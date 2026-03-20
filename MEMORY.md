@@ -23,12 +23,11 @@
 
 | 模块 | 状态 | 备注 |
 |------|------|------|
-| miaoshou-collector | ✅ 已完成框架 | 待测试 |
-| collector-scraper | 🔄 待开发 | - |
+| miaoshou-collector | 🔄 开发中 | 代码完成80%，待测试 |
+| shopee-collector | 🔄 待开发 | Shopee采集箱爬取 |
 | product-storer | 🔄 待开发 | - |
-| listing-optimizer | 🔄 待开发 | - |
-| miaoshou-updater | 🔄 待开发 | - |
-| product-claimer | 🔄 待开发 | - |
+| listing-optimizer | 🔄 待开发 | 含主货号生成 |
+| miaoshou-updater | 🔄 待开发 | 回写Shopee采集箱 |
 
 ### 关键路径
 - 技能目录: `/home/ubuntu/.openclaw/skills/`
@@ -46,8 +45,10 @@
 
 | 页面 | URL参数 | 功能 |
 |------|---------|------|
-| 产品采集 | `?fetchType=1688Product` | 发起1688采集 |
-| 公用采集箱 | `?fetchType=public` | 存储已采集商品 |
+| 产品采集 | `?fetchType=linkCopy` | 发起1688采集 |
+| Shopee采集箱 | `?fetchType=shopeeCopy` | 存储已认领商品 |
+
+**重要：采集后商品进入Shopee采集箱（不是公用采集箱）**
 
 ### 已部署模块（历史）
 - shared/（logger, db, cos_storage, retry_handler）
