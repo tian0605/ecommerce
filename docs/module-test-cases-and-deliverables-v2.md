@@ -668,6 +668,7 @@ update_data示例:
   - tc_mu_001_saved.png: 保存后（显示成功提示）
 
 预期结果: 所有验证点通过，函数返回 True
+预期结果: 浏览器截图 tc_mu_001_success.png 显示采集箱编辑页保存成功（标题/描述/货号已填写）
 """
 ```
 
@@ -694,8 +695,8 @@ update_data示例:
 
 截图要求:
   - tc_mu_002_verify.png: 刷新后页面（证明数据持久化）
-
 预期结果: 页面值与数据库值一致
+预期结果: 浏览器截图 tc_mu_002_verify.png 显示刷新后页面数据与填写值一致
 """
 ```
 
@@ -722,9 +723,9 @@ update_data示例:
 SP-20260320-001
 SP-20260320-002
 ...
-SP-20260321-001
-
 预期结果: 货号唯一且格式正确
+预期结果: 浏览器截图或数据库查询显示货号 SP-YYYYMMDD-序号 生成成功
+
 """
 ```
 
@@ -755,11 +756,10 @@ SP-20260321-001
   "results": [
     {"product_id": "123", "code": "SP-20260320-001", "status": "success"},
     ...
-  ]
+预期结果: success >= 9, total_time < 600s
+预期结果: 每个成功回写的商品均有 tc_mu_xxx_success.png 浏览器截图验证保存成功
 }
 
-预期结果: success >= 9, total_time < 600s
-"""
 ```
 
 ---
@@ -815,13 +815,12 @@ SP-20260321-001
 
 截图要求:
   - tc_pc_001_before.png: 认领前（选中产品）
-  - tc_pc_001_select_shop.png: 选择店铺页面
+预期结果: 认领成功，获得 Shopee 商品ID
+预期结果: 浏览器截图 tc_pc_001_success.png 显示 Shopee 商品ID（如 1234567890）且无错误提示
   - tc_pc_001_mapping.png: 分类映射页面
   - tc_pc_001_success.png: 认领成功页面
 
 预期结果: 认领成功，获得 Shopee 商品ID
-"""
-```
 
 #### TC-PC-002: 认领后数据同步
 
@@ -841,12 +840,11 @@ SP-20260321-001
   [ ] products.main_product_code 非空
   [ ] 数据库与页面显示一致
 
-SQL验证:
+预期结果: 浏览器截图 tc_pc_002_verify.png 显示 Shopee 后台该商品状态为已上架
 SELECT shopee_product_id, status, claimed_at, main_product_code
 FROM products
 WHERE alibaba_product_id = '6012345001';
 
-预期结果:
 {
   "shopee_product_id": "1234567890",
   "status": "claimed",
@@ -868,14 +866,12 @@ WHERE alibaba_product_id = '6012345001';
   3. 验证失败处理
 
 验证点:
-  [ ] 识别失败原因（未编辑/已认领/状态异常）
+预期结果: 函数返回 False，附错误原因
+预期结果: 浏览器截图 tc_pc_003_error.png 显示失败原因（如"商品未编辑完成"）
   [ ] 返回错误信息
   [ ] 不执行无效操作
   [ ] products.status 保持不变
 
-预期结果: 函数返回 False，附错误原因
-"""
-```
 
 #### TC-PC-004: 批量认领（10商品）
 
@@ -902,15 +898,14 @@ WHERE alibaba_product_id = '6012345001';
   "failed": 1,
   "total_time_seconds": 960.5,
   "results": [
-    {"product_id": "123",    {"product_id": "123", "shopee_id": "1234567890", "status": "success"},
+预期结果: success >= 9, total_time < 1200s
+预期结果: 每个成功认领的商品均有 tc_pc_xxx_success.png 浏览器截图验证
     {"product_id": "124", "shopee_id": "1234567891", "status": "success"},
     {"product_id": "125", "error": "商品未编辑完成", "status": "failed"}
   ]
 }
 
-预期结果: success >= 9, total_time < 1200s
 """
-```
 
 ---
 
@@ -948,17 +943,16 @@ WHERE alibaba_product_id = '6012345001';
 验证点:
   [ ] 1688链接正确解析（URL格式识别）
   [ ] 采集按钮可点击（无权限问题）
-  [ ] 显示采集成功提示
+预期结果: 采集发起成功，返回采集箱产品ID
+预期结果: 浏览器截图 tc_mc_001_result.png 显示采集成功提示且商品已添加到公用采集箱
   [ ] 商品已添加到公用采集箱
 
 截图要求:
   - tc_mc_001_page.png: 采集页面（输入链接后）
   - tc_mc_001_result.png: 采集结果（成功提示）
 
-预期结果: 采集发起成功，返回采集箱产品ID
 """
 ```
-
 #### TC-MC-002: 采集状态验证
 
 ```python
@@ -972,7 +966,8 @@ WHERE alibaba_product_id = '6012345001';
   4. 验证商品状态
 
 验证点:
-  [ ] 采集箱中存在该商品
+预期结果: 采集箱验证成功
+预期结果: 浏览器截图 tc_mc_002_verify.png 显示公用采集箱中有该商品且状态为已采集
   [ ] 商品状态 = "已采集" 或类似
   [ ] 商品信息完整（标题/价格/图片数）
   [ ] 可点击进入编辑页
@@ -981,11 +976,7 @@ WHERE alibaba_product_id = '6012345001';
   - tc_mc_002_verify.png: 采集箱中商品列表
 
 预期结果: 采集箱验证成功
-"""
-```
-
 #### TC-MC-003: 关键词搜索采集
-
 ```python
 """
 测试名称: 关键词搜索采集
@@ -997,7 +988,8 @@ WHERE alibaba_product_id = '6012345001';
   4. 截图搜索结果: tc_mc_003_search.png
   5. 选择商品加入采集箱
   6. 验证加入结果
-
+预期结果: 搜索采集成功
+预期结果: 浏览器截图 tc_mc_003_search.png 显示搜索结果列表且商品已添加到采集箱
 验证点:
   [ ] 搜索结果返回多个商品
   [ ] 价格区间过滤生效
@@ -1008,11 +1000,7 @@ WHERE alibaba_product_id = '6012345001';
 
 预期结果: 搜索采集成功
 """
-```
 
-#### TC-MC-004: 批量采集（10链接）
-
-```python
 """
 测试名称: 批量采集
 前置条件: 妙手ERP已登录
@@ -1026,7 +1014,8 @@ WHERE alibaba_product_id = '6012345001';
   [ ] 每个成功商品在采集箱中可查
   [ ] 总耗时 < 10分钟
   [ ] 失败链接记录错误原因
-
+预期结果: success >= 9, total_time < 600s
+预期结果: 每个成功采集的商品均有 tc_mc_xxx_result.png 浏览器截图验证
 输出示例:
 {
   "total": 10,
@@ -1039,11 +1028,7 @@ WHERE alibaba_product_id = '6012345001';
 预期结果: success >= 9, total_time < 600s
 """
 ```
-
----
-
 ## 七、端到端测试用例
-
 ### E2E-001: 全流程采集→认领
 
 ```python
@@ -1118,6 +1103,7 @@ WHERE alibaba_product_id = '6012345001';
   - /home/ubuntu/work/tmp/e2e_001_final.json
 
 预期结果: 全流程成功，3个商品全部认领到Shopee台湾
+预期结果: 每个Step均有对应浏览器截图验证：e2e_001_step1_collect.png（采集成功）/ e2e_001_step5_update.png（编辑保存）/ e2e_001_step6_claim.png（认领成功）
 """
 ```
 
