@@ -33,16 +33,17 @@
 | 任务 | 状态 | 完成日期 | 备注 |
 |------|------|----------|------|
 | 方案设计 | ✅ 完成 | 2026-03-20 | v4.0方案已确认 |
-| 代码开发 | ⏳ 待开始 | - | - |
+| 代码开发 | 🔄 开发中 | 2026-03-20 | collector.py已完成基础框架 |
 | TC-MC-001 测试 | ⏳ 待测试 | - | 产品采集→公用采集箱验证 |
 | TC-MC-002 测试 | ⏳ 待测试 | - | 公用采集箱状态验证 |
 | TC-MC-003 测试 | ⏳ 待测试 | - | 关键词搜索采集 |
 | TC-MC-004 测试 | ⏳ 待测试 | - | 批量采集10链接 |
 
 **代码交付物：**
-- [ ] `/home/ubuntu/.openclaw/skills/miaoshou-collector/collector.py`
-- [ ] `/home/ubuntu/.openclaw/skills/miaoshou-collector/__init__.py`
-- [ ] `/home/ubuntu/.openclaw/skills/miaoshou-collector/config.yaml`
+- [x] `/home/ubuntu/.openclaw/skills/miaoshou-collector/__init__.py` ✅
+- [x] `/home/ubuntu/.openclaw/skills/miaoshou-collector/collector.py` ✅
+- [x] `/home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json` (symlink) ✅
+- [ ] `config.yaml` (可选)
 
 **测试交付物：**
 - [ ] tc_mc_001_xxx.png（5张截图）
@@ -202,7 +203,10 @@
 | 时间 | 模块 | 操作 | 结果 |
 |------|------|------|------|
 | 10:16 | - | 方案v4.0确认，开始执行 | ✅ |
-| 10:16 | miaoshou-collector | 开始开发 | 🔄 |
+| 10:17 | miaoshou-collector | 开始开发 | 🔄 |
+| 10:20 | miaoshou-collector | collector.py 框架完成 | ✅ |
+| 10:20 | miaoshou-collector | __init__.py 完成 | ✅ |
+| 10:20 | miaoshou-collector | cookies文件链接完成 | ✅ |
 
 ---
 
