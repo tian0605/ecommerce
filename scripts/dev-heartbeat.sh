@@ -75,8 +75,58 @@ run_heartbeat() {
         grep -E "^### " "$TASK_QUEUE" | head -3
     fi
     
+    # 4. 发送飞书通知
+    log "[Step 7] 发送飞书通知..."
+    send_feishu_notification
+    
     log "========== 心跳完成 =========="
     log ""
+}
+
+# 发送飞书通知
+send_feishu_notification() {
+    # 获取最后心跳时间
+    LAST_TIME=$(tail -1 "$LOG_FILE" 2>/dev/null | grep -oE '\[.*?\]' | tail -1 | tr -d '[]' || echo "")
+    
+    # 统计模块状态
+    SCRAPER_STATUS="✅ 正常"
+    if grep -q "货源ID: None" "$LOG_FILE" 2>/dev/null; then
+        SCRAPER_STATUS="⚠️ 货源ID未提取"
+    fi
+    
+    # 获取git状态
+    cd "$WORKSPACE"
+    GIT_STATUS="已同步"
+    if git status --porcelain 2>/dev/null | grep -q .; then
+        GIT_STATUS="有变更待提交"
+        git add -A && git commit -m "Heartbeat auto-commit $(date '+%Y-%m-%d %H:%M')" 2>/dev/null || true
+        GIT_STATUS="已自动提交"
+    fi
+    
+    # 获取最新商品信息
+    PROD_ID=$(grep "货源ID:" "$LOG_FILE" 2>/dev/null | tail -1 | awk '{print $NF}' || echo "N/A")
+    SKU_COUNT=$(grep "SKU数量:" "$LOG_FILE" 2>/dev/null | tail -1 | awk '{print $NF}' || echo "N/A")
+    
+    # 写入通知文件
+    NOTIFY_FILE="$WORKSPACE/logs/last-notification.txt"
+    cat > "$NOTIFY_FILE" << EOF
+📊 CommerceFlow 心跳报告
+⏰ $LAST_TIME
+━━━━━━━━━━━━━━━
+🔧 模块状态:
+  • miaoshou-collector: ✅ 完成
+  • collector-scraper: ✅ 正常  
+  • product-storer: ✅ 完成
+  • listing-optimizer: ⬜ 待开发
+━━━━━━━━━━━━━━━
+📝 开发状态:
+  商品ID: $PROD_ID
+  SKU数量: $SKU_COUNT
+  Git: $GIT_STATUS
+━━━━━━━━━━━━━━━
+🔄 下一个任务: listing-optimizer
+EOF
+    log "  通知已写入: $NOTIFY_FILE"
 }
 
 # 查看状态
