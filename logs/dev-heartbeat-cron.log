@@ -182,3 +182,20 @@ After doing this, you may fix the identity used for this commit with:
 ### ✅ miaoshou-collector 模块
 ### ✅ collector-scraper 模块
 [2026-03-20 15:30:16] [Step 7] 发送飞书通知...
+[master b06a9be] Heartbeat auto-commit 2026-03-20 15:30
+ Committer: root <root@localhost.localdomain>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 3 files changed, 68 insertions(+), 1 deletion(-)
+[2026-03-20 15:30:16]   通知已写入: /root/.openclaw/workspace-e-commerce/logs/last-notification.txt
+[2026-03-20 15:30:16] ========== 心跳完成 ==========
+[2026-03-20 15:30:16] 

@@ -76,8 +76,8 @@ run_heartbeat() {
     fi
     
     # 4. 发送飞书通知
-    log "[Step 7] 发送飞书通知..."
-    send_feishu_notification
+    log "[Step 7] 生成报告..."
+    generate_report
     
     log "========== 心跳完成 =========="
     log ""
