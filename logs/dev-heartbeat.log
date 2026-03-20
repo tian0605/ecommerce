@@ -438,3 +438,131 @@
 [2026-03-20 15:30:16]   通知已写入: /root/.openclaw/workspace-e-commerce/logs/last-notification.txt
 [2026-03-20 15:30:16] ========== 心跳完成 ==========
 [2026-03-20 15:30:16] 
+[2026-03-20 15:40:01] ========== 开始开发心跳 ==========
+[2026-03-20 15:40:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-20 15:40:01]   scraper.py 存在
+[2026-03-20 15:40:01] [Step 2] 执行快速测试...
+2026-03-20 15:40:01,982 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-20 15:40:02,580 | collector-scraper | INFO | 浏览器启动成功
+2026-03-20 15:40:02,580 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-20 15:40:10,864 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260320_154010.png
+2026-03-20 15:40:10,874 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-20 15:40:15,389 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260320_154015.png
+2026-03-20 15:40:15,412 | collector-scraper | INFO | 提取到货源ID: 1027205078815
+2026-03-20 15:40:17,001 | collector-scraper | INFO | 找到规格: {'颜色': ['深棕色'], '尺寸': ['大号35*25*16cm', '小号30*20*14cm', '一套（大小号）']}
+2026-03-20 15:40:17,046 | collector-scraper | INFO | 提取到 3 个SKU
+2026-03-20 15:40:17,781 | collector-scraper | INFO | 成功提取商品数据: 1027205078815
+2026-03-20 15:40:17,868 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1027205078815
+  标题: 日式复古风实木竹编收纳筐客厅桌面收纳盒家居书本零食杂物收纳框
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 14
+  SKU数量: 3
+  描述长度: 354
+  物流: {}
+============================================================
+[2026-03-20 15:40:17] [Step 5] 检查代码变更...
+[2026-03-20 15:40:17]   有未提交的变更
+[2026-03-20 15:40:17] [Step 6] 读取任务队列...
+[2026-03-20 15:40:17]   任务队列存在
+[2026-03-20 15:40:17] [Step 7] 生成报告...
+[2026-03-20 15:50:01] ========== 开始开发心跳 ==========
+[2026-03-20 15:50:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-20 15:50:01]   scraper.py 存在
+[2026-03-20 15:50:01] [Step 2] 执行快速测试...
+2026-03-20 15:50:02,050 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-20 15:50:02,643 | collector-scraper | INFO | 浏览器启动成功
+2026-03-20 15:50:02,643 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-20 15:50:10,610 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260320_155010.png
+2026-03-20 15:50:10,618 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-20 15:50:14,746 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260320_155014.png
+2026-03-20 15:50:14,769 | collector-scraper | INFO | 提取到货源ID: 1027205078815
+2026-03-20 15:50:16,495 | collector-scraper | INFO | 找到规格: {'颜色': ['深棕色'], '尺寸': ['大号35*25*16cm', '小号30*20*14cm', '一套（大小号）']}
+2026-03-20 15:50:16,544 | collector-scraper | INFO | 提取到 3 个SKU
+2026-03-20 15:50:17,242 | collector-scraper | INFO | 成功提取商品数据: 1027205078815
+2026-03-20 15:50:17,325 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1027205078815
+  标题: 日式复古风实木竹编收纳筐客厅桌面收纳盒家居书本零食杂物收纳框
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 14
+  SKU数量: 3
+  描述长度: 354
+  物流: {}
+============================================================
+[2026-03-20 15:50:17] [Step 5] 检查代码变更...
+[2026-03-20 15:50:17]   有未提交的变更
+[2026-03-20 15:50:17] [Step 6] 读取任务队列...
+[2026-03-20 15:50:17]   任务队列存在
+[2026-03-20 15:50:17] [Step 7] 生成报告...
+[2026-03-20 16:00:01] ========== 开始开发心跳 ==========
+[2026-03-20 16:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-20 16:00:01]   scraper.py 存在
+[2026-03-20 16:00:01] [Step 2] 执行快速测试...
+2026-03-20 16:00:01,522 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-20 16:00:02,128 | collector-scraper | INFO | 浏览器启动成功
+2026-03-20 16:00:02,128 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-20 16:00:10,283 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260320_160010.png
+2026-03-20 16:00:10,293 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-20 16:00:14,685 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260320_160014.png
+2026-03-20 16:00:14,708 | collector-scraper | INFO | 提取到货源ID: 1027205078815
+2026-03-20 16:00:16,320 | collector-scraper | INFO | 找到规格: {'颜色': ['深棕色'], '尺寸': ['大号35*25*16cm', '小号30*20*14cm', '一套（大小号）']}
+2026-03-20 16:00:16,365 | collector-scraper | INFO | 提取到 3 个SKU
+2026-03-20 16:00:17,087 | collector-scraper | INFO | 成功提取商品数据: 1027205078815
+2026-03-20 16:00:17,170 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1027205078815
+  标题: 日式复古风实木竹编收纳筐客厅桌面收纳盒家居书本零食杂物收纳框
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 14
+  SKU数量: 3
+  描述长度: 354
+  物流: {}
+============================================================
+[2026-03-20 16:00:17] [Step 5] 检查代码变更...
+[2026-03-20 16:00:17]   有未提交的变更
+[2026-03-20 16:00:17] [Step 6] 读取任务队列...
+[2026-03-20 16:00:17]   任务队列存在
+[2026-03-20 16:00:17] [Step 7] 生成报告...
+[2026-03-20 16:10:01] ========== 开始开发心跳 ==========
+[2026-03-20 16:10:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-20 16:10:01]   scraper.py 存在
+[2026-03-20 16:10:01] [Step 2] 执行快速测试...
+2026-03-20 16:10:01,348 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-20 16:10:01,971 | collector-scraper | INFO | 浏览器启动成功
+2026-03-20 16:10:01,971 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-20 16:10:10,043 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260320_161009.png
+2026-03-20 16:10:10,052 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-20 16:10:14,318 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260320_161014.png
+2026-03-20 16:10:14,337 | collector-scraper | INFO | 提取到货源ID: 1027205078815
+2026-03-20 16:10:15,955 | collector-scraper | INFO | 找到规格: {'颜色': ['深棕色'], '尺寸': ['大号35*25*16cm', '小号30*20*14cm', '一套（大小号）']}
+2026-03-20 16:10:16,004 | collector-scraper | INFO | 提取到 3 个SKU
+2026-03-20 16:10:16,697 | collector-scraper | INFO | 成功提取商品数据: 1027205078815
+2026-03-20 16:10:16,785 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1027205078815
+  标题: 日式复古风实木竹编收纳筐客厅桌面收纳盒家居书本零食杂物收纳框
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 14
+  SKU数量: 3
+  描述长度: 354
+  物流: {}
+============================================================
+[2026-03-20 16:10:16] [Step 5] 检查代码变更...
+[2026-03-20 16:10:16]   有未提交的变更
+[2026-03-20 16:10:16] [Step 6] 读取任务队列...
+[2026-03-20 16:10:16]   任务队列存在
+[2026-03-20 16:10:16] [Step 7] 生成报告...
