@@ -118,3 +118,35 @@
 ### ✅ miaoshou-collector 模块
 ### ✅ collector-scraper 模块
 [2026-03-20 15:10:17] [Step 7] 发送飞书通知...
+[master e2225f3] Heartbeat auto-commit 2026-03-20 15:10
+ Committer: root <root@localhost.localdomain>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 3 files changed, 51 insertions(+), 1 deletion(-)
+[2026-03-20 15:10:17]   通知已写入: /root/.openclaw/workspace-e-commerce/logs/last-notification.txt
+[2026-03-20 15:10:17] ========== 心跳完成 ==========
+[2026-03-20 15:10:17] 
+[2026-03-20 15:20:01] ========== 开始开发心跳 ==========
+[2026-03-20 15:20:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-20 15:20:01]   scraper.py 存在
+[2026-03-20 15:20:01] [Step 2] 执行快速测试...
+[2026-03-20 15:20:17] [Step 5] 检查代码变更...
+[2026-03-20 15:20:17]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/last-notification.txt
+[2026-03-20 15:20:17] [Step 6] 读取任务队列...
+[2026-03-20 15:20:17]   任务队列存在
+### listing-optimizer 模块 ⬜
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-20 15:20:17] [Step 7] 发送飞书通知...
