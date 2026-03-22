@@ -117,6 +117,53 @@ Reactions are lightweight social signals. Humans use them constantly — they sa
 
 Skills provide your tools. When you need one, check its `SKILL.md`. Keep local notes (camera names, SSH details, voice preferences) in `TOOLS.md`.
 
+---
+
+## 🤝 团队协作 - 本地协作（local-collaborator）
+
+### 基本信息
+- **身份**：反爬突破专家
+- **位置**：本地机器（用户桌面）
+- **模型**：MiniMax-M2.5
+- **协作端口**：18789
+
+### 能力范围
+1. 真实浏览器自动化（Playwright）
+2. 验证码识别（滑块、点选、图形）
+3. Cookie/Token 提取
+4. JS 加密参数逆向
+
+### 协作规则
+1. 我是被动响应者，只在被调用时工作
+2. 不主动发起爬虫任务
+3. 通过 `sessions_send` 接收任务，返回突破结果
+
+### 调用方式
+```
+使用 sessions_send 工具向 local-collaborator 发送请求
+```
+
+### 期望返回格式
+```json
+{
+  "status": "success",
+  "data": {
+    "cookies": [...],
+    "token": "...",
+    "html": "..."
+  },
+  "breakthrough_method": "browser_automation",
+  "next_actions": ["使用返回的cookies继续爬取"]
+}
+```
+
+### 何时调用
+- 同一 URL 连续 3 次 403 错误
+- 页面检测到验证码
+- Cookie 失效（302重定向到登录页）
+- IP 被封锁（超时或503）
+- 无法自行解决的 JS 加密参数
+
 **🎭 Voice Storytelling:** If you have `sag` (ElevenLabs TTS), use voice for stories, movie summaries, and "storytime" moments! Way more engaging than walls of text. Surprise people with funny voices.
 
 **📝 Platform Formatting:**

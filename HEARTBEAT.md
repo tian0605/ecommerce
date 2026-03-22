@@ -1,5 +1,26 @@
 # HEARTBEAT.md - CommerceFlow 运营监控
 
+---
+
+## ⚠️ 工作流前置条件检查（每次工作前必查）
+
+**参考文档：** `docs/preconditions-checklist.md`
+
+### 三个必要条件
+
+| 条件 | 检查方法 | 处理 |
+|------|----------|------|
+| 1. 妙手ERP已登录 | Cookies文件存在且<24小时 | `/home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json` |
+| 2. 本地爬虫服务启用 | `curl http://127.0.0.1:9090/health` 返回OK | 重启 `python local-1688-weight-server.py` |
+| 3. SSH隧道打开 | `ss -tlnp \| grep 9090` 显示LISTEN | 重建MobaXterm隧道 |
+
+**快速检查命令：**
+```bash
+/root/.openclaw/workspace-e-commerce/scripts/check-preconditions.sh
+```
+
+---
+
 # 每日定期检查任务
 
 ## 每日任务 (按顺序轮询)
@@ -64,6 +85,24 @@
 ```
 
 ---
+
+---
+
+## 🔄 工作流健康巡检 (每2小时)
+
+**脚本：** `scripts/workflow_health_check.sh`
+
+**执行时间：** 每2小时执行一次
+
+**检查内容：**
+1. 前置条件检查（妙手Cookies、本地服务、SSH隧道）
+2. 执行轻量级工作流测试
+3. 结果推送到飞书群
+
+**定时任务：**
+```bash
+0 */2 * * * /root/.openclaw/workspace-e-commerce/scripts/workflow_health_check.sh
+```
 
 ---
 
