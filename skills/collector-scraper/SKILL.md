@@ -70,10 +70,30 @@ for inp in inputs:
     val = inp.input_value() or ''
 ```
 
-### SKU规格提取
-从输入框 `placeholder` 区分规格名和选项：
-- `placeholder="请输入规格名称"` → 规格维度名（如"颜色"、"尺寸"）
-- `placeholder="请输入选项名称"` → 选项值
+### SKU规格提取（JavaScript方式）
+使用JavaScript直接提取SKU数据，精确匹配Element UI组件：
+
+**价格提取：**
+```javascript
+const priceInput = document.querySelector('.jx-pro-input.price-input input.el-input__inner');
+// 结果: 12.9
+```
+
+**库存提取（需去重）：**
+```javascript
+const allInputs = document.querySelectorAll('.jx-pro-input input.el-input__inner');
+// 过滤：排除出现多次的值（重复的是默认值），保留只出现1次的真正库存
+```
+
+**SKU图片提取：**
+```javascript
+const imgBoxes = document.querySelectorAll('.el-image.img-box');
+// 在box内查找颜色名称（包含"奶"、"白"、"黄"等关键字）
+```
+
+**JavaScript字符串使用注意：**
+- 使用 `r"""..."""` 让Python传递原始字符串给JS
+- 批量替换：`sed -i 's/evaluate("""/evaluate(r"""/g' file.py`
 
 ## 前置条件
 

@@ -116,3 +116,44 @@ HEARTBEAT.md中的前置条件检查显示：
 ### Metadata
 - Related Files: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
 - Tags: cookie, miaoshou, session
+
+## 2026-03-24: collector-scraper JavaScript Execution Issues
+
+### Problem: JavaScript in r"" strings had escaping issues
+- When using `self.page.evaluate(r"""...JS code... """)`, Python's r prefix and JavaScript's backslash escaping conflicted
+- Example: `\.` in JS became `\.` in Python raw string, but JS expected `.` 
+
+### Solution
+- Changed all `self.page.evaluate("""...JS...""")` to use `r"""` prefix consistently
+- Used sed to batch replace: `sed -i 's/evaluate("""/evaluate(r"""/g'`
+
+### Related Files
+- `/home/ubuntu/.openclaw/skills/collector-scraper/scraper.py`
+
+---
+
+## 2026-03-24: JavaScript DOM Traversal - Element UI Selectors
+
+### Learning: Element UI Dialog Structure for Miaoshou Collector
+- Price input: `.jx-pro-input.price-input input.el-input__inner`
+- Stock input: `.jx-pro-input input.el-input__inner` (non-price variant)
+- SKU images: `.el-image.img-box .el-image__inner` (but name extraction not working)
+- Stock deduplication: values appearing only once in list are true SKU stocks
+
+### User-provided DOM Info
+```html
+<!-- Price -->
+<div class="jx-pro-input price-input el-input el-input--small el-input--prefix">
+  <input type="text" class="el-input__inner">
+  <span class="el-input__prefix"><span class="price-currency">CNY</span></span>
+</div>
+
+<!-- Stock -->
+<div class="jx-pro-input el-input el-input--small">
+  <input type="text" class="el-input__inner">
+</div>
+
+<!-- SKU Image -->
+<img class="el-image__inner" src="https://cbu01.alicdn.com/img/ibank/...">
+```
+
