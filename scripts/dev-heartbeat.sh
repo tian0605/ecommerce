@@ -25,7 +25,7 @@ mkdir -p "$WORKSPACE/logs"
 
 # 日志函数
 log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG_FILE"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE"
 }
 
 # 发送飞书通知
