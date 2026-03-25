@@ -435,15 +435,17 @@ def main():
         success, msg, data = run_step(step_name, step_func)
         log(f"  → {'✅' if success else '❌'} {msg}")
     
-    # 检查是否有失败步骤
+    # 加载结果并检查是否有失败步骤
+    state = load_state()
+    results = state.get("results", [])
+    
     has_failure = any(not r.get("success", False) for r in results)
     
     # 任务完成
-    state = load_state()
     state["completed"] = not has_failure  # 只有全部成功才标记完成
     state["completed_at"] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     if has_failure:
-        state["failed_step"] = next(r.get("step") for r in results if not r.get("success", False))
+        state["failed_step"] = next((r.get("step") for r in results if not r.get("success", False)), None)
     save_state(state)
     
     if has_failure:
