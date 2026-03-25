@@ -57,6 +57,19 @@
 
 ---
 
+
+### 2026-03-25 16:50 - 自动发现问题
+
+**[P0] listing-optimizer:** 标题未使用繁体中文
+
+**[P0] listing-optimizer:** 标题长度不符合 40-55 字符要求
+
+**[P0] listing-optimizer:** 描述未被优化
+
+**[P0] listing-optimizer:** 描述长度不符合 300-800 字要求
+
+**[P0] listing-optimizer:** 描述包含'现货'等违规词汇
+
 ## 📊 执行状态
 
 | 模块 | 状态 | 验证标准 |
