@@ -26503,3 +26503,62 @@ playwright._impl._errors.Error: Page.evaluate: SyntaxError: Unexpected token '}'
 [2026-03-25 18:10:18]   ✅ 货源ID提取正常
 [2026-03-25 18:10:18] [Step 3] 检查代码变更...
 [2026-03-25 18:10:18]   ⚠️ 有未提交的变更
+[master 13562ea] Heartbeat auto-commit 2026-03-25 18:10
+ 1 file changed, 55 insertions(+)
+[2026-03-25 18:10:18] [Step 4] 检查任务队列...
+[2026-03-25 18:10:18]   下一个任务: ### 1. listing-optimizer 成功标准
+[2026-03-25 18:10:18] [Step 5] 发送飞书通知...
+[2026-03-25 18:10:18]   [飞书] 正在发送通知...
+发送成功
+[2026-03-25 18:10:18]   [飞书] 通知发送成功
+[2026-03-25 18:10:18] [Step 6] 检查并执行待办任务...
+[2026-03-25 18:10:18]   发现待办任务，检查执行状态...
+[2026-03-25 18:10:18]   ✅ 上次任务标记为完成，开始验证...
+[2026-03-25 18:10:18] [Step 6.5] 验证任务结果...
+[2026-03-25 18:10:18]   ✅ 验证通过，无问题
+[2026-03-25 18:10:18]   [飞书] 正在发送通知...
+发送成功
+[2026-03-25 18:10:19]   [飞书] 通知发送成功
+[2026-03-25 18:10:19] ========== 心跳完成 ==========
+[2026-03-25 18:10:19] 
+[2026-03-25 18:10:54] ========== 开始开发心跳 ==========
+[2026-03-25 18:10:54] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 18:10:54]   scraper.py 存在
+[2026-03-25 18:10:54] [Step 2] 执行快速测试...
+2026-03-25 18:10:54,755 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 18:10:55,408 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 18:10:55,409 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 18:11:03,765 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_181103.png
+2026-03-25 18:11:03,776 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 18:11:09,023 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_181108.png
+2026-03-25 18:11:09,050 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 18:11:09,203 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 18:11:09,203 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 18:11:10,189 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 18:11:10,189 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 18:11:10,189 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 18:11:11,030 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 18:11:11,030 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 18:11:11,030 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 18:11:11,030 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 18:11:11,047 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 18:11:11,047 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 18:11:11,063 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 18:11:11,063 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 18:11:11,070 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 18:11:11,160 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 18:11:11]   ✅ 货源ID提取正常
+[2026-03-25 18:11:11] [Step 3] 检查代码变更...
+[2026-03-25 18:11:11]   ⚠️ 有未提交的变更
