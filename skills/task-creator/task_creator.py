@@ -215,31 +215,155 @@ class TaskCreator:
             'task_name': self.task_info['name']
         }
 
+def list_tasks():
+    """列出所有任务及其状态"""
+    print("\n" + "=" * 60)
+    print("📋 任务清单")
+    print("=" * 60)
+    
+    # 读取 task_state.json（最新任务状态）
+    print("\n【当前执行状态】")
+    if STATE_FILE.exists():
+        try:
+            with open(STATE_FILE, 'r') as f:
+                state = json.load(f)
+            
+            print(f"  任务名称: {state.get('task_name', 'N/A')}")
+            print(f"  创建时间: {state.get('created_at', 'N/A')}")
+            print(f"  状态: {state.get('status', 'N/A')}")
+            print(f"  完成度: {state.get('current_step', 0)}/{len(state.get('steps', []))} 步骤")
+            
+            criteria = state.get('success_criteria', [])
+            if criteria:
+                print(f"\n  成功标准 ({len(criteria)} 项):")
+                for i, c in enumerate(criteria, 1):
+                    print(f"    {i}. {c.get('name', 'N/A')}")
+        except Exception as e:
+            print(f"  读取失败: {e}")
+    else:
+        print("  无执行中的任务")
+    
+    # 读取 dev-task-queue.md（任务队列）
+    print("\n【任务队列】")
+    if QUEUE_FILE.exists():
+        try:
+            with open(QUEUE_FILE, 'r') as f:
+                content = f.read()
+            
+            lines = content.split('\n')
+            current_section = None
+            task_count = 0
+            
+            for line in lines:
+                # 检测章节
+                if line.startswith('## '):
+                    current_section = line.replace('## ', '')
+                    print(f"\n  📌 {current_section}")
+                elif line.startswith('### '):
+                    task_name = line.replace('### ', '').strip()
+                    if task_name and task_name != 'P0 问题（立即处理）':
+                        print(f"    - {task_name}")
+                        task_count += 1
+                elif '**状态**' in line:
+                    status = line.split('**状态**')[1].split('**')[0].strip() if '**' in line else ''
+                    print(f"      状态: {status}")
+            
+            if task_count == 0:
+                print("    (空)")
+        except Exception as e:
+            print(f"  读取失败: {e}")
+    else:
+        print("  任务队列文件不存在")
+    
+    # 检查 task_executor 日志
+    executor_log = WORKSPACE / 'logs' / 'task_executor.log'
+    if executor_log.exists():
+        try:
+            with open(executor_log, 'r') as f:
+                lines = f.readlines()
+            
+            # 获取最后10行
+            last_lines = lines[-10:] if len(lines) > 10 else lines
+            
+            print("\n【最近执行日志】")
+            for line in last_lines:
+                line = line.strip()
+                if line:
+                    print(f"  {line}")
+        except Exception as e:
+            print(f"  读取日志失败: {e}")
+    
+    print("\n" + "=" * 60)
+    print("📊 统计")
+    print("=" * 60)
+    
+    # 统计 P0 问题
+    if QUEUE_FILE.exists():
+        try:
+            with open(QUEUE_FILE, 'r') as f:
+                content = f.read()
+            
+            p0_count = content.count('**P0]**') + content.count('[P0]')
+            pending_count = content.count('⬜')
+            completed_count = content.count('✅')
+            
+            print(f"  P0 问题: {p0_count} 个")
+            print(f"  待执行: {pending_count} 个")
+            print(f"  已完成: {completed_count} 个")
+        except:
+            pass
+    
+    print("\n" + "=" * 60)
+    
+    return True
+
 def main():
     """命令行接口"""
-    if len(sys.argv) < 3:
-        print("用法: task_creator.py <任务描述> <成功标准JSON>")
-        print("示例: task_creator.py '每日更新热搜词' '[{\"name\":\"更新成功\",\"verify\":\"数据库记录>400\"}]'")
+    if len(sys.argv) < 2:
+        # 无参数时列出任务
+        list_tasks()
+        sys.exit(0)
+    
+    command = sys.argv[1]
+    
+    if command == '--list' or command == 'list':
+        list_tasks()
+    elif command == '--help':
+        print("""
+task-creator 用法:
+
+  # 列出所有任务
+  python3 task_creator.py list
+  
+  # 创建新任务
+  python3 task_creator.py '<任务描述>' '<成功标准JSON>'
+  
+  # 示例
+  python3 task_creator.py '每日更新热搜词' '[{"name":"更新成功","verify":"数据库记录>400"}]'
+        """)
+    elif len(sys.argv) < 3:
+        print("参数不足！用法: task_creator.py <任务描述> <成功标准JSON>")
+        print("查看帮助: task_creator.py --help")
         sys.exit(1)
-    
-    task_text = sys.argv[1]
-    try:
-        criteria = json.loads(sys.argv[2])
-    except json.JSONDecodeError:
-        print("错误：成功标准JSON格式错误")
-        sys.exit(1)
-    
-    creator = TaskCreator()
-    success, result = creator.create_task(task_text, criteria)
-    
-    if success:
-        print(f"\n✅ {result['message']}")
-        print(f"任务名: {result['task_name']}")
     else:
-        print("\n⚠️ 任务信息不完整，需要补充：")
-        for q in result.get('questions', []):
-            print(f"  {q}")
-        sys.exit(1)
+        task_text = sys.argv[1]
+        try:
+            criteria = json.loads(sys.argv[2])
+        except json.JSONDecodeError:
+            print("错误：成功标准JSON格式错误")
+            sys.exit(1)
+        
+        creator = TaskCreator()
+        success, result = creator.create_task(task_text, criteria)
+        
+        if success:
+            print(f"\n✅ {result['message']}")
+            print(f"任务名: {result['task_name']}")
+        else:
+            print("\n⚠️ 任务信息不完整，需要补充：")
+            for q in result.get('questions', []):
+                print(f"  {q}")
+            sys.exit(1)
 
 if __name__ == '__main__':
     main()

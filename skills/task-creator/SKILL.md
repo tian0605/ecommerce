@@ -137,3 +137,55 @@
 - 脚本：`/root/.openclaw/workspace-e-commerce/skills/task-creator/task_creator.py`
 - 状态：`/root/.openclaw/workspace-e-commerce/logs/task_state.json`
 - 队列：`/root/.openclaw/workspace-e-commerce/docs/dev-task-queue.md`
+
+---
+
+## 查询任务清单
+
+### 命令
+```bash
+python3 /root/.openclaw/workspace-e-commerce/skills/task-creator/task_creator.py list
+```
+
+### 输出内容
+
+**【当前执行状态】**
+- 任务名称
+- 创建时间
+- 状态（pending/in_progress/completed）
+- 完成度（当前步骤/总步骤数）
+- 成功标准列表
+
+**【任务队列】**
+- P0 问题清单
+- 待执行任务
+- 进行中任务
+- 已完成任务
+
+**【最近执行日志】**
+- task_executor.log 最后10行
+
+**【统计】**
+- P0 问题数量
+- 待执行数量
+- 已完成数量
+
+### 使用场景
+
+**场景1：检查当前有什么任务**
+```
+用户: 现在有哪些任务在执行？
+AI: (调用 list_tasks)
+```
+
+**场景2：检查某个任务的成功标准**
+```
+用户: listing-optimizer 的成功标准是什么？
+AI: (调用 list_tasks 查看成功标准列表)
+```
+
+**场景3：检查为什么任务被卡住**
+```
+用户: 任务为什么没完成？
+AI: (调用 list_tasks 查看执行状态和日志)
+```
