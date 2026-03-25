@@ -3,8 +3,7 @@
 写入结果到飞书文档和飞书群
 """
 
-import urllib.request
-import urllib.error
+import subprocess
 import json
 from pathlib import Path
 from datetime import datetime
@@ -16,13 +15,11 @@ FEISHU_WEBHOOK = "https://open.feishu.cn/open-apis/bot/v2/hook/6af7d281-ca31-42c
 def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
 
-def write_to_markdown(results, improvements):
-    """先将结果写入 markdown 文件"""
-    md_file = WORKSPACE / 'logs' / 'task_results_latest.md'
-    
+def build_feishu_content(results, improvements):
+    """构建飞书文档格式的内容"""
     lines = [
         f"# 任务执行报告\n",
-        f"**时间:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n",
+        f"**时间:** {datetime.now().strftime('%Y-%m-%d %H:%M')}\n",
         f"---\n",
         f"## 执行结果\n",
     ]
@@ -57,17 +54,20 @@ def write_to_markdown(results, improvements):
             lines.append(f"\n**[{imp.get('priority', 'P0')}] {imp.get('module')}:** {imp.get('issue')}\n")
             lines.append(f"- 建议: {imp.get('action')}\n")
     
-    content = ''.join(lines)
+    lines.append(f"\n---\n*最后更新: {datetime.now().strftime('%Y-%m-%d %H:%M')}*\n")
     
+    return ''.join(lines)
+
+def write_to_markdown(content):
+    """写入本地 markdown 文件"""
+    md_file = WORKSPACE / 'logs' / 'task_results_latest.md'
     with open(md_file, 'w', encoding='utf-8') as f:
         f.write(content)
-    
-    log(f"结果已写入: {md_file}")
+    log(f"本地文件: {md_file}")
     return str(md_file)
 
-def send_to_feishu(results, improvements):
-    """发送结果到飞书群"""
-    # 构建消息内容
+def send_to_feishu_group(results, improvements):
+    """发送摘要到飞书群"""
     lines = [
         f"📊 任务执行报告\n",
         f"⏰ {datetime.now().strftime('%Y-%m-%d %H:%M')}\n",
@@ -97,11 +97,12 @@ def send_to_feishu(results, improvements):
             lines.append(f"  [{imp.get('priority', 'P0')}] {imp.get('module')}: {imp.get('issue')}\n")
     
     lines.append(f"━━━━━━━━━━━━━━━\n")
-    lines.append(f"📄 完整报告: https://feishu.cn/docx/{FEISHU_DOC_ID}")
+    lines.append(f"📄 完整报告: https://pcn0wtpnjfsd.feishu.cn/docx/{FEISHU_DOC_ID}")
     
     message = ''.join(lines)
     
-    # 发送飞书群消息
+    import urllib.request
+    
     payload = json.dumps({
         "msg_type": "text",
         "content": {"text": message}
@@ -120,51 +121,53 @@ def send_to_feishu(results, improvements):
                 log("✅ 飞书群通知发送成功")
                 return True
             else:
-                log(f"⚠️ 飞书群通知发送失败: {result}")
+                log(f"⚠️ 飞书群通知失败")
                 return False
     except Exception as e:
-        log(f"⚠️ 飞书群通知发送失败: {e}")
+        log(f"⚠️ 飞书群通知失败: {e}")
         return False
 
 def write_to_feishu(results, improvements):
     """写入飞书文档并发送通知"""
-    # 1. 写入本地 markdown
-    md_file = write_to_markdown(results, improvements)
+    # 1. 构建内容
+    content = build_feishu_content(results, improvements)
     
-    # 2. 发送飞书群通知
-    send_to_feishu(results, improvements)
+    # 2. 写入本地文件
+    write_to_markdown(content)
     
-    log(f"📄 完整报告: https://feishu.cn/docx/{FEISHU_DOC_ID}")
+    # 3. 发送飞书群通知
+    send_to_feishu_group(results, improvements)
     
-    return md_file
+    # 4. 生成 OpenClaw 命令用于写入飞书文档
+    # 由于 Python 无法直接调用 feishu_doc 工具，输出命令供手动执行
+    log(f"📄 完整报告已保存，请手动同步到飞书文档")
+    log(f"URL: https://pcn0wtpnjfsd.feishu.cn/docx/{FEISHU_DOC_ID}")
+    
+    # 输出 JSON 格式结果，供外部程序读取
+    output = {
+        "content": content,
+        "doc_url": f"https://pcn0wtpnjfsd.feishu.cn/docx/{FEISHU_DOC_ID}",
+        "markdown_file": str(WORKSPACE / 'logs' / 'task_results_latest.md')
+    }
+    print(f"\n__FEISHU_CONTENT__:{json.dumps(output, ensure_ascii=False)}")
+    
+    return output
 
 if __name__ == '__main__':
-    results = [
-        {
-            "step": "listing-optimizer",
-            "success": True,
-            "message": "listing-optimizer 测试完成",
-            "data": {
-                "module": "listing-optimizer",
-                "status": "✅",
-                "optimized_title": "收納 首飾 北歐風 竹編 帶蓋 分格 桌面 髮飾 20x15x10cm 天然竹 米白 免運",
-                "compliance": "✅ 无'现货'词汇"
-            }
-        },
-        {
-            "step": "profit-analyzer",
-            "success": True,
-            "message": "profit-analyzer 测试完成",
-            "data": {
-                "module": "profit-analyzer",
-                "status": "✅",
-                "suggested_price_twd": 167,
-                "commission_twd": 23,
-                "total_platform_fee_twd": 33,
-                "gross_profit_twd": 89
-            }
-        }
-    ]
+    import sys
+    import json
     
-    improvements = []
+    if len(sys.argv) > 1:
+        # 从 stdin 读取 results JSON
+        try:
+            data = json.loads(sys.argv[1])
+            results = data.get('results', [])
+            improvements = data.get('improvements', [])
+        except:
+            results = []
+            improvements = []
+    else:
+        results = []
+        improvements = []
+    
     write_to_feishu(results, improvements)
