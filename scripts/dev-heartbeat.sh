@@ -115,6 +115,40 @@ run_heartbeat() {
 ━━━━━━━━━━━━━━━
 ✅ 心跳执行正常"
     
+    # 5. 执行待办任务（如果有）
+    log "[Step 6] 检查并执行待办任务..."
+    if [ -f "$WORKSPACE/docs/dev-task-queue.md" ]; then
+        # 检查是否有待执行的任务标记
+        if grep -q "🔄\|⬜" "$WORKSPACE/docs/dev-task-queue.md"; then
+            log "  发现待办任务，开始执行..."
+            
+            # 执行任务（输出JSON结果）
+            TASK_OUTPUT=$(timeout 300 python3 "$WORKSPACE/scripts/task_executor.py" 2>&1)
+            TASK_EXIT=$?
+            
+            # 提取结果
+            if [ $? -eq 0 ] && echo "$TASK_OUTPUT" | grep -q "\[TASK_RESULTS\]"; then
+                log "  ✅ 任务执行完成"
+                
+                # 发送执行结果通知
+                send_feishu "🔄 任务执行完成
+⏰ $START_TIME
+━━━━━━━━━━━━━━━
+📋 已执行:
+  • listing-optimizer 测试
+  • miaoshou-updater 检查
+  • profit-analyzer 分析
+━━━━━━━━━━━━━━━
+✅ 查看飞书文档获取详情
+📄 https://feishu.cn/docx/UVlkd1NHrorLumxC8K7cLMBUnDe"
+            else
+                log "  ⚠️ 任务执行超时或失败"
+            fi
+        else
+            log "  无待执行任务，跳过"
+        fi
+    fi
+    
     log "========== 心跳完成 =========="
     log ""
 }
