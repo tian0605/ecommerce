@@ -1,0 +1,20 @@
+2026-03-25 15:36:37,732 | listing-optimizer | ERROR | curl failed: 
+[15:32:55] ==================================================
+[15:32:55] 开始任务执行
+[15:32:55] ==================================================
+[15:32:55] 测试 listing-optimizer...
+[15:36:37] listing-optimizer: listing-optimizer 测试完成
+[15:36:37] 测试 miaoshou-updater...
+[15:36:37] miaoshou-updater: miaoshou-updater 跳过（无优化标题）
+[15:36:37] 测试 profit-analyzer...
+Traceback (most recent call last):
+  File "/root/.openclaw/workspace-e-commerce/scripts/task_executor.py", line 328, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/root/.openclaw/workspace-e-commerce/scripts/task_executor.py", line 298, in main
+    success, msg, data = run_profit_analyzer_test()
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.openclaw/workspace-e-commerce/scripts/task_executor.py", line 182, in run_profit_analyzer_test
+    if price and weight:
+       ^^^^^
+NameError: name 'price' is not defined. Did you mean: 'print'?

@@ -120,12 +120,35 @@ run_heartbeat() {
     if [ -f "$WORKSPACE/docs/dev-task-queue.md" ]; then
         # 检查是否有待执行的任务标记
         if grep -q "🔄\|⬜" "$WORKSPACE/docs/dev-task-queue.md"; then
-            log "  发现待办任务，后台执行..."
+            log "  发现待办任务，检查执行状态..."
             
-            # 在后台执行任务（不受心跳 timeout 限制）
-            nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
-            TASK_PID=$!
-            log "  任务已启动 (PID: $TASK_PID)"
+            # 检查任务状态文件
+            if [ -f "$WORKSPACE/logs/task_state.json" ]; then
+                # 读取状态
+                TASK_COMPLETED=$(python3 -c "import json; d=json.load(open('$WORKSPACE/logs/task_state.json')); print('yes' if d.get('completed') else 'no')" 2>/dev/null || echo "no")
+                
+                if [ "$TASK_COMPLETED" = "no" ]; then
+                    # 任务未完成，等待或继续
+                    CURRENT_TASK=$(python3 -c "import json; d=json.load(open('$WORKSPACE/logs/task_state.json')); print(d.get('current_task', 'unknown'))" 2>/dev/null || echo "unknown")
+                    COMPLETED_STEPS=$(python3 -c "import json; d=json.load(open('$WORKSPACE/logs/task_state.json')); print(len(d.get('results', [])))" 2>/dev/null || echo "0")
+                    log "  📍 任务进行中: $CURRENT_TASK ($COMPLETED_STEPS/3 步骤完成)"
+                    
+                    # 检查任务进程是否还在运行
+                    if ! pgrep -f "task_executor.py" > /dev/null; then
+                        log "  ⚠️ 任务进程已退出但未完成，尝试恢复..."
+                        nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
+                        log "  🔄 任务已重新启动"
+                    fi
+                else
+                    log "  ✅ 上次任务已完成，无需重复执行"
+                fi
+            else
+                # 无状态文件，开始新任务
+                log "  🆕 开始新任务..."
+                nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
+                TASK_PID=$!
+                log "  任务已启动 (PID: $TASK_PID)"
+            fi
             
             # 发送通知
             send_feishu "🔄 任务执行已启动
