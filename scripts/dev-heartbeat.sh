@@ -42,7 +42,7 @@ send_feishu() {
         -H "Content-Type: application/json" \
         -d "{\"msg_type\":\"text\",\"content\":{\"text\":\"$message\"}}" 2>&1)
     
-    if echo "$response" | grep -q '"code":0'; then
+    if echo "$response" | grep -q '"code":0' || echo "$response" | grep -q '"StatusCode":0'; then
         log "  [飞书] 通知发送成功"
     else
         log "  [飞书] 通知发送失败: $response"
