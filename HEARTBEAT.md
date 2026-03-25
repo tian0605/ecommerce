@@ -90,6 +90,30 @@ ss -tlnp | grep 9090
 - 如果遇到失败 → 记录到 `ERRORS.md`
 - 如果发现新技巧 → 记录到 `TIPS.md`
 
+#### ⚙️ 配置自检（每周检视）
+
+参考 OpenClaw 配置自检方案，检视以下配置项：
+
+| 配置项 | 检查内容 | 健康标准 |
+|--------|----------|----------|
+| **Memory 持久化** | MEMORY.md 与 memory/*.md 完整性 | 关键决策有记录 |
+| **Knowledge Base** | KNOWLEDGE.md 知识覆盖率 | 有成功案例沉淀 |
+| **Errors 错误记录** | ERRORS.md 更新频率 | 问题不重复出现 |
+| **IMPROVEMENTS** | 改进清单执行率 | 季度≥5项完成 |
+| **PROJECT_STATUS** | 项目状态追踪 | 阻塞问题≤1个 |
+| **HEARTBEAT机制** | 心跳误报率 | <5% |
+
+**自检执行：**
+```bash
+# 每周执行
+bash /root/.openclaw/workspace-e-commerce/scripts/config-self-check.sh
+```
+
+**自检输出：**
+- 更新 `docs/IMPROVEMENTS.md` 待办项
+- 更新 `docs/PROJECT_STATUS.md` 阻塞状态
+- 生成周报发送到飞书群
+
 ---
 
 ## 二、自动化检查规则
