@@ -7,15 +7,16 @@ LLM_BASE_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1'
 
 # 可用模型列表
 MODELS = {
-    # 主力模型（推荐）
+    # 主力模型（推荐）- 支持视觉理解
     'qwen3.5-plus': {
         'name': 'qwen3.5-plus',
-        'description': '主力模型，推荐日常使用',
+        'description': '主力模型，推荐日常使用，支持视觉理解',
         'cost_per_1k_tokens': 0.001,  # ¥0.001/1K tokens
         'max_tokens': 1500,
         'temperature': 0.7,
         'speed': 'fast',
         'quality': 'high',
+        'vision': True,  # 支持视觉理解
     },
     # 高配模型（效果更好但更贵）
     'qwen-plus': {
@@ -47,4 +48,6 @@ TASK_MODELS = {
     'title_optimization': 'qwen3.5-plus',  # 标题优化
     'description_optimization': 'qwen3.5-plus',  # 描述优化
     'debug': 'qwen3-plus',  # 快速调试
+    'vision': 'qwen3.5-plus',  # 视觉理解（截图分析）
+    'image_understanding': 'qwen3.5-plus',  # 图片理解
 }
