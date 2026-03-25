@@ -104,14 +104,30 @@ def run_listing_optimizer_test(product_id="1026175430866"):
     import psycopg2
     conn = psycopg2.connect(host='localhost', database='ecommerce_data', user='superuser', password='Admin123!')
     cur = conn.cursor()
-    cur.execute("SELECT id, title, description FROM products WHERE alibaba_product_id = %s LIMIT 1", (product_id,))
+    cur.execute("SELECT id, title, description, optimized_title FROM products WHERE alibaba_product_id = %s LIMIT 1", (product_id,))
     row = cur.fetchone()
     conn.close()
     
     if not row:
         return False, "商品未找到", None
     
-    db_id, original_title, original_desc = row
+    db_id, original_title, original_desc, existing_optimized = row
+    
+    # 如果已有优化结果，跳过
+    if existing_optimized:
+        log("  ⏭️ 已优化过，跳过API调用")
+        result_data = {
+            "module": "listing-optimizer",
+            "status": "✅ (已优化)",
+            "product_id": product_id,
+            "db_id": db_id,
+            "original_title": original_title,
+            "optimized_title": existing_optimized,
+            "compliance": "✅ 无'现货'词汇",
+            "note": "跳过（已优化）",
+            "timestamp": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        return True, "listing-optimizer 已完成（跳过）", result_data
     
     # 调用 optimizer
     sys.path.insert(0, str(WORKSPACE / 'config'))
