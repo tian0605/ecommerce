@@ -1,41 +1,47 @@
 # 开发任务队列
 
 > 记录当前开发任务、问题和待办事项
-> 最后更新：2026-03-25 15:51
+> 最后更新：2026-03-25 15:55
 
 ---
 
-## 当前任务
+## 🔴 P0 优化项（立即处理）
 
-### ✅ 第一轮测试已完成 (15:51)
+### 1. listing-optimizer 需保存结果到数据库
+**问题：** miaoshou-updater 跳过是因为数据库无优化标题数据
+**原因：** listing-optimizer 优化后没有把结果写入 products 表
+**解决方案：** listing-optimizer 测试完成后，更新 products 表的 optimized_title 和 optimized_description 字段
 
-**执行时间：** 2026-03-25 15:47 - 15:51
-
-| 模块 | 状态 | 结果 |
-|------|------|------|
-| listing-optimizer | ✅ | 标题优化完成，合规检查通过 |
-| miaoshou-updater | ⚠️ | 跳过（数据库无优化标题） |
-| profit-analyzer | ✅ | 建议售价 167 TWD |
-
-**执行日志：** `logs/task_state.json`
+**验收标准：**
+- [ ] listing-optimizer 优化后自动更新 products 表
+- [ ] miaoshou-updater 能读取到优化标题进行回写
 
 ---
 
-## 待优化项
+## 📋 待执行任务
 
-| 优先级 | 模块 | 问题 | 建议 |
+| 优先级 | 任务 | 状态 | 说明 |
 |--------|------|------|------|
-| P1 | miaoshou-updater | 数据库无优化标题数据 | 先完成 listing-optimizer 优化后再测试 |
+| P0 | listing-optimizer 保存结果到DB | ⬜ 待开发 | 优化后自动写入 products 表 |
+| P0 | miaoshou-updater 完整测试 | ⬜ 待开始 | 需要 optimizer 结果写入 DB |
+| P1 | profit-analyzer 完整测试 | ✅ 已完成 | 建议售价 167 TWD |
 
 ---
 
-## 历史执行记录
+## ✅ 已完成历史
 
-### 2026-03-25 15:47 - 第一轮测试
-- listing-optimizer: ✅ 完成
-- miaoshou-updater: ⚠️ 跳过
+### 2026-03-25 15:47 - 第一轮自动测试
+- listing-optimizer: ✅ 完成（但未保存到DB）
+- miaoshou-updater: ⚠️ 跳过（无优化标题）
 - profit-analyzer: ✅ 完成
 
 ---
 
-*最后更新：2026-03-25 15:51*
+## 下一步
+
+1. 修改 listing-optimizer，优化完成后更新数据库
+2. 重新执行任务，验证 miaoshou-updater 能正常读取数据
+
+---
+
+*最后更新：2026-03-25 15:55*

@@ -254,36 +254,108 @@ def subprocess_run(cmd, timeout=120):
     except Exception as e:
         return str(e)
 
-def analyze_results(results):
-    """分析测试结果，找出优化项"""
-    improvements = []
+def update_task_queue(improvements):
+    """更新 dev-task-queue.md，添加发现的优化项"""
+    if not improvements:
+        # 无优化项，清除待执行任务标记
+        clear_completed_tasks()
+        return
     
-    for r in results:
-        if not r.get("success"):
-            continue
-        
-        data = r.get("data", {})
-        module = data.get("module", "")
-        
-        if module == "listing-optimizer":
-            if "⚠️" in data.get("status", ""):
-                improvements.append({
-                    "priority": "P0",
-                    "module": module,
-                    "issue": data.get("compliance", "合规问题"),
-                    "action": "检查并修复提示词"
-                })
-        
-        if module == "profit-analyzer":
-            if data.get("suggested_price_twd", 0) < 100:
-                improvements.append({
-                    "priority": "P1",
-                    "module": module,
-                    "issue": "建议售价过低",
-                    "action": "调整利润率和藏价策略"
-                })
+    queue_file = WORKSPACE / 'docs' / 'dev-task-queue.md'
     
-    return improvements
+    # 读取现有内容
+    existing_content = ""
+    if queue_file.exists():
+        with open(queue_file, 'r') as f:
+            existing_content = f.read()
+    
+    # 构建新内容
+    new_p0_items = []
+    for imp in improvements:
+        if imp.get("priority") == "P0":
+            new_p0_items.append(f"### {imp['module']}: {imp['issue']}")
+            new_p0_items.append(f"**建议：** {imp['action']}")
+            new_p0_items.append("")
+    
+    # 如果有新的 P0 项，添加到文件
+    if new_p0_items:
+        # 在 P0 优化项部分插入新项
+        header = "## 🔴 P0 优化项（立即处理）"
+        
+        if header in existing_content:
+            # 找到 P0 部分的位置
+            lines = existing_content.split('\n')
+            new_lines = []
+            in_p0_section = False
+            added = False
+            
+            for line in lines:
+                if header in line:
+                    in_p0_section = True
+                    new_lines.append(line)
+                    continue
+                
+                if in_p0_section and line.startswith("## ") and not added:
+                    # 遇到下一个章节，插入新项
+                    new_lines.append("".join(new_p0_items))
+                    new_lines.append(line)
+                    added = True
+                    in_p0_section = False
+                else:
+                    new_lines.append(line)
+            
+            if not added:
+                new_lines.append("".join(new_p0_items))
+            
+            existing_content = '\n'.join(new_lines)
+        else:
+            # 没有 P0 部分，在顶部插入
+            existing_content = header + "\n\n" + "".join(new_p0_items) + "\n\n" + existing_content
+        
+        # 写回文件
+        with open(queue_file, 'w') as f:
+            f.write(existing_content)
+        
+        log(f"已更新 dev-task-queue.md，添加 {len(new_p0_items)//3} 个 P0 项")
+    
+    # 清除已完成的待执行任务
+    clear_completed_tasks()
+
+def clear_completed_tasks():
+    """清除 dev-task-queue.md 中已完成的待执行任务"""
+    queue_file = WORKSPACE / 'docs' / 'dev-task-queue.md'
+    
+    if not queue_file.exists():
+        return
+    
+    with open(queue_file, 'r') as f:
+        content = f.read()
+    
+    # 检查是否有"✅ 第一轮测试已完成"这样的标记
+    if "✅ 第一轮" in content or "已完成" in content:
+        lines = content.split('\n')
+        new_lines = []
+        skip_until_header = False
+        
+        for line in lines:
+            # 跳过已完成的章节头
+            if "✅ 第一轮" in line or ("已完成" in line and "历史" not in line and "最后" not in line):
+                skip_until_header = True
+                continue
+            
+            # 如果遇到下一个主要章节，停止跳过
+            if skip_until_header and line.startswith("## "):
+                skip_until_header = False
+            
+            if not skip_until_header:
+                new_lines.append(line)
+        
+        new_content = '\n'.join(new_lines)
+        
+        with open(queue_file, 'w') as f:
+            f.write(new_content)
+        
+        log("已清除已完成的待执行任务")
 
 def main():
     log("=" * 50)
@@ -348,6 +420,9 @@ def main():
         log("\n发现的优化项:")
         for imp in improvements:
             log(f"  [{imp['priority']}] {imp['module']}: {imp['issue']}")
+        
+        # 更新 dev-task-queue.md
+        update_task_queue(improvements)
     
     # 写入飞书文档
     try:
