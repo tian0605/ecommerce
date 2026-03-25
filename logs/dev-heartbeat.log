@@ -25491,3 +25491,51 @@ playwright._impl._errors.Error: Page.evaluate: SyntaxError: Unexpected token '}'
 [2026-03-25 16:30:19] ========== 心跳完成 ==========
 [2026-03-25 16:30:19] 
 [2026-03-25 16:30:19] 
+[2026-03-25 16:40:01] ========== 开始开发心跳 ==========
+[2026-03-25 16:40:01] ========== 开始开发心跳 ==========
+[2026-03-25 16:40:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 16:40:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 16:40:01]   scraper.py 存在
+[2026-03-25 16:40:01]   scraper.py 存在
+[2026-03-25 16:40:01] [Step 2] 执行快速测试...
+[2026-03-25 16:40:01] [Step 2] 执行快速测试...
+2026-03-25 16:40:01,317 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 16:40:01,944 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 16:40:01,944 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 16:40:10,007 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_164009.png
+2026-03-25 16:40:10,019 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 16:40:14,653 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_164014.png
+2026-03-25 16:40:14,677 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 16:40:14,830 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 16:40:14,830 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 16:40:15,742 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 16:40:15,742 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 16:40:15,742 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 16:40:16,589 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 16:40:16,590 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 16:40:16,590 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 16:40:16,590 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 16:40:16,605 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 16:40:16,605 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 16:40:16,619 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 16:40:16,620 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 16:40:16,627 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 16:40:16,715 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 16:40:16]   ✅ 货源ID提取正常
+[2026-03-25 16:40:16]   ✅ 货源ID提取正常
+[2026-03-25 16:40:16] [Step 3] 检查代码变更...
+[2026-03-25 16:40:16] [Step 3] 检查代码变更...
+[2026-03-25 16:40:16]   ⚠️ 有未提交的变更
+[2026-03-25 16:40:16]   ⚠️ 有未提交的变更
