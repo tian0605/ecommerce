@@ -37,21 +37,10 @@ send_feishu() {
         return
     fi
     
-    local response
     log "  [飞书] 正在发送通知..."
     
-    # 构建JSON payload（使用单引号避免shell转义问题）
-    local json_payload="{\"msg_type\":\"text\",\"content\":{\"text\":\"$message\"}}"
-    
-    response=$(curl -s -X POST "$FEISHU_WEBHOOK_URL" \
-        -H "Content-Type: application/json" \
-        -d "$json_payload")
-    
-    log "  [飞书] 响应: $response"
-    
-    if echo "$response" | grep -q '"code":0'; then
-        log "  [飞书] 通知发送成功"
-    elif echo "$response" | grep -q '"StatusCode":0'; then
+    # 使用Python脚本发送（更好地处理中文和emoji）
+    if python3 "$WORKSPACE/scripts/send_feishu.py" "$FEISHU_WEBHOOK_URL" "$message"; then
         log "  [飞书] 通知发送成功"
     else
         log "  [飞书] 通知发送失败"
