@@ -104,14 +104,14 @@ def run_listing_optimizer_test(product_id="1026175430866"):
     import psycopg2
     conn = psycopg2.connect(host='localhost', database='ecommerce_data', user='superuser', password='Admin123!')
     cur = conn.cursor()
-    cur.execute("SELECT title, description FROM products WHERE alibaba_product_id = %s LIMIT 1", (product_id,))
+    cur.execute("SELECT id, title, description FROM products WHERE alibaba_product_id = %s LIMIT 1", (product_id,))
     row = cur.fetchone()
     conn.close()
     
     if not row:
         return False, "商品未找到", None
     
-    original_title, original_desc = row
+    db_id, original_title, original_desc = row
     
     # 调用 optimizer
     sys.path.insert(0, str(WORKSPACE / 'config'))
@@ -146,10 +146,31 @@ def run_listing_optimizer_test(product_id="1026175430866"):
         hot_search_words="收納"
     )
     
+    # ⭐ 关键修复：保存到数据库
+    log("  保存到数据库...")
+    try:
+        import psycopg2
+        conn = psycopg2.connect(host='localhost', database='ecommerce_data', user='superuser', password='Admin123!')
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE products 
+            SET optimized_title = %s, 
+                optimized_description = %s,
+                status = 'optimized',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+        """, (optimized_title, optimized_desc, db_id))
+        conn.commit()
+        conn.close()
+        log("  ✅ 已保存到数据库")
+    except Exception as e:
+        log(f"  ⚠️ 保存失败: {e}")
+    
     result_data = {
         "module": "listing-optimizer",
         "status": "✅" if compliance_ok else "⚠️",
         "product_id": product_id,
+        "db_id": db_id,
         "original_title": original_title,
         "optimized_title": optimized_title,
         "original_desc": (original_desc or "")[:200],
