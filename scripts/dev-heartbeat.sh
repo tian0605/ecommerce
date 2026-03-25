@@ -145,9 +145,16 @@ run_heartbeat() {
                     
                     # ===== Step 6.5 验证结果 =====
                     log "[Step 6.5] 验证任务结果..."
-                    VALIDATION_RESULT=$(python3 "$WORKSPACE/scripts/validate_results.py" 2>/dev/null || echo "validation_skip")
+                    VALIDATION_OUTPUT=$(python3 "$WORKSPACE/scripts/validate_results.py" 2>&1)
+                    VALIDATION_EXIT=$?
                     
-                    if [ "$VALIDATION_RESULT" = "has_issues" ]; then
+                    # 提取结果（最后一行包含 __RESULT__:）
+                    VALIDATION_RESULT=$(echo "$VALIDATION_OUTPUT" | grep "__RESULT__:" | sed 's/.*__RESULT__://')
+                    
+                    if [ -z "$VALIDATION_RESULT" ]; then
+                        log "  ⚠️ 验证执行失败，跳过"
+                        log "  调试信息: $VALIDATION_OUTPUT"
+                    elif [ "$VALIDATION_RESULT" = "has_issues" ]; then
                         log "  ⚠️ 验证发现问题，需要重新执行..."
                         # 清除状态，重新执行
                         rm -f "$WORKSPACE/logs/task_state.json"
@@ -157,7 +164,7 @@ run_heartbeat() {
                     elif [ "$VALIDATION_RESULT" = "all_ok" ]; then
                         log "  ✅ 验证通过，无问题"
                     else
-                        log "  ⏭️ 跳过验证（状态文件无效）"
+                        log "  ⏭️ 跳过验证（未知结果: $VALIDATION_RESULT）"
                     fi
                 fi
             else

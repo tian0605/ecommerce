@@ -346,4 +346,6 @@ def update_queue(issues):
 
 if __name__ == '__main__':
     result = validate_results()
+    # 只在最后打印结果标记
+    print(f"\n__RESULT__:{result}")
     sys.exit(0)
