@@ -58,13 +58,7 @@ ps aux | grep dev-heartbeat
 | **收益** | listing-optimizer可自动更新状态 |
 | **风险** | 中（需谨慎操作生产数据） |
 | **ROI** | 高 |
-| **状态** | 🔴 需立即处理 |
-
-**SQL：**
-```sql
-ALTER TYPE product_status ADD VALUE IF NOT EXISTS 'pending';
-ALTER TYPE product_status ADD VALUE IF NOT EXISTS 'optimized';
-```
+| **状态** | ✅ 已完成（2026-03-25） |
 
 ### 5. 监控面板开发
 | 项目 | 内容 |

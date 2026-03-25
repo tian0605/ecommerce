@@ -41,7 +41,7 @@
 **现象：** listing-optimizer更新商品时报错 `invalid input value for enum product_status: "optimized"`
 **原因：** 数据库product_status枚举只有 `collected, listed, published, delisted`
 **教训：** 使用enum类型时要先确认可用值
-**解决方案：** 直接UPDATE title和description字段，绕过status
+**解决方案：** ✅ 已修复（2026-03-25），添加了pending和optimized枚举值
 
 ---
 
