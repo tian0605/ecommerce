@@ -139,26 +139,25 @@ run_heartbeat() {
                         nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
                         log "  🔄 任务已重新启动"
                     fi
-                elif python3 -c "import json; d=json.load(open('$WORKSPACE/logs/task_state.json')); print(d.get('failed_step', ''))" 2>/dev/null | grep -q .; then
-                    # 有失败步骤，需要重试
-                    FAILED_STEP=$(python3 -c "import json; d=json.load(open('$WORKSPACE/logs/task_state.json')); print(d.get('failed_step', ''))" 2>/dev/null)
-                    log "  ⚠️ 上次任务有失败步骤: $FAILED_STEP，清除状态准备重试..."
-                    rm -f "$WORKSPACE/logs/task_state.json"
-                    nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
-                    log "  🔄 任务已重新启动"
                 else
-                    log "  ✅ 上次任务已完成"
+                    # 任务标记为完成，但需要验证结果是否真正符合标准
+                    log "  ✅ 上次任务标记为完成，开始验证..."
                     
                     # ===== Step 6.5 验证结果 =====
                     log "[Step 6.5] 验证任务结果..."
                     VALIDATION_RESULT=$(python3 "$WORKSPACE/scripts/validate_results.py" 2>/dev/null || echo "validation_skip")
                     
                     if [ "$VALIDATION_RESULT" = "has_issues" ]; then
-                        log "  ⚠️ 发现问题，已记录到 P0"
+                        log "  ⚠️ 验证发现问题，需要重新执行..."
+                        # 清除状态，重新执行
+                        rm -f "$WORKSPACE/logs/task_state.json"
+                        log "  🆕 清除状态，开始新任务..."
+                        nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
+                        log "  🔄 任务已启动 (PID: $!)"
                     elif [ "$VALIDATION_RESULT" = "all_ok" ]; then
                         log "  ✅ 验证通过，无问题"
                     else
-                        log "  ⏭️ 跳过验证（状态文件无效或任务未完成）"
+                        log "  ⏭️ 跳过验证（状态文件无效）"
                     fi
                 fi
             else
