@@ -139,6 +139,13 @@ run_heartbeat() {
                         nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
                         log "  🔄 任务已重新启动"
                     fi
+                elif python3 -c "import json; d=json.load(open('$WORKSPACE/logs/task_state.json')); print(d.get('failed_step', ''))" 2>/dev/null | grep -q .; then
+                    # 有失败步骤，需要重试
+                    FAILED_STEP=$(python3 -c "import json; d=json.load(open('$WORKSPACE/logs/task_state.json')); print(d.get('failed_step', ''))" 2>/dev/null)
+                    log "  ⚠️ 上次任务有失败步骤: $FAILED_STEP，清除状态准备重试..."
+                    rm -f "$WORKSPACE/logs/task_state.json"
+                    nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
+                    log "  🔄 任务已重新启动"
                 else
                     log "  ✅ 上次任务已完成，无需重复执行"
                 fi
