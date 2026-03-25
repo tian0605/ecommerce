@@ -1,0 +1,64 @@
+#!/bin/bash
+#
+# config.env配置分离脚本
+# 将敏感配置从硬编码移至config.env
+#
+
+WORKSPACE="/root/.openclaw/workspace-e-commerce"
+CONFIG_FILE="$WORKSPACE/config/config.env"
+LOG_FILE="$WORKSPACE/logs/dev-heartbeat.log"
+
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [config.env] $*" >> "$LOG_FILE"
+}
+
+log "开始创建config.env..."
+
+# 确保config目录存在
+mkdir -p "$WORKSPACE/config"
+
+# 创建config.env文件
+cat > "$CONFIG_FILE" << 'EOF'
+# CommerceFlow 配置文件
+# 最后更新: 2026-03-26
+
+# ========== 数据库配置 ==========
+DB_HOST=localhost
+DB_NAME=ecommerce_data
+DB_USER=superuser
+DB_PASSWORD=Admin123!
+
+# ========== LLM API配置 ==========
+LLM_API_KEY=sk-914c1a9a5f054ab4939464389b5b791f
+LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+DEFAULT_MODEL=qwen3.5-plus
+
+# ========== 飞书配置 ==========
+FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/6af7d281-ca31-42c6-ab88-5ba434404fb9
+FEISHU_CHAT_ID=oc_cdff9eb5f5c8bd8151d20a17be309c23
+
+# ========== 妙手ERP配置 ==========
+MIAOSHOU_COOKIES_FILE=/home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+
+# ========== 本地1688服务配置 ==========
+LOCAL_1688_PORT=8080
+LOCAL_1688_URL=http://127.0.0.1:8080
+
+# ========== SSH隧道配置 ==========
+SSH_TUNNEL_PORT=8080
+
+# ========== 心跳配置 ==========
+HEARTBEAT_INTERVAL=10
+MAX_FAILURE_COUNT=5
+COOLDOWN_MINUTES=30
+EOF
+
+log "config.env已创建: $CONFIG_FILE"
+
+# 验证文件权限
+chmod 600 "$CONFIG_FILE"
+log "文件权限已设置为600（仅所有者可读写）"
+
+# 记录完成
+log "✅ config.env配置分离完成"
+echo "完成"
