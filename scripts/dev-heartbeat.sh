@@ -120,30 +120,25 @@ run_heartbeat() {
     if [ -f "$WORKSPACE/docs/dev-task-queue.md" ]; then
         # 检查是否有待执行的任务标记
         if grep -q "🔄\|⬜" "$WORKSPACE/docs/dev-task-queue.md"; then
-            log "  发现待办任务，开始执行..."
+            log "  发现待办任务，后台执行..."
             
-            # 执行任务（输出JSON结果）
-            TASK_OUTPUT=$(timeout 300 python3 "$WORKSPACE/scripts/task_executor.py" 2>&1)
-            TASK_EXIT=$?
+            # 在后台执行任务（不受心跳 timeout 限制）
+            nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
+            TASK_PID=$!
+            log "  任务已启动 (PID: $TASK_PID)"
             
-            # 提取结果
-            if [ $? -eq 0 ] && echo "$TASK_OUTPUT" | grep -q "\[TASK_RESULTS\]"; then
-                log "  ✅ 任务执行完成"
-                
-                # 发送执行结果通知
-                send_feishu "🔄 任务执行完成
+            # 发送通知
+            send_feishu "🔄 任务执行已启动
 ⏰ $START_TIME
 ━━━━━━━━━━━━━━━
-📋 已执行:
+📋 待执行任务:
   • listing-optimizer 测试
   • miaoshou-updater 检查
   • profit-analyzer 分析
 ━━━━━━━━━━━━━━━
-✅ 查看飞书文档获取详情
-📄 https://feishu.cn/docx/UVlkd1NHrorLumxC8K7cLMBUnDe"
-            else
-                log "  ⚠️ 任务执行超时或失败"
-            fi
+📄 结果将写入:
+https://feishu.cn/docx/UVlkd1NHrorLumxC8K7cLMBUnDe
+⏱️ 预计耗时 3-5 分钟"
         else
             log "  无待执行任务，跳过"
         fi
