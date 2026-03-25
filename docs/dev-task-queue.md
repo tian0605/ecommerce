@@ -1,7 +1,47 @@
 # 开发任务队列
 
 > 记录当前开发任务、问题和待办事项
-> 最后更新：2026-03-25 16:27
+> 最后更新：2026-03-25 16:31
+
+---
+
+## 📋 今日任务：模块测试调优
+
+**执行时间：** 2026-03-25
+
+---
+
+## ✅ 成功标准定义
+
+### 1. listing-optimizer 成功标准
+- [ ] 优化后的商品标题符合 v3.0 提示词要求
+  - 使用繁体中文
+  - 长度 40-55 字符
+  - 包含热搜关键词
+  - 不含"现货"等违规词汇
+- [ ] 优化后的商品描述符合 v3.0 提示词要求
+  - 结构清晰（特色/规格/材质/场景/注意）
+  - 300-800 字
+  - 不含违规词汇
+- [ ] 结果保存到 products 表
+  - optimized_title 已写入 DB
+  - optimized_description 已写入 DB
+
+### 2. miaoshou-updater 成功标准
+- [ ] 能读取到数据库中的 optimized_title
+- [ ] 能读取到数据库中的 optimized_description
+- [ ] 妙手采集箱中商品标题已更新
+- [ ] 妙手采集箱中商品描述已更新
+- [ ] 更新后状态变为"已认领"
+
+### 3. profit-analyzer 成功标准
+- [ ] 能读取商品价格和重量数据
+- [ ] SLS 运费计算正确（台湾站费率）
+- [ ] 佣金计算正确（14%）
+- [ ] 建议售价输出
+- [ ] 利润率符合预期（目标 20%+）
+- [ ] 结果发送到飞书电子表格
+  - 表格 URL: https://pcn0wtpnjfsd.feishu.cn/base/DyzjbfaZZaYeJls6lDFc5DavnPd
 
 ---
 
@@ -9,46 +49,21 @@
 
 > 每次心跳执行后，必须检查此部分是否有新问题
 
-### 2026-03-25 16:27 - listing-optimizer 未保存数据库
+### 2026-03-25 16:31 - listing-optimizer 未保存数据库
 **模块:** listing-optimizer
 **问题:** 优化后没有保存到数据库，导致 miaoshou-updater 无法读取
 **原因:** task_executor 调用 optimizer 但没有调用 update_product()
-**建议:** 已在 commit 7550b86 修复，下次心跳验证
+**建议:** 已在 commit 7550b86 修复，待下次心跳验证
 
 ---
 
-## 📋 执行中任务
+## 📊 执行状态
 
-| 任务ID | 任务名 | 依赖 | 当前状态 |
-|--------|--------|------|----------|
-| T001 | listing-optimizer 优化 | - | ✅ 完成（待验证）|
-| T002 | miaoshou-updater 回写 | T001.optimized_title | ⬜ 等待 |
-| T003 | profit-analyzer 利润分析 | - | ✅ 完成 |
-
-**执行流程:**
-```
-T001 listing-optimizer → [保存 optimized_title 到 DB]
-        ↓ 依赖
-T002 miaoshou-updater  → [读取 optimized_title 回写妙手]
-        ↓
-T003 profit-analyzer    → [计算利润]
-```
-
----
-
-## ✅ 已完成
-
-- 2026-03-25 16:10 - 第一轮测试（结果未保存DB，已修复）
-
----
-
-## 📊 心跳执行日志
-
-| 时间 | 任务 | 结果 | 备注 |
-|------|------|------|------|
-| 16:10 | listing-optimizer | ⚠️ | 完成但未保存DB |
-| 16:10 | miaoshou-updater | ❌ | 跳过（无数据）|
-| 16:10 | profit-analyzer | ✅ | 建议售价 167 TWD |
+| 模块 | 状态 | 验证标准 |
+|------|------|----------|
+| listing-optimizer | ⬜ 待测试 | 3项成功标准 |
+| miaoshou-updater | ⬜ 待测试 | 5项成功标准 |
+| profit-analyzer | ⬜ 待测试 | 6项成功标准 |
 
 ---
 
@@ -56,10 +71,10 @@ T003 profit-analyzer    → [计算利润]
 
 - [x] Step 6 执行任务
 - [x] 断点续执（task_state.json）
-- [ ] Step 6.5 结果验证（待实现）
-- [ ] 依赖追踪（待实现）
-- [ ] P0 问题自动提取（待实现）
+- [x] Step 6.5 结果验证
+- [x] 依赖追踪（T001→T002→T003）
+- [x] P0 问题自动提取
 
 ---
 
-*最后更新：2026-03-25 16:27*
+*最后更新：2026-03-25 16:31*
