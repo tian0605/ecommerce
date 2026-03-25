@@ -27270,3 +27270,33 @@ playwright._impl._errors.Error: Page.evaluate: SyntaxError: Unexpected token '}'
 [2026-03-25 23:00:17]   ✅ 货源ID提取正常
 [2026-03-25 23:00:17] [Step 3] 检查代码变更...
 [2026-03-25 23:00:17]   ⚠️ 有未提交的变更
+[master 97b7543] Heartbeat auto-commit 2026-03-25 23:00
+ 3 files changed, 650 insertions(+)
+ create mode 100644 docs/miaoshou-updater-workflow-20260325.md
+[2026-03-25 23:00:17] [Step 4] 检查任务队列...
+[2026-03-25 23:00:17]   下一个任务: 
+[2026-03-25 23:00:17] [Step 5] 发送飞书通知...
+[2026-03-25 23:00:17]   [飞书] 正在发送通知...
+发送成功
+[2026-03-25 23:00:17]   [飞书] 通知发送成功
+[2026-03-25 23:00:17] [Step 6] 检查并执行待办任务...
+[2026-03-25 23:00:17]   无待执行任务
+[2026-03-25 23:00:18]   ✅ 发现已完成任务，清理中...
+[23:00:18] 清理: 任务已清理过，跳过
+[2026-03-25 23:00:18] ========== 心跳完成 ==========
+[2026-03-25 23:00:18] 
+[2026-03-26 00:00:01] ========== 开始开发心跳 ==========
+[2026-03-26 00:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-26 00:00:01]   scraper.py 存在
+[2026-03-26 00:00:01] [Step 2] 执行快速测试...
+2026-03-26 00:00:01,639 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-26 00:00:02,514 | collector-scraper | INFO | 浏览器启动成功
+2026-03-26 00:00:02,514 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-26 00:00:14,313 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260326_000014.png
+2026-03-26 00:00:14,316 | collector-scraper | ERROR | 没有找到索引为 0 的商品
+2026-03-26 00:00:14,364 | collector-scraper | INFO | 浏览器已关闭
+爬取失败
+[2026-03-26 00:00:14]   测试执行完成（可能有警告）
+[2026-03-26 00:00:14]   ✅ 货源ID提取正常
+[2026-03-26 00:00:14] [Step 3] 检查代码变更...
+[2026-03-26 00:00:14]   ⚠️ 有未提交的变更
