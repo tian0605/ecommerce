@@ -1,0 +1,61 @@
+{
+  "current_task": "profit-analyzer",
+  "results": [
+    {
+      "step": "listing-optimizer",
+      "success": true,
+      "message": "listing-optimizer 已完成（跳过）",
+      "data": {
+        "module": "listing-optimizer",
+        "status": "✅ (已优化)",
+        "product_id": "1026175430866",
+        "db_id": 18,
+        "original_title": "【北歐風竹編收納盒】20x15x10cm 天然竹材｜米白編織｜帶蓋防塵｜髮圈髮夾首飾桌面分格整理盒",
+        "optimized_title": "收納 首飾 北歐風 竹編 帶蓋 分格 桌面 髮飾 20x15x10cm 天然竹 米白 免運",
+        "compliance": "✅ 无'现货'词汇",
+        "note": "跳过（已优化）",
+        "timestamp": "2026-03-25 16:44:25"
+      },
+      "timestamp": "2026-03-25 16:44:25"
+    },
+    {
+      "step": "miaoshou-updater",
+      "success": true,
+      "message": "待手动测试（需要浏览器）",
+      "data": {
+        "module": "miaoshou-updater",
+        "status": "🔄",
+        "product_id": "1026175430866",
+        "db_id": 18,
+        "title": "【北歐風竹編收納盒】20x15x10cm 天然竹材｜米白編織｜帶蓋防塵｜髮圈髮夾首飾桌面分格整理盒",
+        "optimized_title": "收納 首飾 北歐風 竹編 帶蓋 分格 桌面 髮飾 20x15x10cm 天然竹 米白 免運",
+        "note": "需要手动在妙手ERP中测试回写功能",
+        "timestamp": "2026-03-25 16:44:25"
+      },
+      "timestamp": "2026-03-25 16:44:25"
+    },
+    {
+      "step": "profit-analyzer",
+      "success": true,
+      "message": "profit-analyzer 测试完成",
+      "data": {
+        "module": "profit-analyzer",
+        "status": "✅",
+        "product_id": "1026175430866",
+        "title": "【北歐風竹編收納盒】20x15x10cm 天然竹材｜米白編織｜帶蓋防塵｜髮圈髮夾首飾桌面分格整理盒",
+        "purchase_price_cny": 10.0,
+        "weight_g": 500,
+        "sls_twd": 70,
+        "sls_cny": 15.56,
+        "total_cost_cny": 28.56,
+        "suggested_price_twd": 167,
+        "timestamp": "2026-03-25 16:44:25"
+      },
+      "timestamp": "2026-03-25 16:44:25"
+    }
+  ],
+  "started_at": "2026-03-25T16:44:24.998996",
+  "last_updated": "2026-03-25T16:44:25.042157",
+  "completed": true,
+  "completed_at": "2026-03-25 16:44:25"
+}

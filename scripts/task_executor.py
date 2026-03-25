@@ -394,6 +394,55 @@ def clear_completed_tasks():
         
         log("已清除已完成的待执行任务")
 
+def analyze_results(results):
+    """分析测试结果，找出优化项"""
+    improvements = []
+    
+    for r in results:
+        if not r.get("success"):
+            # 任务失败，记录为 P0 问题
+            improvements.append({
+                "priority": "P0",
+                "module": r.get("step", "unknown"),
+                "issue": r.get("message", "未知错误"),
+                "action": "检查并修复"
+            })
+            continue
+        
+        data = r.get("data", {})
+        module = data.get("module", "")
+        
+        if module == "listing-optimizer":
+            # 检查是否跳过
+            if data.get("note") and "跳过" in data.get("note"):
+                improvements.append({
+                    "priority": "P1",
+                    "module": module,
+                    "issue": f"任务跳过: {data.get('note')}",
+                    "action": "检查是否需要重新执行"
+                })
+        
+        if module == "miaoshou-updater":
+            if "跳过" in r.get("message", ""):
+                improvements.append({
+                    "priority": "P0",
+                    "module": module,
+                    "issue": r.get("message", "任务跳过"),
+                    "action": "需要 listing-optimizer 先完成"
+                })
+        
+        if module == "profit-analyzer":
+            price = data.get("suggested_price_twd", 0)
+            if price and price < 100:
+                improvements.append({
+                    "priority": "P1",
+                    "module": module,
+                    "issue": f"建议售价过低: {price} TWD",
+                    "action": "调整利润率和藏价策略"
+                })
+    
+    return improvements
+
 def main():
     log("=" * 50)
     log("开始任务执行 (v2 - 支持断点续执)")
@@ -473,8 +522,10 @@ def main():
     
     # 写入飞书文档
     try:
-        from scripts.write_feishu_result import write_results
-        write_results(results, improvements)
+        import sys
+        sys.path.insert(0, str(WORKSPACE / 'scripts'))
+        from write_feishu_result import write_to_feishu
+        write_to_feishu(results, improvements)
     except Exception as e:
         log(f"写入飞书文档失败: {e}")
     

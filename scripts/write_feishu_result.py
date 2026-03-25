@@ -1,132 +1,151 @@
 #!/usr/bin/env python3
 """
 写入结果到飞书文档
+使用 feishu_doc 工具的 REST API 方式写入
 """
 
 import urllib.request
 import urllib.error
 import json
+from pathlib import Path
 from datetime import datetime
 
+WORKSPACE = Path('/root/.openclaw/workspace-e-commerce')
 FEISHU_DOC_ID = "UVlkd1NHrorLumxC8K7cLMBUnDe"
 
-def write_results(results, improvements):
-    """将测试结果写入飞书文档"""
+def log(msg):
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
+
+def write_to_markdown(results, improvements):
+    """先将结果写入 markdown 文件"""
+    md_file = WORKSPACE / 'logs' / 'task_results_latest.md'
     
-    # 构建飞书文档内容
-    blocks = []
-    
-    # 标题
-    blocks.append({
-        "block_type": 2,  # heading1
-        "heading1": {"elements": [{"type": "text_run", "text_run": {"content": f"任务执行报告 - {datetime.now().strftime('%Y-%m-%d %H:%M')}"}}], "style": {}}
-    })
-    
-    # 分隔线
-    blocks.append({"block_type": 12, "table": {}})  # hr
-    
-    # 执行结果
-    blocks.append({
-        "block_type": 2,
-        "heading1": {"elements": [{"type": "text_run", "text_run": {"content": "执行结果"}}], "style": {}}
-    })
+    lines = [
+        f"# 任务执行报告\n",
+        f"**时间:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n",
+        f"---\n",
+        f"## 执行结果\n",
+    ]
     
     for r in results:
         data = r.get("data", {})
-        module = data.get("module", "")
+        module = data.get("module", "unknown")
+        success = r.get("success", False)
+        message = r.get("message", "")
         
-        blocks.append({
-            "block_type": 3,
-            "heading2": {"elements": [{"type": "text_run", "text_run": {"content": f"◆ {module}"}}], "style": {}}
-        })
-        
-        blocks.append({
-            "block_type": 6,
-            "paragraph": {"elements": [{"type": "text_run", "text_run": {"content": f"状态: {r.get('success', False)} - {r.get('message', '')}"}}], "style": {}}
-        })
+        status_icon = "✅" if success else "❌"
+        lines.append(f"\n### {status_icon} {module}\n")
+        lines.append(f"**状态:** {message}\n")
         
         if data:
             if data.get("optimized_title"):
-                blocks.append({
-                    "block_type": 6,
-                    "paragraph": {"elements": [{"type": "text_run", "text_run": {"content": f"优化标题: {data.get('optimized_title', '')}"}}], "style": {}}
-                })
-            
+                lines.append(f"\n**优化标题:** {data.get('optimized_title')}\n")
             if data.get("suggested_price_twd"):
-                blocks.append({
-                    "block_type": 6,
-                    "paragraph": {"elements": [{"type": "text_run", "text_run": {"content": f"建议售价: {data.get('suggested_price_twd')} TWD"}}], "style": {}}
-                })
-            
+                lines.append(f"\n**建议售价:** {data.get('suggested_price_twd')} TWD\n")
             if data.get("compliance"):
-                blocks.append({
-                    "block_type": 6,
-                    "paragraph": {"elements": [{"type": "text_run", "text_run": {"content": f"合规检查: {data.get('compliance', '')}"}}], "style": {}}
-                })
+                lines.append(f"\n**合规检查:** {data.get('compliance')}\n")
     
-    # 优化项
     if improvements:
-        blocks.append({
-            "block_type": 12,
-            "table": {}
-        })
-        
-        blocks.append({
-            "block_type": 2,
-            "heading1": {"elements": [{"type": "text_run", "text_run": {"content": "发现的优化项"}}], "style": {}}
-        })
-        
+        lines.append(f"\n---\n## 发现的优化项\n")
         for imp in improvements:
-            blocks.append({
-                "block_type": 6,
-                "paragraph": {"elements": [{"type": "text_run", "text_run": {"content": f"[{imp['priority']}] {imp['module']}: {imp['issue']}"}}], "style": {}}
-            })
-            blocks.append({
-                "block_type": 6,
-                "paragraph": {"elements": [{"type": "text_run", "text_run": {"content": f"   建议: {imp['action']}"}}], "style": {}}
-            })
+            lines.append(f"\n**[{imp.get('priority', 'P0')}] {imp.get('module')}:** {imp.get('issue')}\n")
+            lines.append(f"- 建议: {imp.get('action')}\n")
     
-    # 更新飞书文档
-    url = f"https://open.feishu.cn/open-apis/docx/v1/documents/{FEISHU_DOC_ID}/blocks"
+    content = ''.join(lines)
     
-    payload = json.dumps({"children": blocks}).encode('utf-8')
+    with open(md_file, 'w', encoding='utf-8') as f:
+        f.write(content)
     
-    req = urllib.request.Request(
-        url,
-        data=payload,
-        headers={
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer '  # 需要 access token
-        },
-        method='POST'
-    )
-    
-    try:
-        with urllib.request.urlopen(req, timeout=30) as response:
-            result = json.loads(response.read().decode('utf-8'))
-            print(f"飞书文档更新结果: {result.get('code')}")
-            return True
-    except urllib.error.HTTPError as e:
-        print(f"飞书文档更新失败 (HTTP {e.code}): {e.read().decode('utf-8')}")
-        return False
-    except Exception as e:
-        print(f"飞书文档更新失败: {e}")
-        return False
+    log(f"结果已写入: {md_file}")
+    return str(md_file)
 
-if __name__ == '__main__':
-    # 测试
-    write_results([
+def write_to_feishu(results, improvements):
+    """写入飞书文档"""
+    # 构建内容（使用飞书文档 API）
+    content_parts = []
+    
+    content_parts.append(f"## 任务执行报告\n")
+    content_parts.append(f"**时间:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+    
+    for r in results:
+        data = r.get("data", {})
+        module = data.get("module", "unknown")
+        success = r.get("success", False)
+        message = r.get("message", "")
+        
+        status_icon = "✅" if success else "❌"
+        content_parts.append(f"### {status_icon} {module}\n\n")
+        content_parts.append(f"- **状态:** {message}\n")
+        
+        if data:
+            if data.get("optimized_title"):
+                content_parts.append(f"- **优化标题:** {data.get('optimized_title')}\n")
+            if data.get("suggested_price_twd"):
+                content_parts.append(f"- **建议售价:** {data.get('suggested_price_twd')} TWD\n")
+            if data.get("compliance"):
+                content_parts.append(f"- **合规检查:** {data.get('compliance')}\n")
+        
+        content_parts.append(f"\n---\n")
+    
+    if improvements:
+        content_parts.append(f"\n## 发现的优化项\n")
+        for imp in improvements:
+            content_parts.append(f"\n**[{imp.get('priority', 'P0')}] {imp.get('module')}:** {imp.get('issue')}\n")
+            content_parts.append(f"- 建议: {imp.get('action')}\n")
+    
+    content = ''.join(content_parts)
+    
+    # 由于没有 access token，先写入本地文件
+    # 等 feishu_doc 工具支持时再调用 API
+    md_file = write_to_markdown(results, improvements)
+    
+    log(f"⚠️ 飞书 API 需要 access token，当前写入本地文件: {md_file}")
+    log(f"请手动复制内容到飞书文档: https://feishu.cn/docx/{FEISHU_DOC_ID}")
+    
+    return md_file
+
+def main():
+    """测试写入"""
+    results = [
         {
             "step": "listing-optimizer",
             "success": True,
-            "message": "测试完成",
+            "message": "listing-optimizer 测试完成",
             "data": {
                 "module": "listing-optimizer",
                 "status": "✅",
-                "optimized_title": "测试标题",
-                "compliance": "✅ 无违规"
+                "optimized_title": "收納 首飾 北歐風 竹編 帶蓋 分格 桌面 髮飾 20x15x10cm 天然竹 米白 免運",
+                "compliance": "✅ 无'现货'词汇"
+            }
+        },
+        {
+            "step": "miaoshou-updater",
+            "success": False,
+            "message": "跳过（无优化标题）",
+            "data": None
+        },
+        {
+            "step": "profit-analyzer",
+            "success": True,
+            "message": "profit-analyzer 测试完成",
+            "data": {
+                "module": "profit-analyzer",
+                "status": "✅",
+                "suggested_price_twd": 167
             }
         }
-    ], [
-        {"priority": "P1", "module": "test", "issue": "测试问题", "action": "测试修复"}
-    ])
+    ]
+    
+    improvements = [
+        {
+            "priority": "P0",
+            "module": "miaoshou-updater",
+            "issue": "跳过（无优化标题）",
+            "action": "先完成 listing-optimizer 优化"
+        }
+    ]
+    
+    write_to_feishu(results, improvements)
+
+if __name__ == '__main__':
+    main()
