@@ -13,11 +13,24 @@ description: 商品Listing优化模块。使用LLM（通义千问）优化商品
 
 ## LLM配置
 
+**配置文件**: `config/llm_config.py`
+
+### 可用模型
+
+| 模型 | 成本 | 速度 | 用途 |
+|------|------|------|------|
+| **qwen3.5-plus**（默认） | ¥0.001/1K | 快速 | 主力推荐 |
+| qwen-plus | ¥0.004/1K | 中等 | 高质量需求 |
+| qwen3-plus | ¥0.001/1K | 最快 | 快速调试 |
+
+### 配置内容
+
 ```python
-LLM_API_KEY = 'sk-914c1a9a5f054ab4939464389b5b791f'
-LLM_BASE_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1'
-LLM_MODEL = 'qwen-plus'  # 可切换 qwen3-plus 等
+from config.llm_config import DEFAULT_MODEL, MODELS
+# DEFAULT_MODEL = 'qwen3.5-plus'
 ```
+
+**注意**: API Key和Base URL也配置在 `config/llm_config.py`
 
 ## 目标市场
 
@@ -101,5 +114,6 @@ print(result['optimized_description'])
 
 ## 费用参考
 
+- **qwen3.5-plus**: ~¥0.001/1K tokens（**推荐**，已设为默认）
 - qwen-plus: ~¥0.004/1K tokens
-- qwen3-plus: ~¥0.001/1K tokens（推荐）
+- qwen3-plus: ~¥0.001/1K tokens
