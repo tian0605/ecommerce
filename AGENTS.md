@@ -533,4 +533,66 @@ miaoshou-updater ERP对话框 (千克/kg)
 
 ---
 
+## 🤖 LLM模型配置
+
+> **qwen3.5-plus 支持视觉理解**（已验证，2026-03-26）
+> 阿里云官方文档确认：qwen3.5-plus 同时支持文本和图像输入，无需切换到专门的VL模型。
+
+### 模型配置（config/llm_config.py）
+
+```python
+LLM_API_KEY = 'sk-914c1a9a5f054ab4939464389b5b791f'
+LLM_BASE_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1'
+DEFAULT_MODEL = 'qwen3.5-plus'  # 文本+视觉统一模型
+
+MODELS = {
+    'qwen3.5-plus': {
+        'name': 'qwen3.5-plus',
+        'description': '主力模型，推荐日常使用，支持视觉理解',
+        'cost_per_1k_tokens': 0.001,
+        'max_tokens': 1500,
+        'temperature': 0.7,
+        'vision': True,  # 支持视觉理解
+    },
+}
+
+TASK_MODELS = {
+    'title_optimization': 'qwen3.5-plus',
+    'description_optimization': 'qwen3.5-plus',
+    'debug': 'qwen3-plus',
+    'vision': 'qwen3.5-plus',           # 视觉理解
+    'image_understanding': 'qwen3.5-plus',  # 图片理解
+}
+```
+
+### 视觉理解调用示例
+
+```python
+# 发送图片供AI分析
+response = requests.post(
+    f"{LLM_BASE_URL}/chat/completions",
+    headers={"Authorization": f"Bearer {LLM_API_KEY}"},
+    json={
+        "model": "qwen3.5-plus",
+        "messages": [{
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "请描述这张截图的内容"},
+                {"type": "image_url", "image_url": {"url": "data:image/png;base64,..."}}
+            ]
+        }],
+        "max_tokens": 500
+    }
+)
+```
+
+### 优势
+
+- **统一模型**：文本生成 + 视觉理解 使用同一个模型
+- **成本降低**：无需调用多个API
+- **配置简单**：无需维护多个模型配置
+- **效果一致**：文本和视觉理解风格统一
+
+---
+
 *Make It Yours — 这是起点，随着你发现有效的方法，添加你自己的约定、风格和规则。*
