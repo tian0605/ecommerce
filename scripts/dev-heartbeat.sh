@@ -17,7 +17,7 @@ TASK_QUEUE="$WORKSPACE/docs/dev-task-queue.md"
 SCRAPER_DIR="/home/ubuntu/.openclaw/skills/collector-scraper"
 
 # 飞书通知配置
-FEISHU_WEBHOOK_URL=""  # TODO: 替换为实际webhook URL，如: https://open.feishu.cn/open-apis/bot/v2/hook/xxx
+FEISHU_WEBHOOK_URL="https://open.feishu.cn/open-apis/bot/v2/hook/6af7d281-ca31-42c6-ab88-5ba434404fb9"
 FEISHU_CHAT_ID="oc_cdff9eb5f5c8bd8151d20a17be309c23"
 
 # 确保日志目录存在
