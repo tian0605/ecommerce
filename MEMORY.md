@@ -161,6 +161,27 @@
 | 主图数 | 图片数量 | 14 |
 
 ### 7.2 物流数据（来自本地1688服务）
+
+**⚠️ 重量单位速查表：**
+
+| 数据源 | 字段 | 单位 | 说明 |
+|--------|------|------|------|
+| local-1688-weight | weight_g | **克(g)** | Flask服务返回 |
+| product_skus | package_weight | **克(g)** | 直接存储weight_g，不转换 |
+| miaoshou-updater | 包裹重量输入框 | **KG** | 填写时需：package_weight_g / 1000 |
+| profit-analyzer | calculate_sls_shipping(weight_kg) | **KG** | 函数参数，内部转g计算 |
+
+**重要换算：**
+```
+dialog填写值(kg) = product_skus.package_weight(g) / 1000
+例如：package_weight=2500g → 填写2.5kg
+```
+
+**降级逻辑（profit-analyzer）：**
+- 如果 product_skus 无数据，使用 logistics.weight
+- logistics.weight < 10 当 kg 用，>= 10 当 g 用后转 kg
+
+### 7.2 物流数据（来自本地1688服务）
 | 字段 | 说明 | 单位 |
 |------|------|------|
 | weight_g | 商品重量 | 克(g) |
