@@ -50,10 +50,7 @@ run_heartbeat() {
             log "  需要修复：添加货源ID提取逻辑"
         fi
         
-        if grep -q "SKU数量: 2" "$LOG_FILE" 2>/dev/null; then
-            log "[Step 4] 发现问题：SKU数量不准确"
-            log "  应为3个，实际2个"
-        fi
+        # SKU数量检查已移除 - 不同的商品有不同的SKU数量，不能用固定值判断
     else
         log "  collector-scraper 模块未找到"
     fi
