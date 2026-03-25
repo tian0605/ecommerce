@@ -117,6 +117,9 @@ run_heartbeat() {
     
     # 5. 执行待办任务（如果有）
     log "[Step 6] 检查并执行待办任务..."
+    # 标记是否有任务真正启动
+    TASK_STARTED="no"
+    
     if [ -f "$WORKSPACE/docs/dev-task-queue.md" ]; then
         # 检查是否有待执行的任务标记
         if grep -q "🔄\|⬜\|📋" "$WORKSPACE/docs/dev-task-queue.md"; then
@@ -138,6 +141,7 @@ run_heartbeat() {
                         log "  ⚠️ 任务进程已退出但未完成，尝试恢复..."
                         nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
                         log "  🔄 任务已重新启动"
+                        TASK_STARTED="yes"
                     fi
                 else
                     # 任务标记为完成，但需要验证结果是否真正符合标准
@@ -161,6 +165,7 @@ run_heartbeat() {
                         log "  🆕 清除状态，开始新任务..."
                         nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
                         log "  🔄 任务已启动 (PID: $!)"
+                        TASK_STARTED="yes"
                     elif [ "$VALIDATION_RESULT" = "all_ok" ]; then
                         log "  ✅ 验证通过，无问题"
                     else
@@ -173,10 +178,12 @@ run_heartbeat() {
                 nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
                 TASK_PID=$!
                 log "  任务已启动 (PID: $TASK_PID)"
+                TASK_STARTED="yes"
             fi
             
-            # 发送通知
-            send_feishu "🔄 任务执行已启动
+            # 仅当任务真正启动时才发送通知
+            if [ "$TASK_STARTED" = "yes" ]; then
+                send_feishu "🔄 任务执行已启动
 ⏰ $START_TIME
 ━━━━━━━━━━━━━━━
 📋 待执行任务:
@@ -187,6 +194,7 @@ run_heartbeat() {
 📄 结果将写入:
 https://feishu.cn/docx/UVlkd1NHrorLumxC8K7cLMBUnDe
 ⏱️ 预计耗时 3-5 分钟"
+            fi
         else
             log "  无待执行任务，跳过"
         fi
