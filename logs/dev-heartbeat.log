@@ -27214,3 +27214,59 @@ playwright._impl._errors.Error: Page.evaluate: SyntaxError: Unexpected token '}'
 [2026-03-25 22:00:22]   ✅ 货源ID提取正常
 [2026-03-25 22:00:22] [Step 3] 检查代码变更...
 [2026-03-25 22:00:22]   ⚠️ 有未提交的变更
+[master 7a97764] Heartbeat auto-commit 2026-03-25 22:00
+ 4 files changed, 108 insertions(+)
+[2026-03-25 22:00:22] [Step 4] 检查任务队列...
+[2026-03-25 22:00:22]   下一个任务: 
+[2026-03-25 22:00:22] [Step 5] 发送飞书通知...
+[2026-03-25 22:00:22]   [飞书] 正在发送通知...
+发送成功
+[2026-03-25 22:00:23]   [飞书] 通知发送成功
+[2026-03-25 22:00:23] [Step 6] 检查并执行待办任务...
+[2026-03-25 22:00:23]   无待执行任务
+[2026-03-25 22:00:23]   ✅ 发现已完成任务，清理中...
+[22:00:23] 清理: 任务已清理过，跳过
+[2026-03-25 22:00:23] ========== 心跳完成 ==========
+[2026-03-25 22:00:23] 
+[2026-03-25 23:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 23:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 23:00:01]   scraper.py 存在
+[2026-03-25 23:00:01] [Step 2] 执行快速测试...
+2026-03-25 23:00:01,857 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 23:00:02,498 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 23:00:02,498 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 23:00:10,671 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_230010.png
+2026-03-25 23:00:10,685 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 23:00:15,077 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_230014.png
+2026-03-25 23:00:15,099 | collector-scraper | INFO | 提取到货源ID: 1026137274944
+2026-03-25 23:00:15,245 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 23:00:15,245 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 23:00:16,512 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 85142}, {'name': '奶黄色', 'image': None, 'stock': 87620}], 'colorImages': {}, 'overallPrice': 26.8, 'overallStock': None, 'debug': {'stocksFound': [2680, 85142, 1.0261372749441005e+21, 2780, 87620, 1.0261372749441405e+21, 2680, 78654, 1.0261372749441005e+21, 2780, 78617, 1.0261372749441405e+21, 2680, 78358, 1.0261372749441005e+21, 2780, 78522, 1.0261372749441405e+21, 2680, 83523, 1.0261372749441005e+21, 2780, 58345, 1.0261372749441405e+21], 'validStocks': [85142, 87620, 78654, 78617, 78358, 78522, 83523, 58345], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 23:00:16,512 | collector-scraper | INFO | 有效库存: [85142, 87620, 78654, 78617, 78358, 78522, 83523, 58345], 颜色数: 0
+2026-03-25 23:00:16,512 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 23:00:17,342 | collector-scraper | INFO | 找到规格: {'颜色': ['麋鹿', '水草', '小鱼', '小黄鸭'], '规格': ['100L：50*40*50cm', '140L：50*40*70cm']}
+2026-03-25 23:00:17,343 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 23:00:17,343 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 23:00:17,343 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 23:00:17,343 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 23:00:17,343 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 23:00:17,358 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '26.80'}，继续尝试其他方法
+2026-03-25 23:00:17,358 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 23:00:17,374 | collector-scraper | INFO | 方法2提取完整物流信息: {'weight': '26.80', 'length_cm': '26.80', 'width_cm': '40', 'height_cm': '85142'}
+2026-03-25 23:00:17,378 | collector-scraper | INFO | 成功提取商品数据: 1026137274944
+2026-03-25 23:00:17,461 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026137274944
+  标题: 脏衣服收纳袋收纳筐折叠收纳箱束口脏衣篮搬家衣服被子整理箱宿舍
+  类目: None
+  品牌: None
+  主图数量: 0
+  SKU数量: 4
+  描述长度: 298
+  物流: {'weight': '26.80', 'length_cm': '26.80', 'width_cm': '40', 'height_cm': '85142'}
+============================================================
+[2026-03-25 23:00:17]   ✅ 货源ID提取正常
+[2026-03-25 23:00:17] [Step 3] 检查代码变更...
+[2026-03-25 23:00:17]   ⚠️ 有未提交的变更
