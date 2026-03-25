@@ -119,73 +119,80 @@ run_heartbeat() {
     log "[Step 6] 检查并执行待办任务..."
     # 标记是否有任务真正启动
     TASK_STARTED="no"
+    HAS_NEW_TASKS="no"
     
+    # 先检查是否有新任务
     if [ -f "$WORKSPACE/docs/dev-task-queue.md" ]; then
-        # 检查是否有待执行的任务标记
         if grep -qE "^[[:space:]]*[-*][[:space:]]*\[.\]" "$WORKSPACE/docs/dev-task-queue.md" 2>/dev/null; then
-            log "  发现待办任务，检查执行状态..."
+            HAS_NEW_TASKS="yes"
+        fi
+    fi
+    
+    # 如果有待执行任务，处理任务执行
+    if [ "$HAS_NEW_TASKS" = "yes" ]; then
+        log "  发现待办任务，检查执行状态..."
+        
+        # 检查任务状态文件
+        if [ -f "$WORKSPACE/logs/task_state.json" ]; then
+            # 读取状态
+            TASK_COMPLETED=$(python3 -c "import json; d=json.load(open('$WORKSPACE/logs/task_state.json')); print('yes' if d.get('completed') else 'no')" 2>/dev/null || echo "no")
             
-            # 检查任务状态文件
-            if [ -f "$WORKSPACE/logs/task_state.json" ]; then
-                # 读取状态
-                TASK_COMPLETED=$(python3 -c "import json; d=json.load(open('$WORKSPACE/logs/task_state.json')); print('yes' if d.get('completed') else 'no')" 2>/dev/null || echo "no")
+            if [ "$TASK_COMPLETED" = "no" ]; then
+                # 任务未完成，等待或继续
+                CURRENT_TASK=$(python3 -c "import json; d=json.load(open('$WORKSPACE/logs/task_state.json')); print(d.get('current_task', 'unknown'))" 2>/dev/null || echo "unknown")
+                COMPLETED_STEPS=$(python3 -c "import json; d=json.load(open('$WORKSPACE/logs/task_state.json')); print(len(d.get('results', [])))" 2>/dev/null || echo "0")
+                log "  📍 任务进行中: $CURRENT_TASK ($COMPLETED_STEPS/3 步骤完成)"
                 
-                if [ "$TASK_COMPLETED" = "no" ]; then
-                    # 任务未完成，等待或继续
-                    CURRENT_TASK=$(python3 -c "import json; d=json.load(open('$WORKSPACE/logs/task_state.json')); print(d.get('current_task', 'unknown'))" 2>/dev/null || echo "unknown")
-                    COMPLETED_STEPS=$(python3 -c "import json; d=json.load(open('$WORKSPACE/logs/task_state.json')); print(len(d.get('results', [])))" 2>/dev/null || echo "0")
-                    log "  📍 任务进行中: $CURRENT_TASK ($COMPLETED_STEPS/3 步骤完成)"
-                    
-                    # 检查任务进程是否还在运行
-                    if ! pgrep -f "task_executor.py" > /dev/null; then
-                        log "  ⚠️ 任务进程已退出但未完成，尝试恢复..."
-                        nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
-                        log "  🔄 任务已重新启动"
-                        TASK_STARTED="yes"
-                    fi
-                else
-                    # 任务标记为完成，但需要验证结果是否真正符合标准
-                    log "  ✅ 上次任务标记为完成，开始验证..."
-                    
-                    # ===== Step 6.5 验证结果 =====
-                    log "[Step 6.5] 验证任务结果..."
-                    VALIDATION_OUTPUT=$(python3 "$WORKSPACE/scripts/validate_results.py" 2>&1)
-                    VALIDATION_EXIT=$?
-                    
-                    # 提取结果（最后一行包含 __RESULT__:）
-                    VALIDATION_RESULT=$(echo "$VALIDATION_OUTPUT" | grep "__RESULT__:" | sed 's/.*__RESULT__://')
-                    
-                    if [ -z "$VALIDATION_RESULT" ]; then
-                        log "  ⚠️ 验证执行失败，跳过"
-                        log "  调试信息: $VALIDATION_OUTPUT"
-                    elif [ "$VALIDATION_RESULT" = "has_issues" ]; then
-                        log "  ⚠️ 验证发现问题，需要重新执行..."
-                        # 清除状态，重新执行
-                        rm -f "$WORKSPACE/logs/task_state.json"
-                        log "  🆕 清除状态，开始新任务..."
-                        nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
-                        log "  🔄 任务已启动 (PID: $!)"
-                        TASK_STARTED="yes"
-                    elif [ "$VALIDATION_RESULT" = "all_ok" ]; then
-                        log "  ✅ 验证通过，无问题"
-                        # 清理已完成的任务
-                        python3 "$WORKSPACE/scripts/cleanup_completed_tasks.py" 2>&1
-                    else
-                        log "  ⏭️ 跳过验证（未知结果: $VALIDATION_RESULT）"
-                    fi
+                # 检查任务进程是否还在运行
+                if ! pgrep -f "task_executor.py" > /dev/null; then
+                    log "  ⚠️ 任务进程已退出但未完成，尝试恢复..."
+                    nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
+                    log "  🔄 任务已重新启动"
+                    TASK_STARTED="yes"
                 fi
             else
-                # 无状态文件，开始新任务
-                log "  🆕 开始新任务..."
-                nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
-                TASK_PID=$!
-                log "  任务已启动 (PID: $TASK_PID)"
-                TASK_STARTED="yes"
+                # 任务标记为完成，但需要验证结果是否真正符合标准
+                log "  ✅ 上次任务标记为完成，开始验证..."
+                
+                # ===== Step 6.5 验证结果 =====
+                log "[Step 6.5] 验证任务结果..."
+                VALIDATION_OUTPUT=$(python3 "$WORKSPACE/scripts/validate_results.py" 2>&1)
+                VALIDATION_EXIT=$?
+                
+                # 提取结果（最后一行包含 __RESULT__:）
+                VALIDATION_RESULT=$(echo "$VALIDATION_OUTPUT" | grep "__RESULT__:" | sed 's/.*__RESULT__://')
+                
+                if [ -z "$VALIDATION_RESULT" ]; then
+                    log "  ⚠️ 验证执行失败，跳过"
+                    log "  调试信息: $VALIDATION_OUTPUT"
+                elif [ "$VALIDATION_RESULT" = "has_issues" ]; then
+                    log "  ⚠️ 验证发现问题，需要重新执行..."
+                    # 清除状态，重新执行
+                    rm -f "$WORKSPACE/logs/task_state.json"
+                    log "  🆕 清除状态，开始新任务..."
+                    nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
+                    log "  🔄 任务已启动 (PID: $!)"
+                    TASK_STARTED="yes"
+                elif [ "$VALIDATION_RESULT" = "all_ok" ]; then
+                    log "  ✅ 验证通过，无问题"
+                    # 清理已完成的任务
+                    python3 "$WORKSPACE/scripts/cleanup_completed_tasks.py" 2>&1
+                else
+                    log "  ⏭️ 跳过验证（未知结果: $VALIDATION_RESULT）"
+                fi
             fi
-            
-            # 仅当任务真正启动时才发送通知
-            if [ "$TASK_STARTED" = "yes" ]; then
-                send_feishu "🔄 任务执行已启动
+        else
+            # 无状态文件，开始新任务
+            log "  🆕 开始新任务..."
+            nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
+            TASK_PID=$!
+            log "  任务已启动 (PID: $TASK_PID)"
+            TASK_STARTED="yes"
+        fi
+        
+        # 仅当任务真正启动时才发送通知
+        if [ "$TASK_STARTED" = "yes" ]; then
+            send_feishu "🔄 任务执行已启动
 ⏰ $START_TIME
 ━━━━━━━━━━━━━━━
 📋 待执行任务:
@@ -196,9 +203,19 @@ run_heartbeat() {
 📄 结果将写入:
 https://feishu.cn/docx/UVlkd1NHrorLumxC8K7cLMBUnDe
 ⏱️ 预计耗时 3-5 分钟"
+        fi
+    else
+        log "  无待执行任务"
+        
+        # 检查是否有已完成的任务需要清理
+        if [ -f "$WORKSPACE/logs/task_state.json" ]; then
+            TASK_COMPLETED=$(python3 -c "import json; d=json.load(open('$WORKSPACE/logs/task_state.json')); print('yes' if d.get('completed') else 'no')" 2>/dev/null || echo "no")
+            if [ "$TASK_COMPLETED" = "yes" ]; then
+                log "  ✅ 发现已完成任务，清理中..."
+                python3 "$WORKSPACE/scripts/cleanup_completed_tasks.py" 2>&1
             fi
         else
-            log "  无待执行任务，跳过"
+            log "  ✅ 无任务需要清理"
         fi
     fi
     
