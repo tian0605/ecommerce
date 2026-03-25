@@ -122,7 +122,7 @@ run_heartbeat() {
     
     if [ -f "$WORKSPACE/docs/dev-task-queue.md" ]; then
         # 检查是否有待执行的任务标记
-        if grep -q "🔄\|⬜\|📋" "$WORKSPACE/docs/dev-task-queue.md"; then
+        if grep -qE "^[[:space:]]*[-*][[:space:]]*\[.\]" "$WORKSPACE/docs/dev-task-queue.md" 2>/dev/null; then
             log "  发现待办任务，检查执行状态..."
             
             # 检查任务状态文件
