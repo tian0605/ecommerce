@@ -22215,3 +22215,1990 @@ playwright._impl._errors.Error: Page.evaluate: SyntaxError: Unexpected token '}'
 2026-03-24 23:10:17,662 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
 2026-03-24 23:10:17,662 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
 2026-03-24 23:10:17,670 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-24 23:10:17,805 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-24 23:10:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-24 23:10:17]   应为3个，实际2个
+[2026-03-24 23:10:17] [Step 5] 检查代码变更...
+[2026-03-24 23:10:17]   有未提交的变更
+[2026-03-24 23:10:17] [Step 6] 读取任务队列...
+[2026-03-24 23:10:17]   任务队列存在
+[2026-03-24 23:10:17] [Step 7] 生成报告...
+[2026-03-24 23:20:01] ========== 开始开发心跳 ==========
+[2026-03-24 23:20:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-24 23:20:01]   scraper.py 存在
+[2026-03-24 23:20:01] [Step 2] 执行快速测试...
+2026-03-24 23:20:02,021 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-24 23:20:02,619 | collector-scraper | INFO | 浏览器启动成功
+2026-03-24 23:20:02,619 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-24 23:20:10,686 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260324_232010.png
+2026-03-24 23:20:10,697 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-24 23:20:15,400 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260324_232015.png
+2026-03-24 23:20:15,424 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-24 23:20:15,562 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-24 23:20:15,562 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-24 23:20:16,467 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-24 23:20:16,467 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-24 23:20:16,467 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-24 23:20:17,279 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-24 23:20:17,279 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-24 23:20:17,280 | collector-scraper | INFO |   SKU: {sku}
+2026-03-24 23:20:17,280 | collector-scraper | INFO |   SKU: {sku}
+2026-03-24 23:20:17,294 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-24 23:20:17,295 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-24 23:20:17,313 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-24 23:20:17,313 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-24 23:20:17,321 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-24 23:20:17,405 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-24 23:20:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-24 23:20:17]   应为3个，实际2个
+[2026-03-24 23:20:17] [Step 5] 检查代码变更...
+[2026-03-24 23:20:17]   有未提交的变更
+[2026-03-24 23:20:17] [Step 6] 读取任务队列...
+[2026-03-24 23:20:17]   任务队列存在
+[2026-03-24 23:20:17] [Step 7] 生成报告...
+[2026-03-24 23:30:01] ========== 开始开发心跳 ==========
+[2026-03-24 23:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-24 23:30:01]   scraper.py 存在
+[2026-03-24 23:30:01] [Step 2] 执行快速测试...
+2026-03-24 23:30:01,621 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-24 23:30:02,225 | collector-scraper | INFO | 浏览器启动成功
+2026-03-24 23:30:02,226 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-24 23:30:10,321 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260324_233010.png
+2026-03-24 23:30:10,334 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-24 23:30:15,234 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260324_233015.png
+2026-03-24 23:30:15,257 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-24 23:30:15,406 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-24 23:30:15,406 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-24 23:30:16,316 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-24 23:30:16,316 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-24 23:30:16,316 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-24 23:30:17,142 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-24 23:30:17,142 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-24 23:30:17,142 | collector-scraper | INFO |   SKU: {sku}
+2026-03-24 23:30:17,142 | collector-scraper | INFO |   SKU: {sku}
+2026-03-24 23:30:17,158 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-24 23:30:17,158 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-24 23:30:17,177 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-24 23:30:17,178 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-24 23:30:17,185 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-24 23:30:17,270 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-24 23:30:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-24 23:30:17]   应为3个，实际2个
+[2026-03-24 23:30:17] [Step 5] 检查代码变更...
+[2026-03-24 23:30:17]   有未提交的变更
+[2026-03-24 23:30:17] [Step 6] 读取任务队列...
+[2026-03-24 23:30:17]   任务队列存在
+[2026-03-24 23:30:17] [Step 7] 生成报告...
+[2026-03-24 23:40:01] ========== 开始开发心跳 ==========
+[2026-03-24 23:40:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-24 23:40:01]   scraper.py 存在
+[2026-03-24 23:40:01] [Step 2] 执行快速测试...
+2026-03-24 23:40:01,471 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-24 23:40:02,102 | collector-scraper | INFO | 浏览器启动成功
+2026-03-24 23:40:02,102 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-24 23:40:10,064 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260324_234009.png
+2026-03-24 23:40:10,075 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-24 23:40:15,048 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260324_234014.png
+2026-03-24 23:40:15,078 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-24 23:40:15,219 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-24 23:40:15,219 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-24 23:40:16,125 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-24 23:40:16,126 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-24 23:40:16,126 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-24 23:40:16,971 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-24 23:40:16,971 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-24 23:40:16,971 | collector-scraper | INFO |   SKU: {sku}
+2026-03-24 23:40:16,971 | collector-scraper | INFO |   SKU: {sku}
+2026-03-24 23:40:16,987 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-24 23:40:16,987 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-24 23:40:17,007 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-24 23:40:17,007 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-24 23:40:17,015 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-24 23:40:17,098 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-24 23:40:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-24 23:40:17]   应为3个，实际2个
+[2026-03-24 23:40:17] [Step 5] 检查代码变更...
+[2026-03-24 23:40:17]   有未提交的变更
+[2026-03-24 23:40:17] [Step 6] 读取任务队列...
+[2026-03-24 23:40:17]   任务队列存在
+[2026-03-24 23:40:17] [Step 7] 生成报告...
+[2026-03-24 23:50:01] ========== 开始开发心跳 ==========
+[2026-03-24 23:50:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-24 23:50:01]   scraper.py 存在
+[2026-03-24 23:50:01] [Step 2] 执行快速测试...
+2026-03-24 23:50:01,295 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-24 23:50:01,896 | collector-scraper | INFO | 浏览器启动成功
+2026-03-24 23:50:01,896 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-24 23:50:09,971 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260324_235009.png
+2026-03-24 23:50:09,981 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-24 23:50:14,872 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260324_235014.png
+2026-03-24 23:50:14,902 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-24 23:50:15,046 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-24 23:50:15,046 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-24 23:50:15,950 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-24 23:50:15,950 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-24 23:50:15,950 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-24 23:50:16,762 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-24 23:50:16,762 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-24 23:50:16,762 | collector-scraper | INFO |   SKU: {sku}
+2026-03-24 23:50:16,762 | collector-scraper | INFO |   SKU: {sku}
+2026-03-24 23:50:16,778 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-24 23:50:16,778 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-24 23:50:16,793 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-24 23:50:16,793 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-24 23:50:16,801 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-24 23:50:16,888 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-24 23:50:16] [Step 4] 发现问题：SKU数量不准确
+[2026-03-24 23:50:16]   应为3个，实际2个
+[2026-03-24 23:50:16] [Step 5] 检查代码变更...
+[2026-03-24 23:50:16]   有未提交的变更
+[2026-03-24 23:50:16] [Step 6] 读取任务队列...
+[2026-03-24 23:50:16]   任务队列存在
+[2026-03-24 23:50:16] [Step 7] 生成报告...
+[2026-03-25 00:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 00:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 00:00:01]   scraper.py 存在
+[2026-03-25 00:00:01] [Step 2] 执行快速测试...
+2026-03-25 00:00:01,170 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 00:00:01,915 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 00:00:01,915 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 00:00:19,078 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_000010.png
+2026-03-25 00:00:19,082 | collector-scraper | ERROR | 没有找到索引为 0 的商品
+2026-03-25 00:00:19,159 | collector-scraper | INFO | 浏览器已关闭
+爬取失败
+[2026-03-25 00:00:19]   测试执行完成（可能有警告）
+[2026-03-25 00:00:19] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 00:00:19]   应为3个，实际2个
+[2026-03-25 00:00:19] [Step 5] 检查代码变更...
+[2026-03-25 00:00:19]   有未提交的变更
+[2026-03-25 00:00:19] [Step 6] 读取任务队列...
+[2026-03-25 00:00:19]   任务队列存在
+[2026-03-25 00:00:19] [Step 7] 生成报告...
+[2026-03-25 00:10:01] ========== 开始开发心跳 ==========
+[2026-03-25 00:10:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 00:10:01]   scraper.py 存在
+[2026-03-25 00:10:01] [Step 2] 执行快速测试...
+2026-03-25 00:10:01,356 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 00:10:01,982 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 00:10:01,982 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 00:10:10,008 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_001009.png
+2026-03-25 00:10:10,018 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 00:10:14,706 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_001014.png
+2026-03-25 00:10:14,732 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 00:10:15,046 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 00:10:15,046 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 00:10:15,978 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 00:10:15,978 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 00:10:15,978 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 00:10:17,087 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 00:10:17,087 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 00:10:17,087 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 00:10:17,087 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 00:10:17,123 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 00:10:17,123 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 00:10:17,146 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 00:10:17,146 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 00:10:17,167 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 00:10:17,303 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 00:10:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 00:10:17]   应为3个，实际2个
+[2026-03-25 00:10:17] [Step 5] 检查代码变更...
+[2026-03-25 00:10:17]   有未提交的变更
+[2026-03-25 00:10:17] [Step 6] 读取任务队列...
+[2026-03-25 00:10:17]   任务队列存在
+[2026-03-25 00:10:17] [Step 7] 生成报告...
+[2026-03-25 00:17:27] ========== 开始开发心跳 ==========
+[2026-03-25 00:17:27] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 00:17:27]   scraper.py 存在
+[2026-03-25 00:17:27] [Step 2] 执行快速测试...
+2026-03-25 00:17:27,085 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 00:17:27,686 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 00:17:27,686 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 00:17:35,773 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_001735.png
+2026-03-25 00:17:35,787 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 00:17:40,761 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_001740.png
+2026-03-25 00:17:40,783 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 00:17:40,929 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 00:17:40,929 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 00:17:41,923 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 00:17:41,923 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 00:17:41,923 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 00:17:42,736 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 00:17:42,737 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 00:17:42,737 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 00:17:42,737 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 00:17:42,752 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 00:17:42,752 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 00:17:42,768 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 00:17:42,768 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 00:17:42,777 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 00:17:42,874 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 00:17:42] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 00:17:42]   应为3个，实际2个
+[2026-03-25 00:17:42] [Step 5] 检查代码变更...
+[2026-03-25 00:17:42]   有未提交的变更
+[2026-03-25 00:17:42] [Step 6] 读取任务队列...
+[2026-03-25 00:17:42]   任务队列存在
+[2026-03-25 00:17:42] [Step 7] 生成报告...
+[2026-03-25 00:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 00:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 00:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 00:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 00:30:01]   scraper.py 存在
+[2026-03-25 00:30:01]   scraper.py 存在
+[2026-03-25 00:30:01] [Step 2] 执行快速测试...
+[2026-03-25 00:30:01] [Step 2] 执行快速测试...
+2026-03-25 00:30:01,586 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 00:30:02,215 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 00:30:02,215 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 00:30:10,359 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_003010.png
+2026-03-25 00:30:10,373 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 00:30:15,193 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_003015.png
+2026-03-25 00:30:15,215 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 00:30:15,358 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 00:30:15,358 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 00:30:16,273 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 00:30:16,273 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 00:30:16,273 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 00:30:17,062 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 00:30:17,062 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 00:30:17,062 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 00:30:17,062 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 00:30:17,078 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 00:30:17,078 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 00:30:17,095 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 00:30:17,095 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 00:30:17,105 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 00:30:17,194 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 00:30:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 00:30:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 00:30:17]   应为3个，实际2个
+[2026-03-25 00:30:17]   应为3个，实际2个
+[2026-03-25 00:30:17] [Step 5] 检查代码变更...
+[2026-03-25 00:30:17] [Step 5] 检查代码变更...
+[2026-03-25 00:30:17]   有未提交的变更
+[2026-03-25 00:30:17]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? proactive-tracker.md
+[2026-03-25 00:30:17] [Step 6] 读取任务队列...
+[2026-03-25 00:30:17] [Step 6] 读取任务队列...
+[2026-03-25 00:30:17]   任务队列存在
+[2026-03-25 00:30:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 00:30:17] [Step 7] 生成报告...
+[2026-03-25 00:30:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 80: generate_report: command not found
+[2026-03-25 01:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 01:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 01:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 01:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 01:00:01]   scraper.py 存在
+[2026-03-25 01:00:01]   scraper.py 存在
+[2026-03-25 01:00:01] [Step 2] 执行快速测试...
+[2026-03-25 01:00:01] [Step 2] 执行快速测试...
+2026-03-25 01:00:01,523 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 01:00:02,165 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 01:00:02,165 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 01:00:10,420 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_010010.png
+2026-03-25 01:00:10,430 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 01:00:15,157 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_010015.png
+2026-03-25 01:00:15,181 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 01:00:15,312 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 01:00:15,312 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 01:00:16,231 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 01:00:16,231 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 01:00:16,231 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 01:00:17,018 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 01:00:17,018 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 01:00:17,018 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 01:00:17,018 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 01:00:17,036 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 01:00:17,036 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 01:00:17,052 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 01:00:17,052 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 01:00:17,060 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 01:00:17,158 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 01:00:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 01:00:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 01:00:17]   应为3个，实际2个
+[2026-03-25 01:00:17]   应为3个，实际2个
+[2026-03-25 01:00:17] [Step 5] 检查代码变更...
+[2026-03-25 01:00:17] [Step 5] 检查代码变更...
+[2026-03-25 01:00:17]   有未提交的变更
+[2026-03-25 01:00:17]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? proactive-tracker.md
+[2026-03-25 01:00:17] [Step 6] 读取任务队列...
+[2026-03-25 01:00:17] [Step 6] 读取任务队列...
+[2026-03-25 01:00:17]   任务队列存在
+[2026-03-25 01:00:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 01:00:17] [Step 7] 生成报告...
+[2026-03-25 01:00:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 80: generate_report: command not found
+[2026-03-25 01:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 01:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 01:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 01:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 01:30:01]   scraper.py 存在
+[2026-03-25 01:30:01]   scraper.py 存在
+[2026-03-25 01:30:01] [Step 2] 执行快速测试...
+[2026-03-25 01:30:01] [Step 2] 执行快速测试...
+2026-03-25 01:30:01,490 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 01:30:02,105 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 01:30:02,105 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 01:30:10,219 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_013010.png
+2026-03-25 01:30:10,231 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 01:30:15,367 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_013015.png
+2026-03-25 01:30:15,444 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 01:30:15,724 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 01:30:15,724 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 01:30:16,701 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 01:30:16,701 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 01:30:16,701 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 01:30:17,488 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 01:30:17,488 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 01:30:17,488 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 01:30:17,488 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 01:30:17,503 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 01:30:17,503 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 01:30:17,517 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 01:30:17,518 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 01:30:17,525 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 01:30:17,614 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 01:30:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 01:30:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 01:30:17]   应为3个，实际2个
+[2026-03-25 01:30:17]   应为3个，实际2个
+[2026-03-25 01:30:17] [Step 5] 检查代码变更...
+[2026-03-25 01:30:17] [Step 5] 检查代码变更...
+[2026-03-25 01:30:17]   有未提交的变更
+[2026-03-25 01:30:17]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? proactive-tracker.md
+[2026-03-25 01:30:17] [Step 6] 读取任务队列...
+[2026-03-25 01:30:17] [Step 6] 读取任务队列...
+[2026-03-25 01:30:17]   任务队列存在
+[2026-03-25 01:30:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 01:30:17] [Step 7] 生成报告...
+[2026-03-25 01:30:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 80: generate_report: command not found
+[2026-03-25 02:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 02:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 02:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 02:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 02:00:01]   scraper.py 存在
+[2026-03-25 02:00:01]   scraper.py 存在
+[2026-03-25 02:00:01] [Step 2] 执行快速测试...
+[2026-03-25 02:00:01] [Step 2] 执行快速测试...
+2026-03-25 02:00:01,971 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 02:00:02,845 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 02:00:02,845 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 02:00:11,026 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_020010.png
+2026-03-25 02:00:11,041 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 02:00:16,038 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_020015.png
+2026-03-25 02:00:16,060 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 02:00:16,202 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 02:00:16,203 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 02:00:17,102 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 02:00:17,102 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 02:00:17,102 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 02:00:17,910 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 02:00:17,910 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 02:00:17,910 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 02:00:17,911 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 02:00:17,926 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 02:00:17,926 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 02:00:17,941 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 02:00:17,941 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 02:00:17,949 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 02:00:18,067 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 02:00:18] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 02:00:18] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 02:00:18]   应为3个，实际2个
+[2026-03-25 02:00:18]   应为3个，实际2个
+[2026-03-25 02:00:18] [Step 5] 检查代码变更...
+[2026-03-25 02:00:18] [Step 5] 检查代码变更...
+[2026-03-25 02:00:18]   有未提交的变更
+[2026-03-25 02:00:18]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 02:00:18] [Step 6] 读取任务队列...
+[2026-03-25 02:00:18] [Step 6] 读取任务队列...
+[2026-03-25 02:00:18]   任务队列存在
+[2026-03-25 02:00:18]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 02:00:18] [Step 7] 生成报告...
+[2026-03-25 02:00:18] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 80: generate_report: command not found
+[2026-03-25 02:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 02:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 02:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 02:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 02:30:01]   scraper.py 存在
+[2026-03-25 02:30:01]   scraper.py 存在
+[2026-03-25 02:30:01] [Step 2] 执行快速测试...
+[2026-03-25 02:30:01] [Step 2] 执行快速测试...
+2026-03-25 02:30:01,395 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 02:30:01,994 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 02:30:01,994 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 02:30:10,137 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_023009.png
+2026-03-25 02:30:10,150 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 02:30:14,755 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_023014.png
+2026-03-25 02:30:14,778 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 02:30:14,918 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 02:30:14,918 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 02:30:15,831 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 02:30:15,831 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 02:30:15,831 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 02:30:16,646 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 02:30:16,647 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 02:30:16,647 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 02:30:16,647 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 02:30:16,663 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 02:30:16,663 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 02:30:16,677 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 02:30:16,678 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 02:30:16,685 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 02:30:16,771 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 02:30:16] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 02:30:16] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 02:30:16]   应为3个，实际2个
+[2026-03-25 02:30:16]   应为3个，实际2个
+[2026-03-25 02:30:16] [Step 5] 检查代码变更...
+[2026-03-25 02:30:16] [Step 5] 检查代码变更...
+[2026-03-25 02:30:16]   有未提交的变更
+[2026-03-25 02:30:16]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 02:30:16] [Step 6] 读取任务队列...
+[2026-03-25 02:30:16] [Step 6] 读取任务队列...
+[2026-03-25 02:30:16]   任务队列存在
+[2026-03-25 02:30:16]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 02:30:16] [Step 7] 生成报告...
+[2026-03-25 02:30:16] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 80: generate_report: command not found
+[2026-03-25 03:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 03:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 03:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 03:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 03:00:01]   scraper.py 存在
+[2026-03-25 03:00:01]   scraper.py 存在
+[2026-03-25 03:00:01] [Step 2] 执行快速测试...
+[2026-03-25 03:00:01] [Step 2] 执行快速测试...
+2026-03-25 03:00:01,102 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 03:00:01,765 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 03:00:01,766 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 03:00:09,802 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_030009.png
+2026-03-25 03:00:09,817 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 03:00:14,685 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_030014.png
+2026-03-25 03:00:14,710 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 03:00:14,852 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 03:00:14,852 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 03:00:15,752 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 03:00:15,752 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 03:00:15,752 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 03:00:16,534 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 03:00:16,534 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 03:00:16,534 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 03:00:16,534 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 03:00:16,551 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 03:00:16,552 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 03:00:16,576 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 03:00:16,577 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 03:00:16,584 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 03:00:16,665 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 03:00:16] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 03:00:16] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 03:00:16]   应为3个，实际2个
+[2026-03-25 03:00:16]   应为3个，实际2个
+[2026-03-25 03:00:16] [Step 5] 检查代码变更...
+[2026-03-25 03:00:16] [Step 5] 检查代码变更...
+[2026-03-25 03:00:16]   有未提交的变更
+[2026-03-25 03:00:16]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 03:00:16] [Step 6] 读取任务队列...
+[2026-03-25 03:00:16] [Step 6] 读取任务队列...
+[2026-03-25 03:00:16]   任务队列存在
+[2026-03-25 03:00:16]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 03:00:16] [Step 7] 生成报告...
+[2026-03-25 03:00:16] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 80: generate_report: command not found
+[2026-03-25 03:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 03:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 03:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 03:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 03:30:01]   scraper.py 存在
+[2026-03-25 03:30:01]   scraper.py 存在
+[2026-03-25 03:30:01] [Step 2] 执行快速测试...
+[2026-03-25 03:30:01] [Step 2] 执行快速测试...
+2026-03-25 03:30:01,990 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 03:30:02,590 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 03:30:02,590 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 03:30:10,719 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_033010.png
+2026-03-25 03:30:10,731 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 03:30:15,608 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_033015.png
+2026-03-25 03:30:15,635 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 03:30:15,780 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 03:30:15,780 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 03:30:16,686 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 03:30:16,686 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 03:30:16,686 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 03:30:17,510 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 03:30:17,511 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 03:30:17,511 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 03:30:17,511 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 03:30:17,530 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 03:30:17,530 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 03:30:17,544 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 03:30:17,545 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 03:30:17,552 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 03:30:17,637 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 03:30:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 03:30:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 03:30:17]   应为3个，实际2个
+[2026-03-25 03:30:17]   应为3个，实际2个
+[2026-03-25 03:30:17] [Step 5] 检查代码变更...
+[2026-03-25 03:30:17] [Step 5] 检查代码变更...
+[2026-03-25 03:30:17]   有未提交的变更
+[2026-03-25 03:30:17]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 03:30:17] [Step 6] 读取任务队列...
+[2026-03-25 03:30:17] [Step 6] 读取任务队列...
+[2026-03-25 03:30:17]   任务队列存在
+[2026-03-25 03:30:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 03:30:17] [Step 7] 生成报告...
+[2026-03-25 03:30:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 80: generate_report: command not found
+[2026-03-25 04:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 04:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 04:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 04:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 04:00:01]   scraper.py 存在
+[2026-03-25 04:00:01]   scraper.py 存在
+[2026-03-25 04:00:01] [Step 2] 执行快速测试...
+[2026-03-25 04:00:01] [Step 2] 执行快速测试...
+2026-03-25 04:00:01,984 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 04:00:02,582 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 04:00:02,583 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 04:00:10,519 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_040010.png
+2026-03-25 04:00:10,530 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 04:00:15,157 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_040014.png
+2026-03-25 04:00:15,184 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 04:00:15,324 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 04:00:15,324 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 04:00:16,428 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 04:00:16,428 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 04:00:16,428 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 04:00:17,277 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 04:00:17,277 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 04:00:17,277 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 04:00:17,277 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 04:00:17,295 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 04:00:17,295 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 04:00:17,311 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 04:00:17,311 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 04:00:17,320 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 04:00:17,421 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 04:00:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 04:00:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 04:00:17]   应为3个，实际2个
+[2026-03-25 04:00:17]   应为3个，实际2个
+[2026-03-25 04:00:17] [Step 5] 检查代码变更...
+[2026-03-25 04:00:17] [Step 5] 检查代码变更...
+[2026-03-25 04:00:17]   有未提交的变更
+[2026-03-25 04:00:17]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 04:00:17] [Step 6] 读取任务队列...
+[2026-03-25 04:00:17] [Step 6] 读取任务队列...
+[2026-03-25 04:00:17]   任务队列存在
+[2026-03-25 04:00:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 04:00:17] [Step 7] 生成报告...
+[2026-03-25 04:00:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 80: generate_report: command not found
+[2026-03-25 04:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 04:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 04:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 04:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 04:30:01]   scraper.py 存在
+[2026-03-25 04:30:01]   scraper.py 存在
+[2026-03-25 04:30:01] [Step 2] 执行快速测试...
+[2026-03-25 04:30:01] [Step 2] 执行快速测试...
+2026-03-25 04:30:01,771 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 04:30:02,396 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 04:30:02,396 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 04:30:10,630 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_043010.png
+2026-03-25 04:30:10,646 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 04:30:15,822 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_043015.png
+2026-03-25 04:30:15,845 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 04:30:15,991 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 04:30:15,991 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 04:30:16,981 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 04:30:16,981 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 04:30:16,981 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 04:30:17,773 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 04:30:17,773 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 04:30:17,773 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 04:30:17,773 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 04:30:17,788 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 04:30:17,788 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 04:30:17,802 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 04:30:17,802 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 04:30:17,810 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 04:30:17,919 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 04:30:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 04:30:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 04:30:17]   应为3个，实际2个
+[2026-03-25 04:30:17]   应为3个，实际2个
+[2026-03-25 04:30:17] [Step 5] 检查代码变更...
+[2026-03-25 04:30:17] [Step 5] 检查代码变更...
+[2026-03-25 04:30:17]   有未提交的变更
+[2026-03-25 04:30:17]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 04:30:17] [Step 6] 读取任务队列...
+[2026-03-25 04:30:17] [Step 6] 读取任务队列...
+[2026-03-25 04:30:17]   任务队列存在
+[2026-03-25 04:30:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 04:30:17] [Step 7] 生成报告...
+[2026-03-25 04:30:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 80: generate_report: command not found
+[2026-03-25 05:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 05:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 05:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 05:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 05:00:01]   scraper.py 存在
+[2026-03-25 05:00:01]   scraper.py 存在
+[2026-03-25 05:00:01] [Step 2] 执行快速测试...
+[2026-03-25 05:00:01] [Step 2] 执行快速测试...
+2026-03-25 05:00:01,254 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 05:00:01,856 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 05:00:01,856 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 05:00:10,127 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_050009.png
+2026-03-25 05:00:10,138 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 05:00:14,747 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_050014.png
+2026-03-25 05:00:14,894 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 05:00:15,106 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 05:00:15,106 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 05:00:16,019 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 05:00:16,019 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 05:00:16,019 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 05:00:16,824 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 05:00:16,824 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 05:00:16,824 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 05:00:16,824 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 05:00:16,840 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 05:00:16,840 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 05:00:16,860 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 05:00:16,860 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 05:00:16,868 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 05:00:16,961 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 05:00:16] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 05:00:16] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 05:00:16]   应为3个，实际2个
+[2026-03-25 05:00:16]   应为3个，实际2个
+[2026-03-25 05:00:16] [Step 5] 检查代码变更...
+[2026-03-25 05:00:16] [Step 5] 检查代码变更...
+[2026-03-25 05:00:16]   有未提交的变更
+[2026-03-25 05:00:16]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 05:00:16] [Step 6] 读取任务队列...
+[2026-03-25 05:00:16] [Step 6] 读取任务队列...
+[2026-03-25 05:00:17]   任务队列存在
+[2026-03-25 05:00:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 05:00:17] [Step 7] 生成报告...
+[2026-03-25 05:00:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 80: generate_report: command not found
+[2026-03-25 05:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 05:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 05:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 05:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 05:30:01]   scraper.py 存在
+[2026-03-25 05:30:01]   scraper.py 存在
+[2026-03-25 05:30:01] [Step 2] 执行快速测试...
+[2026-03-25 05:30:01] [Step 2] 执行快速测试...
+2026-03-25 05:30:01,290 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 05:30:01,940 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 05:30:01,940 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 05:30:10,221 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_053010.png
+2026-03-25 05:30:10,233 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 05:30:14,971 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_053014.png
+2026-03-25 05:30:14,996 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 05:30:15,144 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 05:30:15,144 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 05:30:16,060 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 05:30:16,060 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 05:30:16,061 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 05:30:16,869 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 05:30:16,869 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 05:30:16,869 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 05:30:16,869 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 05:30:16,887 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 05:30:16,887 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 05:30:16,913 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 05:30:16,913 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 05:30:16,926 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 05:30:17,016 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 05:30:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 05:30:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 05:30:17]   应为3个，实际2个
+[2026-03-25 05:30:17]   应为3个，实际2个
+[2026-03-25 05:30:17] [Step 5] 检查代码变更...
+[2026-03-25 05:30:17] [Step 5] 检查代码变更...
+[2026-03-25 05:30:17]   有未提交的变更
+[2026-03-25 05:30:17]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 05:30:17] [Step 6] 读取任务队列...
+[2026-03-25 05:30:17] [Step 6] 读取任务队列...
+[2026-03-25 05:30:17]   任务队列存在
+[2026-03-25 05:30:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 05:30:17] [Step 7] 生成报告...
+[2026-03-25 05:30:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 80: generate_report: command not found
+[2026-03-25 06:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 06:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 06:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 06:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 06:00:01]   scraper.py 存在
+[2026-03-25 06:00:01]   scraper.py 存在
+[2026-03-25 06:00:01] [Step 2] 执行快速测试...
+[2026-03-25 06:00:01] [Step 2] 执行快速测试...
+2026-03-25 06:00:01,392 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 06:00:02,062 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 06:00:02,062 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 06:00:10,032 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_060009.png
+2026-03-25 06:00:10,046 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 06:00:15,127 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_060014.png
+2026-03-25 06:00:15,152 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 06:00:15,293 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 06:00:15,294 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 06:00:16,199 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 06:00:16,199 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 06:00:16,199 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 06:00:16,993 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 06:00:16,993 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 06:00:16,993 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 06:00:16,993 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 06:00:17,009 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 06:00:17,009 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 06:00:17,025 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 06:00:17,025 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 06:00:17,033 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 06:00:17,133 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 06:00:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 06:00:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 06:00:17]   应为3个，实际2个
+[2026-03-25 06:00:17]   应为3个，实际2个
+[2026-03-25 06:00:17] [Step 5] 检查代码变更...
+[2026-03-25 06:00:17] [Step 5] 检查代码变更...
+[2026-03-25 06:00:17]   有未提交的变更
+[2026-03-25 06:00:17]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 06:00:17] [Step 6] 读取任务队列...
+[2026-03-25 06:00:17] [Step 6] 读取任务队列...
+[2026-03-25 06:00:17]   任务队列存在
+[2026-03-25 06:00:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 06:00:17] [Step 7] 生成报告...
+[2026-03-25 06:00:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 80: generate_report: command not found
+[2026-03-25 06:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 06:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 06:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 06:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 06:30:01]   scraper.py 存在
+[2026-03-25 06:30:01]   scraper.py 存在
+[2026-03-25 06:30:01] [Step 2] 执行快速测试...
+[2026-03-25 06:30:01] [Step 2] 执行快速测试...
+2026-03-25 06:30:01,535 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 06:30:02,147 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 06:30:02,147 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 06:30:10,198 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_063010.png
+2026-03-25 06:30:10,212 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 06:30:15,203 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_063015.png
+2026-03-25 06:30:15,227 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 06:30:15,374 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 06:30:15,374 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 06:30:16,285 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 06:30:16,285 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 06:30:16,285 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 06:30:17,147 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 06:30:17,147 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 06:30:17,147 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 06:30:17,147 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 06:30:17,164 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 06:30:17,164 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 06:30:17,179 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 06:30:17,179 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 06:30:17,187 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 06:30:17,272 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 06:30:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 06:30:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 06:30:17]   应为3个，实际2个
+[2026-03-25 06:30:17]   应为3个，实际2个
+[2026-03-25 06:30:17] [Step 5] 检查代码变更...
+[2026-03-25 06:30:17] [Step 5] 检查代码变更...
+[2026-03-25 06:30:17]   有未提交的变更
+[2026-03-25 06:30:17]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 06:30:17] [Step 6] 读取任务队列...
+[2026-03-25 06:30:17] [Step 6] 读取任务队列...
+[2026-03-25 06:30:17]   任务队列存在
+[2026-03-25 06:30:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 06:30:17] [Step 7] 生成报告...
+[2026-03-25 06:30:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 80: generate_report: command not found
+[2026-03-25 07:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 07:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 07:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 07:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 07:00:01]   scraper.py 存在
+[2026-03-25 07:00:01]   scraper.py 存在
+[2026-03-25 07:00:01] [Step 2] 执行快速测试...
+[2026-03-25 07:00:01] [Step 2] 执行快速测试...
+2026-03-25 07:00:01,606 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 07:00:02,215 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 07:00:02,215 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 07:00:10,355 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_070010.png
+2026-03-25 07:00:10,368 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 07:00:14,827 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_070014.png
+2026-03-25 07:00:14,850 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 07:00:14,994 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 07:00:14,994 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 07:00:16,092 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 07:00:16,092 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 07:00:16,092 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 07:00:16,864 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 07:00:16,864 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 07:00:16,864 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 07:00:16,864 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 07:00:16,879 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 07:00:16,879 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 07:00:16,896 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 07:00:16,896 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 07:00:16,908 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 07:00:16,992 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 07:00:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 07:00:17] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 07:00:17]   应为3个，实际2个
+[2026-03-25 07:00:17]   应为3个，实际2个
+[2026-03-25 07:00:17] [Step 5] 检查代码变更...
+[2026-03-25 07:00:17] [Step 5] 检查代码变更...
+[2026-03-25 07:00:17]   有未提交的变更
+[2026-03-25 07:00:17]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 07:00:17] [Step 6] 读取任务队列...
+[2026-03-25 07:00:17] [Step 6] 读取任务队列...
+[2026-03-25 07:00:17]   任务队列存在
+[2026-03-25 07:00:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 07:00:17] [Step 7] 生成报告...
+[2026-03-25 07:00:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 80: generate_report: command not found
+[2026-03-25 07:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 07:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 07:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 07:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 07:30:01]   scraper.py 存在
+[2026-03-25 07:30:01]   scraper.py 存在
+[2026-03-25 07:30:01] [Step 2] 执行快速测试...
+[2026-03-25 07:30:01] [Step 2] 执行快速测试...
+2026-03-25 07:30:01,318 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 07:30:01,929 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 07:30:01,929 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 07:30:09,953 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_073009.png
+2026-03-25 07:30:09,965 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 07:30:14,599 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_073014.png
+2026-03-25 07:30:14,623 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 07:30:14,761 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 07:30:14,761 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 07:30:15,676 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 07:30:15,676 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 07:30:15,676 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 07:30:16,464 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 07:30:16,464 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 07:30:16,464 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 07:30:16,464 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 07:30:16,481 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 07:30:16,481 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 07:30:16,520 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 07:30:16,520 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 07:30:16,554 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 07:30:16,697 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 07:30:16] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 07:30:16] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 07:30:16]   应为3个，实际2个
+[2026-03-25 07:30:16]   应为3个，实际2个
+[2026-03-25 07:30:16] [Step 5] 检查代码变更...
+[2026-03-25 07:30:16] [Step 5] 检查代码变更...
+[2026-03-25 07:30:16]   有未提交的变更
+[2026-03-25 07:30:16]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 07:30:16] [Step 6] 读取任务队列...
+[2026-03-25 07:30:16] [Step 6] 读取任务队列...
+[2026-03-25 07:30:16]   任务队列存在
+[2026-03-25 07:30:16]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 07:30:16] [Step 7] 生成报告...
+[2026-03-25 07:30:16] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 80: generate_report: command not found
+[2026-03-25 08:00:02] ========== 开始开发心跳 ==========
+[2026-03-25 08:00:02] ========== 开始开发心跳 ==========
+[2026-03-25 08:00:02] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 08:00:02] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 08:00:02]   scraper.py 存在
+[2026-03-25 08:00:02]   scraper.py 存在
+[2026-03-25 08:00:02] [Step 2] 执行快速测试...
+[2026-03-25 08:00:02] [Step 2] 执行快速测试...
+2026-03-25 08:00:02,159 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 08:00:03,246 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 08:00:03,246 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 08:00:11,415 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_080011.png
+2026-03-25 08:00:11,429 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 08:00:16,389 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_080016.png
+2026-03-25 08:00:16,413 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 08:00:16,555 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 08:00:16,555 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 08:00:17,502 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 08:00:17,502 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 08:00:17,502 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 08:00:18,336 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 08:00:18,336 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 08:00:18,336 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 08:00:18,336 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 08:00:18,353 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 08:00:18,354 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 08:00:18,374 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 08:00:18,374 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 08:00:18,381 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 08:00:18,489 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 08:00:18] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 08:00:18] [Step 4] 发现问题：SKU数量不准确
+[2026-03-25 08:00:18]   应为3个，实际2个
+[2026-03-25 08:00:18]   应为3个，实际2个
+[2026-03-25 08:00:18] [Step 5] 检查代码变更...
+[2026-03-25 08:00:18] [Step 5] 检查代码变更...
+[2026-03-25 08:00:18]   有未提交的变更
+[2026-03-25 08:00:18]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 08:00:18] [Step 6] 读取任务队列...
+[2026-03-25 08:00:18] [Step 6] 读取任务队列...
+[2026-03-25 08:00:18]   任务队列存在
+[2026-03-25 08:00:18]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 08:00:18] [Step 7] 生成报告...
+[2026-03-25 08:00:18] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 80: generate_report: command not found
+[2026-03-25 08:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 08:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 08:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 08:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 08:30:01]   scraper.py 存在
+[2026-03-25 08:30:01]   scraper.py 存在
+[2026-03-25 08:30:01] [Step 2] 执行快速测试...
+[2026-03-25 08:30:01] [Step 2] 执行快速测试...
+2026-03-25 08:30:01,853 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 08:30:02,481 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 08:30:02,482 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 08:30:10,495 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_083010.png
+2026-03-25 08:30:10,508 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 08:30:15,595 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_083015.png
+2026-03-25 08:30:15,621 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 08:30:15,764 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 08:30:15,764 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 08:30:16,687 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 08:30:16,687 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 08:30:16,688 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 08:30:17,515 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 08:30:17,515 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 08:30:17,515 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 08:30:17,515 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 08:30:17,532 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 08:30:17,532 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 08:30:17,547 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 08:30:17,547 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 08:30:17,555 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 08:30:17,643 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 08:30:17] [Step 5] 检查代码变更...
+[2026-03-25 08:30:17] [Step 5] 检查代码变更...
+[2026-03-25 08:30:17]   有未提交的变更
+[2026-03-25 08:30:17]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 08:30:17] [Step 6] 读取任务队列...
+[2026-03-25 08:30:17] [Step 6] 读取任务队列...
+[2026-03-25 08:30:17]   任务队列存在
+[2026-03-25 08:30:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 08:30:17] [Step 7] 生成报告...
+[2026-03-25 08:30:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 77: generate_report: command not found
+[2026-03-25 09:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 09:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 09:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 09:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 09:00:01]   scraper.py 存在
+[2026-03-25 09:00:01]   scraper.py 存在
+[2026-03-25 09:00:01] [Step 2] 执行快速测试...
+[2026-03-25 09:00:01] [Step 2] 执行快速测试...
+2026-03-25 09:00:01,977 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 09:00:03,018 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 09:00:03,018 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 09:00:10,976 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_090010.png
+2026-03-25 09:00:10,989 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 09:00:16,056 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_090015.png
+2026-03-25 09:00:16,080 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 09:00:16,224 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 09:00:16,224 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 09:00:17,143 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 09:00:17,143 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 09:00:17,143 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 09:00:17,976 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 09:00:17,976 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 09:00:17,976 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 09:00:17,976 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 09:00:17,994 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 09:00:17,994 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 09:00:18,010 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 09:00:18,010 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 09:00:18,019 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 09:00:18,115 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 09:00:18] [Step 5] 检查代码变更...
+[2026-03-25 09:00:18] [Step 5] 检查代码变更...
+[2026-03-25 09:00:18]   有未提交的变更
+[2026-03-25 09:00:18]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 09:00:18] [Step 6] 读取任务队列...
+[2026-03-25 09:00:18] [Step 6] 读取任务队列...
+[2026-03-25 09:00:18]   任务队列存在
+[2026-03-25 09:00:18]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 09:00:18] [Step 7] 生成报告...
+[2026-03-25 09:00:18] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 77: generate_report: command not found
+[2026-03-25 09:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 09:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 09:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 09:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 09:30:01]   scraper.py 存在
+[2026-03-25 09:30:01]   scraper.py 存在
+[2026-03-25 09:30:01] [Step 2] 执行快速测试...
+[2026-03-25 09:30:01] [Step 2] 执行快速测试...
+2026-03-25 09:30:01,457 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 09:30:02,069 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 09:30:02,069 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 09:30:10,279 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_093010.png
+2026-03-25 09:30:10,289 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 09:30:14,977 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_093014.png
+2026-03-25 09:30:15,008 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 09:30:15,341 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 09:30:15,342 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 09:30:16,279 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 09:30:16,279 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 09:30:16,279 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 09:30:17,112 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 09:30:17,112 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 09:30:17,112 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 09:30:17,112 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 09:30:17,132 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 09:30:17,132 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 09:30:17,147 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 09:30:17,147 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 09:30:17,156 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 09:30:17,247 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 09:30:17] [Step 5] 检查代码变更...
+[2026-03-25 09:30:17] [Step 5] 检查代码变更...
+[2026-03-25 09:30:17]   有未提交的变更
+[2026-03-25 09:30:17]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 09:30:17] [Step 6] 读取任务队列...
+[2026-03-25 09:30:17] [Step 6] 读取任务队列...
+[2026-03-25 09:30:17]   任务队列存在
+[2026-03-25 09:30:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 09:30:17] [Step 7] 生成报告...
+[2026-03-25 09:30:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 77: generate_report: command not found
+[2026-03-25 10:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 10:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 10:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 10:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 10:00:01]   scraper.py 存在
+[2026-03-25 10:00:01]   scraper.py 存在
+[2026-03-25 10:00:01] [Step 2] 执行快速测试...
+[2026-03-25 10:00:01] [Step 2] 执行快速测试...
+2026-03-25 10:00:01,637 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 10:00:02,255 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 10:00:02,255 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 10:00:10,440 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_100010.png
+2026-03-25 10:00:10,452 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 10:00:15,218 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_100015.png
+2026-03-25 10:00:15,243 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 10:00:15,383 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 10:00:15,383 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 10:00:16,345 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 10:00:16,346 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 10:00:16,346 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 10:00:17,154 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 10:00:17,154 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 10:00:17,154 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 10:00:17,154 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 10:00:17,169 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 10:00:17,169 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 10:00:17,186 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 10:00:17,186 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 10:00:17,194 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 10:00:17,286 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 10:00:17] [Step 5] 检查代码变更...
+[2026-03-25 10:00:17] [Step 5] 检查代码变更...
+[2026-03-25 10:00:17]   有未提交的变更
+[2026-03-25 10:00:17]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 10:00:17] [Step 6] 读取任务队列...
+[2026-03-25 10:00:17] [Step 6] 读取任务队列...
+[2026-03-25 10:00:17]   任务队列存在
+[2026-03-25 10:00:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 10:00:17] [Step 7] 生成报告...
+[2026-03-25 10:00:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 77: generate_report: command not found
+[2026-03-25 10:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 10:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 10:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 10:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 10:30:01]   scraper.py 存在
+[2026-03-25 10:30:01]   scraper.py 存在
+[2026-03-25 10:30:01] [Step 2] 执行快速测试...
+[2026-03-25 10:30:01] [Step 2] 执行快速测试...
+2026-03-25 10:30:01,623 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 10:30:02,239 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 10:30:02,239 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 10:30:10,273 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_103010.png
+2026-03-25 10:30:10,287 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 10:30:14,971 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_103014.png
+2026-03-25 10:30:14,994 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 10:30:15,144 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 10:30:15,145 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 10:30:16,072 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 10:30:16,072 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 10:30:16,072 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 10:30:16,887 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 10:30:16,887 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 10:30:16,887 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 10:30:16,887 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 10:30:16,909 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 10:30:16,909 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 10:30:16,925 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 10:30:16,925 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 10:30:16,933 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 10:30:17,026 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 10:30:17] [Step 5] 检查代码变更...
+[2026-03-25 10:30:17] [Step 5] 检查代码变更...
+[2026-03-25 10:30:17]   有未提交的变更
+[2026-03-25 10:30:17]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 10:30:17] [Step 6] 读取任务队列...
+[2026-03-25 10:30:17] [Step 6] 读取任务队列...
+[2026-03-25 10:30:17]   任务队列存在
+[2026-03-25 10:30:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 10:30:17] [Step 7] 生成报告...
+[2026-03-25 10:30:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 77: generate_report: command not found
+[2026-03-25 11:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 11:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 11:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 11:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 11:00:01]   scraper.py 存在
+[2026-03-25 11:00:01]   scraper.py 存在
+[2026-03-25 11:00:01] [Step 2] 执行快速测试...
+[2026-03-25 11:00:01] [Step 2] 执行快速测试...
+2026-03-25 11:00:01,356 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 11:00:02,046 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 11:00:02,047 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 11:00:10,031 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_110009.png
+2026-03-25 11:00:10,045 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 11:00:15,003 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_110014.png
+2026-03-25 11:00:15,028 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 11:00:15,172 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 11:00:15,172 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 11:00:16,101 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 11:00:16,102 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 11:00:16,102 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 11:00:16,931 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 11:00:16,931 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 11:00:16,932 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 11:00:16,932 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 11:00:16,949 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 11:00:16,949 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 11:00:16,963 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 11:00:16,963 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 11:00:16,971 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 11:00:17,074 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 11:00:17] [Step 5] 检查代码变更...
+[2026-03-25 11:00:17] [Step 5] 检查代码变更...
+[2026-03-25 11:00:17]   有未提交的变更
+[2026-03-25 11:00:17]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 11:00:17] [Step 6] 读取任务队列...
+[2026-03-25 11:00:17] [Step 6] 读取任务队列...
+[2026-03-25 11:00:17]   任务队列存在
+[2026-03-25 11:00:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 11:00:17] [Step 7] 生成报告...
+[2026-03-25 11:00:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 77: generate_report: command not found
+[2026-03-25 11:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 11:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 11:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 11:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 11:30:01]   scraper.py 存在
+[2026-03-25 11:30:01]   scraper.py 存在
+[2026-03-25 11:30:01] [Step 2] 执行快速测试...
+[2026-03-25 11:30:01] [Step 2] 执行快速测试...
+2026-03-25 11:30:01,414 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 11:30:02,031 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 11:30:02,031 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 11:30:10,126 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_113009.png
+2026-03-25 11:30:10,138 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 11:30:14,945 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_113014.png
+2026-03-25 11:30:14,982 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 11:30:15,258 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 11:30:15,258 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 11:30:16,201 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 11:30:16,201 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 11:30:16,201 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 11:30:17,206 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 11:30:17,206 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 11:30:17,206 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 11:30:17,206 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 11:30:17,222 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 11:30:17,222 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 11:30:17,239 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 11:30:17,240 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 11:30:17,249 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 11:30:17,333 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 11:30:17] [Step 5] 检查代码变更...
+[2026-03-25 11:30:17] [Step 5] 检查代码变更...
+[2026-03-25 11:30:17]   有未提交的变更
+[2026-03-25 11:30:17]   有未提交的变更
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 11:30:17] [Step 6] 读取任务队列...
+[2026-03-25 11:30:17] [Step 6] 读取任务队列...
+[2026-03-25 11:30:17]   任务队列存在
+[2026-03-25 11:30:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 11:30:17] [Step 7] 生成报告...
+[2026-03-25 11:30:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 77: generate_report: command not found
+[2026-03-25 12:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 12:00:01] ========== 开始开发心跳 ==========
+[2026-03-25 12:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 12:00:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 12:00:01]   scraper.py 存在
+[2026-03-25 12:00:01]   scraper.py 存在
+[2026-03-25 12:00:01] [Step 2] 执行快速测试...
+[2026-03-25 12:00:01] [Step 2] 执行快速测试...
+2026-03-25 12:00:01,698 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 12:00:02,389 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 12:00:02,390 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 12:00:10,537 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_120010.png
+2026-03-25 12:00:10,552 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 12:00:15,203 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_120015.png
+2026-03-25 12:00:15,229 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 12:00:15,472 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 12:00:15,472 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 12:00:16,472 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 12:00:16,472 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 12:00:16,472 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 12:00:17,268 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 12:00:17,268 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 12:00:17,268 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 12:00:17,268 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 12:00:17,283 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 12:00:17,284 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 12:00:17,299 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 12:00:17,299 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 12:00:17,307 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 12:00:17,401 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 12:00:17] [Step 5] 检查代码变更...
+[2026-03-25 12:00:17] [Step 5] 检查代码变更...
+[2026-03-25 12:00:17]   有未提交的变更
+[2026-03-25 12:00:17]   有未提交的变更
+ M HEARTBEAT.md
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? config/prompts/product_info_extractor.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 12:00:17] [Step 6] 读取任务队列...
+[2026-03-25 12:00:17] [Step 6] 读取任务队列...
+[2026-03-25 12:00:17]   任务队列存在
+[2026-03-25 12:00:17]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 12:00:17] [Step 7] 生成报告...
+[2026-03-25 12:00:17] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 77: generate_report: command not found
+[2026-03-25 12:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 12:30:01] ========== 开始开发心跳 ==========
+[2026-03-25 12:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 12:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 12:30:01]   scraper.py 存在
+[2026-03-25 12:30:01]   scraper.py 存在
+[2026-03-25 12:30:01] [Step 2] 执行快速测试...
+[2026-03-25 12:30:01] [Step 2] 执行快速测试...
+2026-03-25 12:30:01,876 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 12:30:03,764 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 12:30:03,764 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 12:30:13,758 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_123013.png
+2026-03-25 12:30:13,839 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 12:30:20,992 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_123020.png
+2026-03-25 12:30:21,042 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 12:30:21,304 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 12:30:21,305 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 12:30:22,709 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 12:30:22,710 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 12:30:22,710 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 12:30:24,044 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 12:30:24,044 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 12:30:24,044 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 12:30:24,045 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 12:30:24,069 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 12:30:24,069 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 12:30:24,095 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 12:30:24,095 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 12:30:24,106 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 12:30:24,312 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 12:30:24] [Step 5] 检查代码变更...
+[2026-03-25 12:30:24] [Step 5] 检查代码变更...
+[2026-03-25 12:30:24]   有未提交的变更
+[2026-03-25 12:30:24]   有未提交的变更
+ M HEARTBEAT.md
+ M logs/dev-heartbeat-cron.log
+ M logs/dev-heartbeat.log
+ M logs/workflow_health_check.log
+ M scripts/workflow_health_check.sh
+?? SESSION-STATE.md
+?? config/prompts/product_info_extractor.md
+?? logs/workflow_health.log
+?? proactive-tracker.md
+[2026-03-25 12:30:24] [Step 6] 读取任务队列...
+[2026-03-25 12:30:24] [Step 6] 读取任务队列...
+[2026-03-25 12:30:24]   任务队列存在
+[2026-03-25 12:30:24]   任务队列存在
+### ✅ 所有模块已完成！
+### ✅ miaoshou-collector 模块
+### ✅ collector-scraper 模块
+[2026-03-25 12:30:24] [Step 7] 生成报告...
+[2026-03-25 12:30:24] [Step 7] 生成报告...
+/root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh: line 77: generate_report: command not found
+[2026-03-25 12:35:58] ========== 开始开发心跳 ==========
+[2026-03-25 12:35:58] [Step 1] 检查collector-scraper模块状态...
+[2026-03-25 12:35:58]   scraper.py 存在
+[2026-03-25 12:35:58] [Step 2] 执行快速测试...
+2026-03-25 12:35:58,165 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-25 12:35:59,070 | collector-scraper | INFO | 浏览器启动成功
+2026-03-25 12:35:59,070 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-25 12:36:07,186 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260325_123607.png
+2026-03-25 12:36:07,201 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-25 12:36:12,281 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260325_123612.png
+2026-03-25 12:36:12,301 | collector-scraper | INFO | 提取到货源ID: 1026175430866
+2026-03-25 12:36:12,443 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-25 12:36:12,443 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-25 12:36:13,371 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2220}, {'name': '奶黄色', 'image': None, 'stock': 2218}], 'colorImages': {}, 'overallPrice': 12.9, 'overallStock': None, 'debug': {'stocksFound': [1290, 2220, 1026175430866, 1290, 2218, 1026175430866], 'validStocks': [2220, 2218], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-25 12:36:13,372 | collector-scraper | INFO | 有效库存: [2220, 2218], 颜色数: 0
+2026-03-25 12:36:13,372 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-25 12:36:14,217 | collector-scraper | INFO | 找到规格: {'颜色': ['奶白色', '奶黄色']}
+2026-03-25 12:36:14,217 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-25 12:36:14,217 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 12:36:14,217 | collector-scraper | INFO |   SKU: {sku}
+2026-03-25 12:36:14,233 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '40'}，继续尝试其他方法
+2026-03-25 12:36:14,233 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-25 12:36:14,248 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '40'}，继续尝试方法3
+2026-03-25 12:36:14,248 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-25 12:36:14,256 | collector-scraper | INFO | 成功提取商品数据: 1026175430866
+2026-03-25 12:36:14,360 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1026175430866
+  标题: 发饰收纳盒桌面分格发圈发夹置物儿童带盖便携首饰盒发头绳整理盒
+  类目: 收纳盒、收纳包与篮子 (Storage Boxes, Bags & Baskets)
+  品牌: None
+  主图数量: 21
+  SKU数量: 2
+  描述长度: 227
+  物流: {'weight': '40'}
+============================================================
+[2026-03-25 12:36:14]   ✅ 货源ID提取正常
+[2026-03-25 12:36:14] [Step 3] 检查代码变更...
+[2026-03-25 12:36:14]   ⚠️ 有未提交的变更

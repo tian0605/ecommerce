@@ -92,7 +92,9 @@ ss -tlnp | grep 9090
 
 #### ⚙️ 配置自检（每周检视）
 
-参考 OpenClaw 配置自检方案，检视以下配置项：
+参考 OpenClaw 配置自检方案，路径是：/home/ubuntu/Downloads/openclaw_config_self_check_scheme.md，根据自检方案校对现有配置是否有待办优化项。
+
+并检视以下配置项：
 
 | 配置项 | 检查内容 | 健康标准 |
 |--------|----------|----------|

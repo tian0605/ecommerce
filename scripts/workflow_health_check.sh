@@ -3,7 +3,7 @@
 # 定时执行，验证各模块状态
 
 LOG_FILE="/root/.openclaw/workspace-e-commerce/logs/workflow_health_check.log"
-FEISHU_WEBHOOK="https://open.feishu.cn/open-apis/bot/v2/hook/xxx"  # TODO: 替换为实际的webhook
+FEISHU_WEBHOOK="https://open.feishu.cn/open-apis/bot/v2/hook/xxx"  # TODO: 替换为实际webhook
 
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
@@ -35,7 +35,7 @@ else
 fi
 
 # 检查本地1688服务
-if curl -s --max-time 5 http://127.0.0.1:9090/health > /tmp/health.json 2>&1; then
+if curl -s --max-time 5 http://127.0.0.1:8080/health > /tmp/health.json 2>&1; then
     log "  ✅ 本地1688服务正常"
 else
     log "  ❌ 本地1688服务未启动"
@@ -44,7 +44,7 @@ else
 fi
 
 # 检查SSH隧道
-if ss -tlnp 2>/dev/null | grep -q "127.0.0.1:9090"; then
+if ss -tlnp 2>/dev/null | grep -q "127.0.0.1:8080"; then
     log "  ✅ SSH隧道已建立"
 else
     log "  ❌ SSH隧道未建立"
