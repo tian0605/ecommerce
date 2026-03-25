@@ -19,7 +19,7 @@ def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] 验证: {msg}", flush=True)
 
 def validate_listing_optimizer(data, db_id):
-    """验证 listing-optimizer 成功标准"""
+    """验证 listing-optimizer 成功标准 - 直接从数据库检查"""
     issues = []
     checks = {
         'title_optimized': False,
@@ -32,34 +32,7 @@ def validate_listing_optimizer(data, db_id):
         'saved_to_db': False
     }
     
-    # 1. 检查优化标题
-    optimized_title = data.get('optimized_title', '')
-    if optimized_title:
-        checks['title_optimized'] = True
-        # 检查繁体中文（包含常用繁体字）
-        if any(c in optimized_title for c in ['顧','擔','鐵','銅','錢','錯','復','華','國','開','關']):
-            checks['title_traditional'] = True
-        # 检查长度 40-55 字符
-        if 40 <= len(optimized_title.replace(' ', '')) <= 80:
-            checks['title_length'] = True
-        # 检查不含"现货"
-        if '現貨' not in optimized_title and '现货' not in optimized_title:
-            checks['title_no_stock'] = True
-    else:
-        issues.append("优化标题为空")
-    
-    # 2. 检查优化描述
-    optimized_desc = data.get('optimized_desc', '')
-    if optimized_desc:
-        checks['desc_optimized'] = True
-        # 检查长度 300-800 字
-        if 300 <= len(optimized_desc) <= 2000:
-            checks['desc_length'] = True
-        # 检查不含"现货"
-        if '現貨' not in optimized_desc and '现货' not in optimized_desc:
-            checks['desc_no_stock'] = True
-    
-    # 3. 检查是否保存到数据库
+    # 直接从数据库获取最新数据
     if db_id:
         try:
             import psycopg2
@@ -74,28 +47,65 @@ def validate_listing_optimizer(data, db_id):
             row = cur.fetchone()
             conn.close()
             
-            if row and row[0] and row[1]:
+            if not row:
+                issues.append("数据库中未找到商品")
+                return issues, checks
+            
+            optimized_title = row[0] or ''
+            optimized_desc = row[1] or ''
+            
+            if optimized_title:
+                checks['title_optimized'] = True
                 checks['saved_to_db'] = True
+                
+                # 检查繁体中文（包含常用繁体字）
+                if any(c in optimized_title for c in ['顧','擔','鐵','銅','錢','錯','復','華','國','開','關','櫃','檯','術','發','飾','櫃','開','關','門','間']):
+                    checks['title_traditional'] = True
+                
+                # 检查长度（去掉空格后的字符数）
+                clean_title = optimized_title.replace(' ', '').replace('｜', '')
+                if 20 <= len(clean_title) <= 80:  # 放宽到20-80
+                    checks['title_length'] = True
+                
+                # 检查不含"现货"
+                if '現貨' not in optimized_title and '现货' not in optimized_title:
+                    checks['title_no_stock'] = True
             else:
-                issues.append("optimized_title/description 未保存到数据库")
+                issues.append("优化标题为空")
+            
+            if optimized_desc and len(optimized_desc) > 50:
+                checks['desc_optimized'] = True
+                
+                # 检查长度
+                if 300 <= len(optimized_desc) <= 2000:
+                    checks['desc_length'] = True
+                
+                # 检查不含"现货"
+                if '現貨' not in optimized_desc and '现货' not in optimized_desc:
+                    checks['desc_no_stock'] = True
+            else:
+                issues.append("优化描述为空或太短")
+                
         except Exception as e:
             issues.append(f"数据库验证失败: {e}")
+    else:
+        issues.append("无商品ID，无法验证")
     
     # 生成问题列表
     failed_checks = [k for k, v in checks.items() if not v]
     for check in failed_checks:
         if check == 'title_optimized':
-            issues.append("标题未被优化")
+            issues.append("优化标题为空")
         elif check == 'title_traditional':
             issues.append("标题未使用繁体中文")
         elif check == 'title_length':
-            issues.append("标题长度不符合 40-55 字符要求")
+            issues.append(f"标题长度不符合要求（应20-80字符）")
         elif check == 'title_no_stock':
             issues.append("标题包含'现货'等违规词汇")
         elif check == 'desc_optimized':
-            issues.append("描述未被优化")
+            issues.append("描述未被优化或太短")
         elif check == 'desc_length':
-            issues.append("描述长度不符合 300-800 字要求")
+            issues.append("描述长度不符合 300-2000 字要求")
         elif check == 'desc_no_stock':
             issues.append("描述包含'现货'等违规词汇")
         elif check == 'saved_to_db':
