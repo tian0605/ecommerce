@@ -167,6 +167,7 @@ def validate_profit_analyzer(data):
     purchase_price = data.get('purchase_price_cny', 0)
     weight_g = data.get('weight_g', 0)
     sls_twd = data.get('sls_twd', 0)
+    commission_twd = data.get('commission_twd', 0)
     suggested_price = data.get('suggested_price_twd', 0)
     
     if purchase_price and purchase_price > 0:
@@ -182,13 +183,20 @@ def validate_profit_analyzer(data):
         if abs(sls_twd - expected_sls) > 5:  # 允许5 TWD误差
             issues.append(f"SLS运费计算可能有误: 实际{sls_twd}，预期{expected_sls}")
     
+    if commission_twd and commission_twd > 0:
+        checks['commission_calculated'] = True
+        # 验证佣金计算（14%）
+        expected_commission = int(suggested_price * 0.14)
+        if abs(commission_twd - expected_commission) > 5:
+            issues.append(f"佣金计算可能有误: 实际{commission_twd}，预期{expected_commission}")
+    
     if suggested_price and suggested_price > 0:
         checks['has_suggested_price'] = True
-        checks['sls_calculated'] = True  # 能输出售价说明计算了
         
         # 检查售价是否合理（至少覆盖成本）
         if purchase_price and sls_twd:
-            total_cost_cny = purchase_price + 3 + (sls_twd / 4.5)  # 货代3元+运费
+            # 总成本包含佣金
+            total_cost_cny = purchase_price + 3 + (sls_twd / 4.5)
             min_price_twd = total_cost_cny * 4.5 * 1.1  # 至少10%利润
             if suggested_price >= min_price_twd:
                 checks['price_reasonable'] = True

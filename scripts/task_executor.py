@@ -263,8 +263,32 @@ def run_profit_analyzer_test(product_id="1026175430866"):
         sls_twd = 70 + extra
     
     sls_cny = sls_twd / 4.5
+    
+    # 目标利润率 30%
+    target_margin = 1.3
+    
+    # 计算包含所有费用的售价
+    # 总成本 = 采购价 + 货代费(3元) + SLS运费
+    # 售价 = (采购价 + 货代费 + SLS运费CNY) * 汇率 * 目标系数 / (1 - 平台费率)
+    # 平台费率 = 佣金14% + 交易手续费2.5% + 预售服务费3% = 19.5%
+    platform_fee_rate = 0.195
+    exchange_rate = 4.5
+    
     total_cost_cny = purchase_price + 3 + sls_cny
-    suggested_price_twd = int(total_cost_cny * 4.5 * 1.3)
+    suggested_price_twd = int(total_cost_cny * exchange_rate * target_margin / (1 - platform_fee_rate))
+    
+    # 计算各项费用
+    commission_twd = int(suggested_price_twd * 0.14)
+    transaction_fee_twd = int(suggested_price_twd * 0.025)
+    pre_sale_fee_twd = int(suggested_price_twd * 0.03)
+    total_platform_fee_twd = commission_twd + transaction_fee_twd + pre_sale_fee_twd
+    
+    # 买家实付运费（藏价）
+    buyer_shipping = 55  # 普通情况买家付55 TWD
+    seller_shipping = sls_twd - buyer_shipping  # 卖家实际付的
+    
+    # 预估利润
+    gross_profit_twd = suggested_price_twd - total_platform_fee_twd - total_cost_cny * exchange_rate - seller_shipping
     
     return True, "profit-analyzer 测试完成", {
         "module": "profit-analyzer",
@@ -275,8 +299,13 @@ def run_profit_analyzer_test(product_id="1026175430866"):
         "weight_g": weight_g,
         "sls_twd": sls_twd,
         "sls_cny": round(sls_cny, 2),
+        "commission_twd": commission_twd,
+        "transaction_fee_twd": transaction_fee_twd,
+        "pre_sale_fee_twd": pre_sale_fee_twd,
+        "total_platform_fee_twd": total_platform_fee_twd,
         "total_cost_cny": round(total_cost_cny, 2),
         "suggested_price_twd": suggested_price_twd,
+        "gross_profit_twd": gross_profit_twd,
         "timestamp": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     }
 
