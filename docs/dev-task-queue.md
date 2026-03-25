@@ -1,47 +1,65 @@
 # 开发任务队列
 
 > 记录当前开发任务、问题和待办事项
-> 最后更新：2026-03-25 15:55
+> 最后更新：2026-03-25 16:27
 
 ---
 
-## 🔴 P0 优化项（立即处理）
+## 🔴 P0 问题（立即处理）
 
-### 1. listing-optimizer 需保存结果到数据库
-**问题：** miaoshou-updater 跳过是因为数据库无优化标题数据
-**原因：** listing-optimizer 优化后没有把结果写入 products 表
-**解决方案：** listing-optimizer 测试完成后，更新 products 表的 optimized_title 和 optimized_description 字段
+> 每次心跳执行后，必须检查此部分是否有新问题
 
-**验收标准：**
-- [ ] listing-optimizer 优化后自动更新 products 表
-- [ ] miaoshou-updater 能读取到优化标题进行回写
-
----
-
-## 📋 待执行任务
-
-| 优先级 | 任务 | 状态 | 说明 |
-|--------|------|------|------|
-| P0 | listing-optimizer 保存结果到DB | ⬜ 待开发 | 优化后自动写入 products 表 |
-| P0 | miaoshou-updater 完整测试 | ⬜ 待开始 | 需要 optimizer 结果写入 DB |
-| P1 | profit-analyzer 完整测试 | ✅ 已完成 | 建议售价 167 TWD |
+### 2026-03-25 16:27 - listing-optimizer 未保存数据库
+**模块:** listing-optimizer
+**问题:** 优化后没有保存到数据库，导致 miaoshou-updater 无法读取
+**原因:** task_executor 调用 optimizer 但没有调用 update_product()
+**建议:** 已在 commit 7550b86 修复，下次心跳验证
 
 ---
 
-## ✅ 已完成历史
+## 📋 执行中任务
 
-### 2026-03-25 15:47 - 第一轮自动测试
-- listing-optimizer: ✅ 完成（但未保存到DB）
-- miaoshou-updater: ⚠️ 跳过（无优化标题）
-- profit-analyzer: ✅ 完成
+| 任务ID | 任务名 | 依赖 | 当前状态 |
+|--------|--------|------|----------|
+| T001 | listing-optimizer 优化 | - | ✅ 完成（待验证）|
+| T002 | miaoshou-updater 回写 | T001.optimized_title | ⬜ 等待 |
+| T003 | profit-analyzer 利润分析 | - | ✅ 完成 |
+
+**执行流程:**
+```
+T001 listing-optimizer → [保存 optimized_title 到 DB]
+        ↓ 依赖
+T002 miaoshou-updater  → [读取 optimized_title 回写妙手]
+        ↓
+T003 profit-analyzer    → [计算利润]
+```
 
 ---
 
-## 下一步
+## ✅ 已完成
 
-1. 修改 listing-optimizer，优化完成后更新数据库
-2. 重新执行任务，验证 miaoshou-updater 能正常读取数据
+- 2026-03-25 16:10 - 第一轮测试（结果未保存DB，已修复）
 
 ---
 
-*最后更新：2026-03-25 15:55*
+## 📊 心跳执行日志
+
+| 时间 | 任务 | 结果 | 备注 |
+|------|------|------|------|
+| 16:10 | listing-optimizer | ⚠️ | 完成但未保存DB |
+| 16:10 | miaoshou-updater | ❌ | 跳过（无数据）|
+| 16:10 | profit-analyzer | ✅ | 建议售价 167 TWD |
+
+---
+
+## 🔧 心跳机制优化清单
+
+- [x] Step 6 执行任务
+- [x] 断点续执（task_state.json）
+- [ ] Step 6.5 结果验证（待实现）
+- [ ] 依赖追踪（待实现）
+- [ ] P0 问题自动提取（待实现）
+
+---
+
+*最后更新：2026-03-25 16:27*

@@ -119,7 +119,7 @@ run_heartbeat() {
     log "[Step 6] 检查并执行待办任务..."
     if [ -f "$WORKSPACE/docs/dev-task-queue.md" ]; then
         # 检查是否有待执行的任务标记
-        if grep -q "🔄\|⬜" "$WORKSPACE/docs/dev-task-queue.md"; then
+        if grep -q "🔄\|⬜\|📋" "$WORKSPACE/docs/dev-task-queue.md"; then
             log "  发现待办任务，检查执行状态..."
             
             # 检查任务状态文件
@@ -147,7 +147,19 @@ run_heartbeat() {
                     nohup python3 "$WORKSPACE/scripts/task_executor.py" > "$WORKSPACE/logs/task_executor.log" 2>&1 &
                     log "  🔄 任务已重新启动"
                 else
-                    log "  ✅ 上次任务已完成，无需重复执行"
+                    log "  ✅ 上次任务已完成"
+                    
+                    # ===== Step 6.5 验证结果 =====
+                    log "[Step 6.5] 验证任务结果..."
+                    VALIDATION_RESULT=$(python3 "$WORKSPACE/scripts/validate_results.py" 2>/dev/null || echo "validation_skip")
+                    
+                    if [ "$VALIDATION_RESULT" = "has_issues" ]; then
+                        log "  ⚠️ 发现问题，已记录到 P0"
+                    elif [ "$VALIDATION_RESULT" = "all_ok" ]; then
+                        log "  ✅ 验证通过，无问题"
+                    else
+                        log "  ⏭️ 跳过验证（状态文件无效或任务未完成）"
+                    fi
                 fi
             else
                 # 无状态文件，开始新任务

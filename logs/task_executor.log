@@ -5,3 +5,24 @@
 [16:20:18] ▶️ 执行: listing-optimizer
 [16:20:18] 测试 listing-optimizer...
 [16:20:18]   调用 LLM 优化标题...
+[16:21:43]   调用 LLM 优化描述...
+2026-03-25 16:23:43,863 | listing-optimizer | ERROR | curl failed: 
+[16:23:43]   保存到数据库...
+[16:23:43]   ✅ 已保存到数据库
+[16:23:43]   → ✅ listing-optimizer 测试完成
+[16:23:43] 📍 从上次继续: miaoshou-updater
+[16:23:43] ▶️ 执行: miaoshou-updater
+[16:23:43] 测试 miaoshou-updater...
+[16:23:43]   → ✅ 待手动测试（需要浏览器）
+[16:23:43] 📍 从上次继续: profit-analyzer
+[16:23:43] ▶️ 执行: profit-analyzer
+[16:23:43] 测试 profit-analyzer...
+[16:23:43]   → ✅ profit-analyzer 测试完成
+Traceback (most recent call last):
+  File "/root/.openclaw/workspace-e-commerce/scripts/task_executor.py", line 475, in <module>
+    write_results(results, improvements)
+         ^^^^^^
+  File "/root/.openclaw/workspace-e-commerce/scripts/task_executor.py", line 423, in main
+    state = load_state()
+                         
+UnboundLocalError: cannot access local variable 'results' where it is not associated with a value
