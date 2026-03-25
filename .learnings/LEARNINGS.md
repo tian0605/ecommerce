@@ -292,3 +292,117 @@ local-1688-weight服务在测试过程中多次断开：
 - Related Files: skills/product-storer/storer.py
 - Tags: product-id, format, architecture
 
+---
+
+## [LRN-20260325-001] best_practice
+
+**Logged**: 2026-03-25T22:50:00+08:00
+**Priority**: critical
+**Status**: completed
+**Area**: backend
+
+### Summary
+miaoshou-updater类目组件是el-cascader（级联选择器），不是el-dropdown
+
+### Details
+妙手ERP编辑对话框中的类目选择组件是 `el-cascader`，不是常见的 `el-dropdown`。
+
+关键特征：
+- cascader节点在DOM中存在但Playwright locator检测为不可见（visibility: hidden）
+- 必须用JS `.click()` 直接点击节点，不能用Playwright locator
+- 三级级联：家居生活 → 居家收纳 → 收纳盒、收纳包与篮子
+- 每级点击后需等0.3-0.5秒让面板更新
+
+选择器：`document.querySelectorAll(".el-cascader-node")`
+
+### Metadata
+- Source: testing
+- Related Files: skills/miaoshou-updater/updater.py
+- Tags: miaoshou, cascader, category, vue
+
+---
+
+## [LRN-20260325-002] best_practice
+
+**Logged**: 2026-03-25T22:50:00+08:00
+**Priority**: critical
+**Status**: completed
+**Area**: backend
+
+### Summary
+妙手ERP编辑对话框：所有操作在一个session内完成，不要刷新页面
+
+### Details
+测试中发现：每次page.goto()都会刷新页面，导致已填字段全部丢失。
+
+教训：
+1. 打开编辑对话框后，所有字段填写、类目选择、发布操作必须在同一个session内完成
+2. 脚本运行中途不要重新加载页面
+3. 如果脚本中断，已填数据丢失，只能重新开始
+
+解决方案：一次性编写完整脚本，包含所有8个步骤（定位→填字段→cascader→保存并发布→全选→确定发布→关闭弹窗）
+
+### Metadata
+- Source: error
+- Related Files: skills/miaoshou-updater/updater.py
+- Tags: miaoshou, session, browser-automation
+
+---
+
+## [LRN-20260325-003] best_practice
+
+**Logged**: 2026-03-25T22:50:00+08:00
+**Priority**: critical
+**Status**: completed
+**Area**: backend
+
+### Summary
+Form item索引：0=标题, 1=描述, 3=主货号, 5=类目, 12=重量, 13=尺寸
+
+### Details
+妙手ERP编辑对话框的form-item使用0-based索引：
+
+| index | 字段 | 组件 | 选择器 |
+|-------|------|------|--------|
+| 0 | 产品标题 | input | `input[placeholder="标题不能为空"]` |
+| 1 | 简易描述 | textarea | `.el-dialog__body .el-form-item:nth-child(2) textarea` |
+| 3 | 主货号 | input | `.el-dialog__body .el-form-item:nth-child(4) input` |
+| 5 | 类目 | **el-cascader** | `.el-dialog__body .el-form-item:nth-child(6) .el-cascader` |
+| 12 | 包裹重量 | input | `.el-dialog__body .el-form-item:nth-child(13) input` |
+| 13 | 包裹尺寸 | 3个input | `.el-dialog__body .el-form-item:nth-child(14) input` |
+
+注意：nth-child是1-based，所以 index N = nth-child(N+1)
+
+### Metadata
+- Source: testing
+- Related Files: skills/miaoshou-updater/updater.py
+- Tags: miaoshou, form-item, index, selector
+
+---
+
+## [LRN-20260325-004] best_practice
+
+**Logged**: 2026-03-25T22:50:00+08:00
+**Priority**: critical
+**Status**: completed
+**Area**: backend
+
+### Summary
+重量单位链：数据库g → ERP填kg → 公式 weight_g / 1000
+
+### Details
+重量数据流：
+1. 1688商品重量单位：克(g)
+2. 本地1688服务返回：克(g)
+3. product_skus.package_weight：克(g)
+4. ERP编辑对话框：千克(kg)
+
+换算公式：`erp_value_kg = package_weight_g / 1000`
+
+示例：2500g → 填 2.5
+
+### Metadata
+- Source: success
+- Related Files: skills/miaoshou-updater/updater.py, skills/product-storer/storer.py
+- Tags: weight, unit, conversion, g-kg
+

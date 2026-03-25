@@ -162,7 +162,7 @@ conn.close()
 
 ---
 
-## 三、常见问题诊断与自愈
+## 三、常见问题诊断与自愈（P0优化版）
 
 ### 问题1：心跳重复执行
 
@@ -180,17 +180,34 @@ pkill -f dev-heartbeat.sh
 sleep 10 && bash /root/.openclaw/workspace-e-commerce/scripts/dev-heartbeat.sh &
 ```
 
-### 问题2：LLM API调用失败
+### 问题2：LLM API调用失败（P0优化）
 
 **诊断：**
 ```bash
-# 检查API响应
-curl -s https://dashscope.aliyuncs.com/compatible-mode/v1/models | jq
+# 检查API响应和HTTP状态码
+response=$(curl -s -w "\n%{http_code}" -X POST \
+  -H "Authorization: Bearer sk-914c1a9a5f054ab4939464389b5b791f" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"qwen3.5-plus","messages":[{"role":"user","content":"hi"}],"max_tokens":10}' \
+  https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions)
+response_code=$(echo "$response" | tail -1)
+response_body=$(echo "$response" | sed '$ d')
 ```
 
 **自愈：**
-- 切换到备用模型 `qwen3-plus`
-- 或降低 `max_tokens` 减少单次调用量
+```bash
+if [ "$response_code" -ge 400 ]; then
+    echo "API调用失败，状态码: $response_code"
+    if [ "$response_code" -eq 401 ]; then
+        echo "认证失败，检查API密钥"
+    elif [ "$response_code" -eq 402 ]; then
+        echo "余额不足，切换到免费模型qwen-turbo"
+    elif [ "$response_code" -ge 500 ]; then
+        echo "服务端错误，等待5秒重试"
+        sleep 5
+    fi
+fi
+```
 
 ### 问题3：数据库状态枚举错误
 
@@ -208,13 +225,77 @@ conn.close()
 
 **自愈：** 直接用SQL UPDATE而不依赖status字段
 
-### 问题4：前置条件失败
+### 问题4：前置条件失败（P0优化）
 
 | 条件 | 症状 | 自愈方案 |
 |------|------|----------|
-| Cookies过期 | 采集返回空 | 重新导出Cookies |
+| Cookies过期 | 采集返回空 | 重新导出Cookies（不要直接退出，继续其他检查） |
 | 本地服务宕机 | curl超时 | 重启服务 |
 | SSH隧道断开 | 连接refused | 重建隧道 |
+| 前置条件失败 | 单一条件失败 | 记录到日志，跳过该步骤，继续其他检查 |
+
+---
+
+## 四、P0优化：解耦前置条件检查
+
+> **原则：** 单个前置条件失败不应该导致整个心跳中断
+
+### 原方案（阻塞式）
+```bash
+if [ ! -f "$COOKIES_FILE" ]; then
+    echo "Cookies文件缺失"
+    exit 1  # ❌ 直接退出
+fi
+```
+
+### 优化方案（解耦式）
+```bash
+cookies_status="OK"
+if [ ! -f "$COOKIES_FILE" ]; then
+    echo "⚠️ Cookies文件缺失，尝试自动获取..."
+    if python3 "$WORKSPACE/scripts/get-miaoshou-cookies.py"; then
+        echo "✅ Cookies获取成功"
+        cookies_status="OK"
+    else
+        echo "❌ Cookies获取失败，跳过采集步骤"
+        cookies_status="FAILED"
+    fi
+fi
+
+# 即使Cookies失败，也继续检查其他前置条件
+llm_status="OK"
+if ! curl -s --max-time 5 "http://127.0.0.1:9090/health" | grep -q "ok"; then
+    echo "⚠️ 本地1688服务离线"
+    llm_status="FAILED"
+fi
+
+# 汇总报告
+if [ "$cookies_status" = "FAILED" ] && [ "$llm_status" = "FAILED" ]; then
+    send_feishu "⚠️ 前置条件多项失败，请检查"
+fi
+```
+
+---
+
+## 五、P0优化：LLM API错误处理
+
+> **原则：** 区分错误类型，精准处理
+
+### 错误处理策略
+```bash
+# 检查HTTP状态码
+response_code=$(curl -s -o /dev/null -w "%{http_code}" \
+  -H "Authorization: Bearer $LLM_API_KEY" \
+  "$LLM_API_BASE/chat/completions" ...)
+
+case $response_code in
+    401) echo "认证失败"; notify_and_switch_key ;;
+    402) echo "余额不足"; switch_to_free_model ;;
+    429) echo "限流"; wait_and_retry ;;
+    500|502|503) echo "服务端错误"; retry_once ;;
+    *) echo "其他错误: $response_code" ;;
+esac
+```
 
 ---
 
@@ -270,24 +351,28 @@ conn.close()
 
 | 问题 | 影响 | 解决耗时 | 状态 |
 |------|------|----------|------|
-| status枚举缺少pending/optimized | listing-optimizer无法更新状态 | 10分钟 | 🔴 需修复 |
-| dev-heartbeat误报SKU数量 | 浪费监控资源 | 5分钟 | ✅ 已修复 |
+| status枚举缺少pending/optimized | listing-optimizer无法更新状态 | 10分钟 | ✅ 已修复 |
+| LLM API错误处理不完善 | 401/402/500等无法区分处理 | 30分钟 | 🔄 P0优化中 |
+| 前置条件失败导致心跳中断 | 单点故障导致系统不可用 | 30分钟 | 🔄 P0优化中 |
 
 ### 当前P1配置问题（今天必须处理）
 
 | 问题 | 影响 | 解决耗时 | 状态 |
 |------|------|----------|------|
-| 提示词硬编码 | 不便于迭代优化 | 1小时 | ⬜ 待处理 |
-| 心跳双进程问题 | 重复执行浪费资源 | 30分钟 | ⬜ 待处理 |
+| 提示词硬编码 | 不便于迭代优化 | 1小时 | ✅ 已修复 |
+| Cookies过期无自动刷新 | 采集失败无自愈 | 1小时 | ⬜ 待处理 |
+| 心跳双进程问题 | 重复执行浪费资源 | 30分钟 | ✅ 已排查确认无问题 |
 
 ### 当前P2配置问题（本周优化）
 
 | 问题 | 影响 | 解决耗时 | 状态 |
 |------|------|----------|------|
-| LLM模型较贵 | 成本高 | 30分钟 | ⬜ 可切换qwen3-plus |
+| LLM模型较贵 | 成本高 | 30分钟 | ✅ 已切换qwen3.5-plus |
 | 无监控面板 | 问题发现不及时 | 2小时 | ⬜ 待开发 |
+| 熔断机制缺失 | 服务频繁失败时无效重试 | 1小时 | ⬜ 待实现 |
 
 ---
 
-*最后更新：2026-03-25 11:08*
+*最后更新：2026-03-26 00:00*
 *框架来源：个人项目质量与效率决策框架 v2.0*
+*今日优化：P0心跳解耦 + LLM错误处理 + 论语工作准则*
