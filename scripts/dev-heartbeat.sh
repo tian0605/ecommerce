@@ -168,6 +168,8 @@ run_heartbeat() {
                         TASK_STARTED="yes"
                     elif [ "$VALIDATION_RESULT" = "all_ok" ]; then
                         log "  ✅ 验证通过，无问题"
+                        # 清理已完成的任务
+                        python3 "$WORKSPACE/scripts/cleanup_completed_tasks.py" 2>&1
                     else
                         log "  ⏭️ 跳过验证（未知结果: $VALIDATION_RESULT）"
                     fi
