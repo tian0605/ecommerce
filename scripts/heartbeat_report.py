@@ -3,7 +3,7 @@
 import sys
 sys.path.insert(0, '/root/.openclaw/workspace-e-commerce/scripts')
 
-from task_manager import TaskManager, generate_db_report
+from task_manager import TaskManager, ExecState
 import json
 import re
 from pathlib import Path
@@ -52,20 +52,33 @@ def analyze_errors(errors):
 def generate_report():
     tm = TaskManager()
     all_tasks = tm.get_all_tasks()
-    pending_tasks = tm.get_pending_tasks()
+    actionable = tm.get_actionable_tasks()
     tm.close()
     
     task_result = parse_task_log()
     fixes = analyze_errors(task_result['errors']) if task_result and task_result.get('errors') else []
     
-    total = len(all_tasks)
-    pending = len(pending_tasks)
-    completed = total - pending
+    # 按状态分组
+    by_state = {}
+    for t in all_tasks:
+        state = t['exec_state']
+        if state not in by_state:
+            by_state[state] = []
+        by_state[state].append(t)
+    
+    state_names = {
+        ExecState.NEW: "🆕 新任务",
+        ExecState.ERROR_FIX_PENDING: "🔧 待修复",
+        ExecState.NORMAL_CRASH: "🔄 可重试",
+        ExecState.REQUIRES_MANUAL: "👤 需人工",
+        ExecState.PROCESSING: "⚙️ 执行中",
+        ExecState.END: "✅ 已完成"
+    }
     
     report = []
     report.append("📊 **CommerceFlow 心跳报告**")
     report.append(f"⏰ {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-    report.append("━" * 20)
+    report.append("━" * 22)
     
     # 上次执行结果
     if task_result and task_result.get('summary'):
@@ -78,32 +91,52 @@ def generate_report():
                 report.append(f"    • {err[:80]}")
         report.append("")
     
-    # 数据库任务状态
-    report.append(f"📌 **任务状态** ({completed}/{total})")
-    for t in all_tasks:
-        status_icon = {'completed': '✅', 'running': '🔄', 'pending': '⬜', 'failed': '❌'}.get(t['status'], '❓')
-        last_exec = t['last_executed_at'].strftime('%m-%d %H:%M') if t['last_executed_at'] else '从未'
-        if t['status'] == 'failed' and t['last_error']:
-            report.append(f"  {status_icon} {t['display_name']} | 上次:{last_exec}")
-            report.append(f"      ❌ {t['last_error'][:50]}")
-        elif t['status'] in ('pending', 'failed'):
-            report.append(f"  {status_icon} {t['display_name']} | 上次:{last_exec}")
-        else:
-            report.append(f"  {status_icon} {t['display_name']}")
+    # 任务状态
+    report.append("📌 **任务状态**")
+    total = len(all_tasks)
+    pending = len(by_state.get(ExecState.NEW, [])) + \
+              len(by_state.get(ExecState.ERROR_FIX_PENDING, [])) + \
+              len(by_state.get(ExecState.NORMAL_CRASH, [])) + \
+              len(by_state.get(ExecState.REQUIRES_MANUAL, []))
+    
+    report.append(f"  总计: {total} | 待执行: {pending}")
     report.append("")
+    
+    # 显示各状态任务
+    for state in [ExecState.ERROR_FIX_PENDING, ExecState.NORMAL_CRASH, 
+                  ExecState.REQUIRES_MANUAL, ExecState.NEW, 
+                  ExecState.PROCESSING, ExecState.END]:
+        if state in by_state:
+            report.append(f"**{state_names[state]}** ({len(by_state[state])})")
+            for t in by_state[state]:
+                exec_time = t['last_executed_at'].strftime('%m-%d %H:%M') if t['last_executed_at'] else '从未'
+                if state == ExecState.ERROR_FIX_PENDING and t.get('fix_suggestion'):
+                    report.append(f"  • {t['display_name']}")
+                    report.append(f"    → {t['fix_suggestion']}")
+                elif state == ExecState.REQUIRES_MANUAL:
+                    err = t.get('last_error', '')[:40] if t.get('last_error') else ''
+                    report.append(f"  • {t['display_name']}")
+                    report.append(f"    ❌ {err}")
+                else:
+                    report.append(f"  • {t['display_name']} ({exec_time})")
+            report.append("")
     
     # 本次计划
     report.append("📋 **本次计划**")
-    if fixes:
-        for fix in fixes:
-            report.append(f"  🔧 {fix}")
-    elif pending_tasks:
-        for t in pending_tasks[:3]:
-            report.append(f"  ▸ {t['display_name']}")
+    if actionable:
+        for t in actionable[:5]:
+            action = ""
+            if t['exec_state'] == ExecState.ERROR_FIX_PENDING:
+                action = f" → {t.get('fix_suggestion', '自动修复')}"
+            elif t['exec_state'] == ExecState.REQUIRES_MANUAL:
+                action = " → 需人工介入"
+            elif t['exec_state'] == ExecState.NORMAL_CRASH:
+                action = " → 自动重试"
+            report.append(f"  ▸ {t['display_name']}{action}")
     else:
         report.append("  无待处理任务")
     
-    report.append("━" * 20)
+    report.append("━" * 22)
     report.append("✅ 心跳检查正常")
     return '\n'.join(report)
 
