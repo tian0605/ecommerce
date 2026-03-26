@@ -82,16 +82,19 @@ execute_task_queue() {
         return 0
     fi
     
-    # 读取任务名称（向上查找 ### 或 ## 标题）
-    local task_name=""
-    local search_start=$task_line
-    for ((i=$search_start-1; i>=1; i--)); do
-        local line=$(sed -n "${i}p" "$task_queue")
-        if echo "$line" | grep -qE "^## |^### "; then
-            task_name=$(echo "$line" | sed 's/^#* *//' | tr -d '\n')
-            break
-        fi
-    done
+    # 用Python解析任务名称（更可靠）
+    local task_name=$(python3 << 'PYEOF'
+import sys
+with open('/root/.openclaw/workspace-e-commerce/docs/dev-task-queue.md', 'r') as f:
+    lines = f.readlines()
+for i, line in enumerate(lines):
+    if '⬜ 待执行' in line:
+        parts = line.split('|')
+        if len(parts) >= 3:
+            print(parts[2].strip().replace('**', ''))
+            sys.exit(0)
+PYEOF
+)
     
     if [ -z "$task_name" ]; then
         task_name="未知任务"
@@ -101,7 +104,7 @@ execute_task_queue() {
     
     # 根据任务名称执行对应脚本
     case "$task_name" in
-        *"TC-FLOW-001"*|*"端到端测试"*|*"自动化上架"*)
+        *"TC-FLOW-001"*|*"端到端测试"*|*"自动化上架"*|*"P0"*|*"立即执行"*)
             log "  [任务] 执行: TC-FLOW-001 端到端自动化上架测试"
             # 执行完整工作流测试
             cd /root/.openclaw/workspace-e-commerce/skills/workflow-runner/scripts
