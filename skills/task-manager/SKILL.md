@@ -171,6 +171,61 @@ def apply_fix():
 - 禁止在验证完成前上报成功
 - 每次状态更新需记录到 main_logs
 
+## P0问题修复记录
+
+### 修复1: 代码持久化 (2026-03-27)
+
+**问题：** 自愈代码只在内存执行，重启后丢失
+
+**修复方案：**
+```python
+# subtask_executor.py execute_fix_code() 函数
+fix_file = scripts/fixes/fix_{task_name}.py
+
+# 1. 持久化到文件
+with open(fix_file, 'w') as f:
+    f.write(code)
+
+# 2. 从文件加载执行
+with open(fix_file, 'r') as f:
+    exec(f.read(), exec_globals, exec_locals)
+```
+
+**持久化目录：** `scripts/fixes/`
+
+**验证：** 重启后FIX任务不再报 `name 'analyze' is not defined`
+
+---
+
+### 修复2: 状态管理规范 (2026-03-27)
+
+**问题：** 任务状态更新早于验证完成
+
+**检查结果：** FIX-010执行流程正常，未发现竞态条件
+
+**规范要求：**
+- `mark_end()` 必须在所有验证完成后调用
+- 禁止在验证完成前上报成功
+- 每次状态更新需记录到 main_logs
+
+---
+
+### 修复3: 提示词优化 (2026-03-27)
+
+**文件：** `config/prompts/subtask_executor_system.txt`
+
+**改进：** 要求LLM生成完整可持久化的函数定义，而非代码片段
+
+---
+
+## P0优化建议（待处理）
+
+| 优先级 | 问题 | 建议 | 状态 |
+|--------|------|------|------|
+| P1 | 重试策略过长 | 10分钟→30秒 | 待处理 |
+| P1 | 日志冗余 | 禁止打印代码 | 待处理 |
+| P2 | 预检机制缺失 | 先检查函数是否存在 | 待处理 |
+
 ### 2.2 常见问题
 
 **Q: 代码执行成功但功能不正常？**
