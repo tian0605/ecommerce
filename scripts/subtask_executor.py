@@ -21,44 +21,25 @@ WORKSPACE = Path('/root/.openclaw/workspace-e-commerce')
 SCRIPTS_DIR = WORKSPACE / 'scripts'
 sys.path.insert(0, str(SCRIPTS_DIR))
 
+# 从配置文件加载
+sys.path.insert(0, '/root/.openclaw/workspace-e-commerce/config')
+from llm_config import LLM_CONFIG
+
+# 从配置文件加载提示词
+PROMPTS_DIR = '/root/.openclaw/workspace-e-commerce/config/prompts'
+with open(f'{PROMPTS_DIR}/subtask_executor_system.txt', 'r') as f:
+    SYSTEM_PROMPT = f.read()
+
+SUBTASK_USER_TEMPLATE = """任务信息：
+- 任务名：{task_name}
+- 任务描述：{description}
+- 错误信息：{error}
+- 修复建议：{fix_suggestion}
+
+请分析并输出修复代码。"""
+
 from task_manager import TaskManager
 from logger import get_logger
-
-LLM_CONFIG = {
-    'api_key': 'sk-914c1a9a5f054ab4939464389b5b791f',
-    'base_url': 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-    'model': 'qwen3.5-plus'
-}
-
-SYSTEM_PROMPT = """你是一个专业的电商运营自动化工程师，负责修复Python代码bug。
-
-【关键要求】
-你必须输出【修复代码】，这是最重要的部分。
-
-【输出格式】
-必须按以下格式输出：
-
-【分析】
-1-3句话说明问题根因
-
-【修复代码】
-```python
-# 这里必须输出完整的、可执行的Python代码
-# 代码要能够直接运行并修复问题
-```
-
-【示例输出】
-【分析】
-错误是因为传入的参数是字符串但代码尝试调用.get()方法
-
-【修复代码】
-```python
-import json
-def fix_params(params):
-    if isinstance(params, str):
-        params = json.loads(params)
-    return params
-```"""
 
 
 def call_llm(messages: list, max_tokens: int = 2000) -> str:
@@ -74,194 +55,143 @@ def call_llm(messages: list, max_tokens: int = 2000) -> str:
                 "model": LLM_CONFIG['model'],
                 "messages": messages,
                 "max_tokens": max_tokens,
-                "temperature": 0.3
+                "temperature": LLM_CONFIG.get('temperature', 0.3)
             },
-            timeout=120
+            timeout=LLM_CONFIG.get('timeout', 120)
         )
         
-        if response.status_code == 200:
-            return response.json()['choices'][0]['message']['content']
-        else:
-            return f"LLM Error: {response.status_code} - {response.text[:200]}"
+        if response.status_code != 200:
+            print(f"LLM API error: {response.status_code} - {response.text}")
+            return None
+        
+        result = response.json()
+        return result['choices'][0]['message']['content']
+        
     except Exception as e:
-        return f"LLM Exception: {str(e)}"
+        print(f"Error calling LLM: {e}")
+        return None
 
 
-def parse_llm_response(result: str) -> dict:
-    """解析LLM响应，提取分析、计划、代码"""
-    
-    # 用正则提取所有 python 代码块
-    code_blocks = re.findall(r'```python\s*(.*?)```', result, re.DOTALL)
-    code_fix = '\n'.join(code_blocks).strip() if code_blocks else ''
-    
-    # 清理代码中的 docstring
-    if code_fix:
-        code_lines = []
-        skip_triple_quote = False
-        for line in code_fix.split('\n'):
-            stripped = line.strip()
-            if '"""' in stripped or "'''" in stripped:
-                skip_triple_quote = not skip_triple_quote
-                continue
-            if not skip_triple_quote:
-                code_lines.append(line)
-        code_fix = '\n'.join(code_lines).strip()
-    
-    # 提取分析（第一段非代码内容）
-    analysis_lines = []
-    plan_lines = []
-    in_code = False
-    
-    for line in result.split('\n'):
-        if '```' in line:
-            in_code = not in_code
-            continue
-        if not in_code:
-            if line.strip().startswith('【分析】'):
-                analysis_lines.append(line.replace('【分析】', '').strip())
-            elif line.strip().startswith('【计划】'):
-                plan_lines.append(line.replace('【计划】', '').strip())
-            elif line.strip().startswith('【修复代码】'):
-                continue
-            elif analysis_lines and not plan_lines and line.strip():
-                analysis_lines.append(line.strip())
-            elif plan_lines and line.strip():
-                plan_lines.append(line.strip())
-    
-    analysis = ' '.join(analysis_lines).strip()
-    plan = ' '.join(plan_lines).strip()
-    
-    return {
-        'analysis': analysis,
-        'plan': plan,
-        'code_fix': code_fix,
-        'llm_response': result
+def parse_fix_response(content: str) -> dict:
+    """解析LLM返回的修复代码"""
+    result = {
+        'analysis': '',
+        'code_fix': ''
     }
-
-
-def analyze_and_plan(task_info: dict) -> dict:
-    """分析并制定计划"""
-    task_name = task_info['task_name']
-    description = task_info.get('description', '')
-    error = task_info.get('last_error', '')
-    success_criteria = task_info.get('success_criteria', '')
-    fix_suggestion = task_info.get('fix_suggestion', '')
     
-    user_prompt = f"""## 子任务信息
-- 任务名：{task_name}
-- 描述：{description}
-- 错误信息：{error}
-- 成功标准：{success_criteria}
-- 已有修复建议：{fix_suggestion}
-
-请分析问题并输出修复代码。"""
+    if not content:
+        return result
     
+    # 提取分析部分
+    if '【分析】' in content:
+        analysis = content.split('【分析】')[1].split('【修复代码】')[0].strip()
+        result['analysis'] = analysis
+    
+    # 提取代码部分
+    if '【修复代码】' in content:
+        code = content.split('【修复代码】')[1].strip()
+        # 去除markdown代码块标记
+        if code.startswith('```'):
+            code = code.split('\n', 1)[1]
+        if '```' in code:
+            code = code.split('```')[0]
+        result['code_fix'] = code.strip()
+    
+    return result
+
+
+def execute_fix_code(code: str, task_name: str) -> tuple:
+    """执行修复代码"""
+    if not code:
+        return False, "没有修复代码"
+    
+    try:
+        # 创建执行环境
+        exec_globals = {'__name__': '__fix__'}
+        exec_locals = {}
+        
+        # 执行代码
+        exec(code, exec_globals, exec_locals)
+        
+        return True, "修复代码执行成功"
+        
+    except Exception as e:
+        return False, f"执行错误: {str(e)}"
+
+
+def main(task_name: str):
+    """主函数"""
+    log = get_logger('subtask')
+    log.set_task(task_name).set_message(f"开始执行子任务: {task_name}").finish("running")
+    
+    tm = TaskManager()
+    
+    # 获取任务信息
+    task = tm.get_task(task_name)
+    if not task:
+        print(f"任务不存在: {task_name}")
+        return
+    
+    description = task.get('description', '')
+    fix_suggestion = task.get('fix_suggestion', '')
+    last_error = task.get('last_error', '')
+    
+    print(f"任务: {task_name}")
+    print(f"描述: {description}")
+    print(f"错误: {last_error}")
+    
+    # 构建prompt
+    user_prompt = SUBTASK_USER_TEMPLATE.format(
+        task_name=task_name,
+        description=description or '无',
+        error=last_error or '无',
+        fix_suggestion=fix_suggestion or '无'
+    )
+    
+    # 调用LLM
+    print("\n调用LLM分析...")
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": user_prompt}
     ]
     
-    print(f"  🤖 调用LLM分析问题...")
-    result = call_llm(messages)
+    response = call_llm(messages)
     
-    return parse_llm_response(result)
-
-
-def execute_fix(code: str) -> tuple:
-    """执行修复代码"""
-    if not code:
-        return False, "没有提供修复代码"
+    if not response:
+        print("LLM调用失败")
+        tm.mark_error_fix_pending(task_name, "LLM调用失败")
+        return
     
-    print(f"  📝 执行修复代码...")
-    try:
-        exec(code)
-        return True, "代码执行成功"
-    except Exception as e:
-        return False, f"代码执行失败: {e}"
-
-
-def run_subtask(task_name: str):
-    """执行单个子任务"""
-    log = get_logger('subtask_executor')
-    log.set_task(task_name)
+    print(f"\nLLM返回:\n{response}")
     
-    print(f"\n{'='*60}")
-    print(f"执行子任务: {task_name}")
-    print(f"{'='*60}")
+    # 解析响应
+    parsed = parse_fix_response(response)
     
-    tm = TaskManager()
-    task = tm.get_task(task_name)
+    print(f"\n分析: {parsed['analysis']}")
+    print(f"修复代码: {parsed['code_fix'][:200] if parsed['code_fix'] else '无'}...")
     
-    if not task:
-        print(f"  ❌ 任务不存在: {task_name}")
-        log.finish("failed", "任务不存在")
-        tm.close()
-        return False
-    
-    # 标记开始
-    tm.mark_start(task_name)
-    
-    # Step 1 & 2: 分析并制定计划
-    print(f"  📋 分析问题...")
-    fix_plan = analyze_and_plan(task)
-    
-    analysis = fix_plan.get('analysis', '')
-    plan = fix_plan.get('plan', '')
-    code_fix = fix_plan.get('code_fix', '')
-    llm_response = fix_plan.get('llm_response', '')
-    
-    # 回写分析结果
-    tm.update_task(task_name,
-        analysis=analysis[:2000] if analysis else '',
-        plan=plan[:2000] if plan else ''
-    )
-    
-    print(f"  ✅ 分析完成")
-    if analysis:
-        print(f"     分析: {analysis[:100]}...")
-    if plan:
-        print(f"     计划: {plan[:100]}...")
-    if code_fix:
-        print(f"     代码: {code_fix[:100]}...")
-    
-    # Step 3 & 4: 执行修复
-    success, msg = execute_fix(code_fix)
-    
-    # Step 5: 验证和回写
-    if success:
-        tm.mark_end(task_name, f"修复成功: {msg}")
-        print(f"  ✅ 修复成功: {msg}")
-        log.set_message(f"子任务修复成功").finish("success")
-    else:
-        # 记录当前重试次数
-        retry_count = task.get('retry_count', 0) or 0
+    # 执行修复代码
+    if parsed['code_fix']:
+        print("\n执行修复代码...")
+        success, msg = execute_fix_code(parsed['code_fix'], task_name)
+        print(f"执行结果: {msg}")
         
-        if retry_count >= 3:
-            tm.update_task(task_name,
-                status='failed',
-                exec_state='requires_manual',
-                last_error=msg
-            )
-            print(f"  👤 超过重试次数，标记为需要人工")
-            log.set_message(f"子任务失败，需人工").finish("failed", msg)
+        if success:
+            tm.mark_end(task_name, "修复成功")
+            log.set_message(f"修复成功").finish("success")
         else:
-            tm.update_task(task_name,
-                status='pending',
-                exec_state='normal_crash',
-                last_error=msg
-            )
-            print(f"  ⏳ 标记为可重试 (retry={retry_count+1})")
-            log.set_message(f"子任务失败，可重试").finish("failed", msg)
+            tm.mark_error_fix_pending(task_name, msg)
+            log.set_message(f"修复失败: {msg}").finish("failed")
+    else:
+        print("没有可执行的修复代码")
+        tm.mark_error_fix_pending(task_name, "没有可执行的修复代码")
     
     tm.close()
-    return success
 
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print("用法: python3 subtask_executor.py <task_name>")
+        print("用法: python subtask_executor.py <task_name>")
         sys.exit(1)
     
-    task_name = sys.argv[1]
-    success = run_subtask(task_name)
-    sys.exit(0 if success else 1)
+    main(sys.argv[1])

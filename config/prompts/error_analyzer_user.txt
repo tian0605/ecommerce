@@ -1,0 +1,7 @@
+任务信息：
+- 任务名：{task_name}
+- 任务描述：{description}
+- 错误信息：{error}
+- 已尝试的修复：{fix_suggestion}
+
+请分析错误并提出解决方案。

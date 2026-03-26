@@ -3,43 +3,30 @@
 LLM错误分析器
 当子任务重试3次失败后，调用LLM分析错误并提出解决方案
 """
+import sys
 import requests
-import json
-from typing import Dict, List, Optional
+from pathlib import Path
 
-LLM_CONFIG = {
-    'api_key': 'sk-914c1a9a5f054ab4939464389b5b791f',
-    'base_url': 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-    'model': 'qwen3.5-plus'
-}
+# 从配置文件加载
+sys.path.insert(0, '/root/.openclaw/workspace-e-commerce/config')
+from llm_config import LLM_CONFIG
 
-SYSTEM_PROMPT = """你是一个电商运营自动化系统的错误分析专家。
-当任务失败时，你需要分析错误信息并提出具体的修复方案。
-
-输出格式要求：
-1. 错误根因分析（简明扼要）
-2. 修复步骤（具体可执行）
-3. 验证方法（如何确认修复成功）
-
-请用中文回答。"""
-
-USER_TEMPLATE = """任务信息：
-- 任务名：{task_name}
-- 任务描述：{description}
-- 错误信息：{error}
-- 已尝试的修复：{fix_suggestion}
-
-请分析错误并提出解决方案。"""
+# 从配置文件加载提示词
+PROMPTS_DIR = '/root/.openclaw/workspace-e-commerce/config/prompts'
+with open(f'{PROMPTS_DIR}/error_analyzer_system.txt', 'r') as f:
+    SYSTEM_PROMPT = f.read()
+with open(f'{PROMPTS_DIR}/error_analyzer_user.txt', 'r') as f:
+    USER_TEMPLATE = f.read()
 
 
-def analyze_error(task_info: Dict, error: str) -> Optional[Dict]:
+def analyze_error(task_info: dict, error: str) -> dict:
     """
     调用LLM分析错误并返回解决方案
     
     Returns:
         {
             'root_cause': str,      # 根因分析
-            'solution_steps': List,  # 修复步骤
+            'solution_steps': list,  # 修复步骤
             'verification': str,     # 验证方法
             'code_fix': str         # 代码修改建议（如果有）
         }
@@ -68,10 +55,10 @@ def analyze_error(task_info: Dict, error: str) -> Optional[Dict]:
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": user_prompt}
                 ],
-                "max_tokens": 1500,
-                "temperature": 0.3
+                "max_tokens": LLM_CONFIG.get('max_tokens', 1500),
+                "temperature": LLM_CONFIG.get('temperature', 0.3)
             },
-            timeout=60
+            timeout=LLM_CONFIG.get('timeout', 60)
         )
         
         if response.status_code != 200:
@@ -89,7 +76,7 @@ def analyze_error(task_info: Dict, error: str) -> Optional[Dict]:
         return None
 
 
-def parse_llm_response(content: str) -> Dict:
+def parse_llm_response(content: str) -> dict:
     """解析LLM返回的解决方案"""
     result = {
         'root_cause': '',
