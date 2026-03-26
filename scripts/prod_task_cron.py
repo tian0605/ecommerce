@@ -202,12 +202,30 @@ def run():
                 result = handle_subtask_failure(tm, task, output[-500:])
                 log.set_message(f"{display_name} 失败: {result}").finish("failed")
             else:
-                tm.update_task(task_name,
-                    status='failed',
-                    exec_state='error_fix_pending',
-                    last_error=output[-200:]
-                )
-                log.set_message(f"{display_name} 失败").finish("failed")
+                # 父任务失败：解析失败步骤，创建多个子任务
+                failed_steps = []
+                for line in output.split('\n'):
+                    if '❌' in line and ':' in line:
+                        step_name = line.split(':')[0].strip().replace('❌', '').strip()
+                        if step_name:
+                            failed_steps.append({
+                                'error': f"{step_name} 失败",
+                                'fix': f"检查 {step_name} 步骤执行失败原因",
+                                'success_criteria': f"{step_name} 执行成功"
+                            })
+                
+                if failed_steps:
+                    # 创建多个修复子任务
+                    tm.create_fix_subtasks(task_name, failed_steps)
+                    log.set_message(f"{display_name} 失败，{len(failed_steps)}个步骤有问题，已创建子任务").finish("failed")
+                else:
+                    # 无法解析失败步骤
+                    tm.update_task(task_name,
+                        status='failed',
+                        exec_state='error_fix_pending',
+                        last_error=output[-200:]
+                    )
+                    log.set_message(f"{display_name} 失败: {output[-100:]}").finish("failed")
     
     tm.close()
     print(f"\n{'='*60}")
