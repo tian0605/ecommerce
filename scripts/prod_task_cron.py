@@ -204,6 +204,28 @@ def run():
                 result = handle_subtask_failure(tm, task, output[-500:])
                 log.set_message(f"{display_name} 失败: {result}").finish("failed")
             else:
+                # 父任务失败处理
+                # 获取重试次数
+                task_info = tm.get_task(task_name)
+                retry_count = task_info.get('retry_count', 0) if task_info else 0
+                
+                if retry_count >= 3:
+                    # 重试3次以上，先进行根因分析
+                    print(f"  ⚠️ 父任务重试{retry_count}次，先进行根因分析...")
+                    
+                    # 调用根因分析器
+                    import subprocess
+                    result = subprocess.run(
+                        ['python3', f'{WORKSPACE}/scripts/root_cause_analyzer.py', task_name],
+                        capture_output=True, text=True, cwd=str(WORKSPACE)
+                    )
+                    
+                    if result.returncode == 0:
+                        print(f"  📊 根因分析完成，请查看日志")
+                    else:
+                        print(f"  ⚠️ 根因分析执行异常: {result.stderr[:200]}")
+                
+                # 解析失败步骤，创建多个子任务
                 # 父任务失败：解析失败步骤，创建多个子任务
                 failed_steps = []
                 for line in output.split('\n'):

@@ -29881,3 +29881,58 @@ HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
 📈 汇总：待处理:1 | 运行中:0 | 需人工:0
 {"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
 [2026-03-27 00:00:03] ========== 心跳完成 ==========
+[2026-03-27 00:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (6 个)
+  - FIX-TC-FLOW-001-012 (修复: 2026-03-27 00 失败) - new
+  - FIX-TC-FLOW-001-013 (修复: 2026-03-27 00 失败) - new
+  - FIX-TC-FLOW-001-014 (修复: store 失败) - new
+  - FIX-TC-FLOW-001-015 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-016 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-017 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 754
+  ✅ success: 22
+  ❌ failed: 30
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:6 | 运行中:0 | 需人工:0
+[2026-03-27 00:30:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (6 个)
+  - FIX-TC-FLOW-001-012 (修复: 2026-03-27 00 失败) - new
+  - FIX-TC-FLOW-001-013 (修复: 2026-03-27 00 失败) - new
+  - FIX-TC-FLOW-001-014 (修复: store 失败) - new
+  - FIX-TC-FLOW-001-015 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-016 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-017 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 754
+  ✅ success: 22
+  ❌ failed: 30
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:6 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 00:30:02] ========== 心跳完成 ==========
