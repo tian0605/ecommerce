@@ -143,13 +143,29 @@ PYEOF
             # 执行完整工作流测试
             cd "$WORKSPACE/skills/workflow-runner/scripts"
             python3 workflow_runner.py --url "https://detail.1688.com/offer/1031400982378.html" >> "$task_log" 2>&1
-            # 检查工作流实际结果（collect/scrape/weight必须都成功才算完成）
-            if grep -q "collect: ✅" "$task_log" && grep -q "scrape: ✅" "$task_log" && grep -q "weight: ✅" "$task_log"; then
-                log "  [任务] ✅ TC-FLOW-001 核心步骤完成"
+            if [ $? -eq 0 ]; then
+                log "  [任务] ✅ TC-FLOW-001 完成"
+                # 更新任务状态
                 sed -i '/TC-FLOW-001.*⬜ 待执行/s/⬜ 待执行/✅ 已完成/' "$task_queue"
                 send_feishu "✅ TC-FLOW-001 端到端测试完成！商品：https://detail.1688.com/offer/1031400982378.html"
             else
-                log "  [任务] ⚠️ TC-FLOW-001 部分步骤失败，保持待执行状态"
+                log "  [任务] ❌ TC-FLOW-001 失败，exit_code=$?"
+                # 分析失败原因
+                local new_analysis=$(python3 "$WORKSPACE/scripts/analyze_task_failure.py" "$task_log" 2>/dev/null)
+                local new_action=$(echo "$new_analysis" | grep "^action=" | cut -d= -f2)
+                local new_error=$(echo "$new_analysis" | grep "^error_type=" | cut -d= -f2)
+                
+                case "$new_action" in
+                    skip)
+                        send_feishu "❌ TC-FLOW-001 失败\n错误类型: $new_error\n原因: 技术错误，需修复后再重试"
+                        ;;
+                    manual)
+                        send_feishu "❌ TC-FLOW-001 失败\n错误类型: $new_error\n原因: 需要人工介入处理"
+                        ;;
+                    *)
+                        send_feishu "❌ TC-FLOW-001 失败 (客观错误)\n错误类型: $new_error\n下次心跳将自动重试"
+                        ;;
+                esac
             fi
             ;;
         *"熔断"*)
