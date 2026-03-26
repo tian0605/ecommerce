@@ -68,7 +68,7 @@ def kill_process(task_name: str) -> bool:
         return False
 
 
-def run_with_popen(task_name: str, script_info: dict) -> tuple:
+def run_with_popen(task_name: str, script_info: dict, on_line_callback=None) -> tuple:
     """使用Popen执行任务，实时输出"""
     script = script_info.get('script')
     args = script_info.get('args', [])
@@ -89,6 +89,8 @@ def run_with_popen(task_name: str, script_info: dict) -> tuple:
         for line in proc.stdout:
             print(line, end='')  # 实时打印
             output_lines.append(line)
+            if on_line_callback:
+                on_line_callback(line.rstrip())
         
         proc.wait()
         success = proc.returncode == 0
@@ -188,7 +190,7 @@ def run():
         log.finish("running")
         
         # 使用Popen执行
-        success, output = run_with_popen(task_name, script_info)
+        success, output = run_with_popen(task_name, script_info, on_line_callback=log.info)
         
         if success:
             tm.mark_end(task_name, "执行成功")
