@@ -249,6 +249,75 @@ log.set_content('详细日志...')
 log.finish('success', '处理完成')
 ```
 
+## 日志机制
+
+### 日志写入时机
+
+| 场景 | 写入 | 内容 |
+|------|------|------|
+| 任务开始执行 | ✅ | `task_name` + "开始执行" |
+| 执行成功 | ✅ | `task_name` + "执行成功" |
+| 执行失败 | ✅ | `task_name` + "失败原因" |
+| 执行跳过 | ✅ | `task_name` + "跳过原因" |
+| 任务执行中 | ⚠️ | 子任务进度（通过 log.info() 打印） |
+
+### prod_task_cron 日志写入点
+
+```python
+# 1. 任务开始执行
+log.set_task(task_name)
+tm.mark_start(task_name)      # 数据库更新
+log.finish("running")         # main_logs 写入
+
+# 2. 执行成功
+if success:
+    tm.mark_end(task_name)
+    log.set_message(f"{display_name} 成功").finish("success")
+
+# 3. 执行失败
+else:
+    log.set_message(f"{display_name} 失败").finish("failed")
+
+# 4. 执行跳过
+if not actionable:
+    log.set_message("无待执行任务").finish("skipped")
+```
+
+### main_logs 表状态值
+
+| run_status | 含义 |
+|------------|------|
+| running | 执行中 |
+| success | 执行成功 |
+| failed | 执行失败 |
+| skipped | 跳过（无任务） |
+
+### 执行中日志的挑战
+
+workflow_runner 是长时间运行的子进程，stdout/stderr 被捕获但无法实时流式返回。
+
+**解决方案：**
+1. workflow_runner 使用 `print()` 直接输出到 stdout
+2. 主进程捕获输出并实时打印
+3. 使用 `subprocess.Popen` 而非 `subprocess.run`
+
+```python
+# 使用 Popen 实现实时输出
+proc = subprocess.Popen(
+    cmd, 
+    stdout=subprocess.PIPE, 
+    stderr=subprocess.STDOUT,
+    text=True,
+    bufsize=1
+)
+
+for line in proc.stdout:
+    print(line, end='')  # 实时打印
+    log.info(line)        # 可选：写入日志
+
+proc.wait()
+```
+
 ## 调试指南
 
 ### subtask_executor 无法修复的问题

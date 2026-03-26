@@ -52,7 +52,7 @@ def execute_task(task_name: str, script_info: dict) -> tuple:
             cmd,
             capture_output=True,
             text=True,
-            timeout=300,
+            timeout=600,
             cwd=WORKSPACE
         )
         return result.returncode == 0, result.stdout + result.stderr
@@ -207,6 +207,9 @@ def run():
         print(f"\n{'='*60}")
         print(f"处理任务: {display_name} (level={task_level}, state={exec_state})")
         
+        
+        # 绑定日志
+        log.set_task(task_name)
         # 获取脚本
         script_info = TASK_SCRIPTS.get(task_name)
         
@@ -230,6 +233,7 @@ def run():
         
         # 标记开始
         tm.mark_start(task_name)
+        log.finish("running")
         
         # 执行
         success, output = execute_task(task_name, script_info)
