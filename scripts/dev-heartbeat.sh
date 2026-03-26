@@ -103,20 +103,69 @@ PYEOF
     log "  [任务队列] 执行任务: $task_name"
     
     # 根据任务名称执行对应脚本
-    case "$task_name" in
         *"TC-FLOW-001"*|*"端到端测试"*|*"自动化上架"*|*"P0"*|*"立即执行"*)
             log "  [任务] 执行: TC-FLOW-001 端到端自动化上架测试"
+            
+            # 分析上次执行情况（如果日志存在）
+            if [ -f "$task_log" ] && [ -s "$task_log" ]; then
+                log "  [分析] 检查上次执行情况..."
+                
+                # 运行Python分析脚本
+                local analysis=$(python3 "$WORKSPACE/scripts/analyze_task_failure.py" "$task_log" 2>/dev/null)
+                local error_type=$(echo "$analysis" | grep "^error_type=" | cut -d= -f2)
+                local action=$(echo "$analysis" | grep "^action=" | cut -d= -f2)
+                
+                log "  [分析] 错误类型: $error_type"
+                log "  [分析] 建议动作: $action"
+                
+                case "$action" in
+                    skip)
+                        log "  [决策] 技术错误需修复，跳过本次执行"
+                        local suggest=$(echo "$analysis" | grep "^原因:" | cut -d: -f2 | sed 's/^ *//')
+                        send_feishu "⚠️ TC-FLOW-001 阻塞\n错误类型: $error_type\n原因: $suggest\n等待修复后再执行"
+                        return 1
+                        ;;
+                    manual)
+                        log "  [决策] 需要人工介入"
+                        local suggest=$(echo "$analysis" | grep "^原因:" | cut -d: -f2 | sed 's/^ *//')
+                        send_feishu "🚨 TC-FLOW-001 需要人工介入\n错误类型: $error_type\n原因: $suggest\n请人工处理后再继续"
+                        return 1
+                        ;;
+                    retry|*)
+                        log "  [决策] 可重试，继续执行"
+                        ;;
+                esac
+            fi
+            
+            # 清空旧日志，开始新执行
+            > "$task_log"
+            
             # 执行完整工作流测试
-            cd /root/.openclaw/workspace-e-commerce/skills/workflow-runner/scripts
+            cd "$WORKSPACE/skills/workflow-runner/scripts"
             python3 workflow_runner.py --url "https://detail.1688.com/offer/1031400982378.html" >> "$task_log" 2>&1
             if [ $? -eq 0 ]; then
                 log "  [任务] ✅ TC-FLOW-001 完成"
-                # 更新任务状态（只更新包含"TC-FLOW"的行）
+                # 更新任务状态
                 sed -i '/TC-FLOW-001.*⬜ 待执行/s/⬜ 待执行/✅ 已完成/' "$task_queue"
                 send_feishu "✅ TC-FLOW-001 端到端测试完成！商品：https://detail.1688.com/offer/1031400982378.html"
             else
-                log "  [任务] ❌ TC-FLOW-001 失败，查看日志: $task_log"
-                send_feishu "❌ TC-FLOW-001 端到端测试失败，请检查日志"
+                log "  [任务] ❌ TC-FLOW-001 失败，exit_code=$?"
+                # 分析失败原因
+                local new_analysis=$(python3 "$WORKSPACE/scripts/analyze_task_failure.py" "$task_log" 2>/dev/null)
+                local new_action=$(echo "$new_analysis" | grep "^action=" | cut -d= -f2)
+                local new_error=$(echo "$new_analysis" | grep "^error_type=" | cut -d= -f2)
+                
+                case "$new_action" in
+                    skip)
+                        send_feishu "❌ TC-FLOW-001 失败\n错误类型: $new_error\n原因: 技术错误，需修复后再重试"
+                        ;;
+                    manual)
+                        send_feishu "❌ TC-FLOW-001 失败\n错误类型: $new_error\n原因: 需要人工介入处理"
+                        ;;
+                    *)
+                        send_feishu "❌ TC-FLOW-001 失败 (客观错误)\n错误类型: $new_error\n下次心跳将自动重试"
+                        ;;
+                esac
             fi
             ;;
         *"熔断"*)

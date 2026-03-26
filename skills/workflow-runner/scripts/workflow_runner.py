@@ -22,6 +22,7 @@ from pathlib import Path
 
 # 添加shared模块路径
 sys.path.insert(0, '/home/ubuntu/.openclaw/skills/shared')
+sys.path.insert(0, '/home/ubuntu/.openclaw')
 
 from logger import setup_logger
 import db
@@ -59,6 +60,7 @@ class WorkflowRunner:
         try:
             from skills.miaoshou_collector.collector import MiaoshouCollector
             collector = MiaoshouCollector()
+            collector.launch()  # 启动浏览器
             result = collector.collect(url)
             collector.close()
             

@@ -2,3 +2,17 @@ Traceback (most recent call last):
   File "/root/.openclaw/workspace-e-commerce/skills/workflow-runner/scripts/workflow_runner.py", line 26, in <module>
     from logger import setup_logger
 ModuleNotFoundError: No module named 'logger'
+2026-03-26 12:05:52,911 | workflow-runner | WARNING | 部分模块导入失败: No module named 'skills'
+2026-03-26 12:05:52,915 | workflow-runner | INFO | ============================================================
+2026-03-26 12:05:52,915 | workflow-runner | INFO | 🚀 自动化工作流开始
+2026-03-26 12:05:52,915 | workflow-runner | INFO | ============================================================
+2026-03-26 12:05:52,915 | workflow-runner | INFO | ==================================================
+2026-03-26 12:05:52,915 | workflow-runner | INFO | [步骤1] 妙手采集认领
+2026-03-26 12:05:52,915 | workflow-runner | INFO | ==================================================
+2026-03-26 12:05:52,915 | workflow-runner | ERROR | ❌ 采集失败: No module named 'skills'
+2026-03-26 12:05:52,915 | workflow-runner | ERROR | 采集失败，终止工作流
+
+==================================================
+工作流结果汇总:
+==================================================
+  collect: ❌
