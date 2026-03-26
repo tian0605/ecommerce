@@ -115,12 +115,18 @@ class TaskManager:
     
     def mark_start(self, task_name: str):
         """标记任务开始"""
-        self.update_task(task_name,
-            status='running',
-            exec_state='processing',
-            last_executed_at=datetime.now(),
-            execution_count=psycopg2.sql.SQL("COALESCE(execution_count, 0) + 1")
-        )
+        cur = self.conn.cursor()
+        cur.execute("""
+            UPDATE tasks 
+            SET status = %s, 
+                exec_state = %s, 
+                last_executed_at = %s,
+                execution_count = COALESCE(execution_count, 0) + 1,
+                updated_at = %s
+            WHERE task_name = %s
+        """, ('running', 'processing', datetime.now(), datetime.now(), task_name))
+        self.conn.commit()
+        cur.close()
     
     def mark_end(self, task_name: str, result: str = "成功"):
         """标记任务完成"""
