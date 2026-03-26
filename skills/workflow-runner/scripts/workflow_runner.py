@@ -369,9 +369,25 @@ def main():
         print("\n" + "=" * 50)
         print("工作流结果汇总:")
         print("=" * 50)
+        
+        # 统计成功和失败
+        success_count = sum(1 for r in results.values() if r.get('success'))
+        total_count = len(results)
+        failed_steps = [step for step, r in results.items() if not r.get('success')]
+        
         for step, result in results.items():
             status = "✅" if result.get('success') else "❌"
             print(f"  {step}: {status}")
+        
+        # 打印最终结果
+        print("=" * 50)
+        if success_count == total_count:
+            print(f"🎉 全部成功 ({success_count}/{total_count})")
+            sys.exit(0)  # 成功
+        else:
+            print(f"⚠️  部分失败 ({success_count}/{total_count})")
+            print(f"失败的步骤: {', '.join(failed_steps)}")
+            sys.exit(1)  # 失败
         
     elif args.url_file:
         # 批量处理
