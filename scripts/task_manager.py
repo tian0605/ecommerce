@@ -107,8 +107,9 @@ class TaskManager:
         result = []
         for task in all_tasks:
             if task.get('task_level') == 2:
-                # 子任务：直接返回
-                result.append(task)
+                # 子任务：只有 requires_manual 才跳过（需要人工介入）
+                if task.get('exec_state') != 'requires_manual':
+                    result.append(task)
             else:
                 # 父任务：检查子任务是否都完成
                 cur.execute("""
@@ -121,7 +122,7 @@ class TaskManager:
                 if pending_count == 0:
                     # 所有子任务都完成了，可以执行父任务
                     result.append(task)
-                # else: 还有子任务未完成，跳过父任务
+                # else: 还有子任务未完成（包括 requires_manual），跳过父任务
         
         cur.close()
         return result[:limit]
