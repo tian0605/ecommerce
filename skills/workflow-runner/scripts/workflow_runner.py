@@ -20,7 +20,8 @@ import sys
 import time
 from pathlib import Path
 
-# 添加shared模块路径
+# 添加模块路径
+sys.path.insert(0, '/home/ubuntu/.openclaw/skills')
 sys.path.insert(0, '/home/ubuntu/.openclaw/skills/shared')
 sys.path.insert(0, '/home/ubuntu/.openclaw')
 
@@ -31,12 +32,12 @@ logger = setup_logger('workflow-runner')
 
 # 导入各模块
 try:
-    from skills.collector_scraper.scraper import CollectorScraper
-    from skills.remote_weight_caller import fetch_weight_from_local
-    from skills.product_storer.storer import ProductStorer
-    from skills.listing_optimizer.optimizer import ListingOptimizer  
-    from skills.miaoshou_updater.updater import MiaoshouUpdater
-    from skills.profit_analyzer.analyzer import ProfitAnalyzer
+    from collector_scraper.scraper import CollectorScraper
+    from remote_weight_caller import fetch_weight_from_local
+    from product_storer.storer import ProductStorer
+    from listing_optimizer.optimizer import ListingOptimizer  
+    from miaoshou_updater.updater import MiaoshouUpdater
+    from profit_analyzer.analyzer import ProfitAnalyzer
 except ImportError as e:
     logger.warning(f"部分模块导入失败: {e}")
 
@@ -58,7 +59,7 @@ class WorkflowRunner:
         logger.info("=" * 50)
         
         try:
-            from skills.miaoshou_collector.collector import MiaoshouCollector
+            from miaoshou_collector.collector import MiaoshouCollector
             collector = MiaoshouCollector()
             collector.launch()  # 启动浏览器
             result = collector.collect(url)
@@ -134,7 +135,7 @@ class WorkflowRunner:
             if weight_data and weight_data.get('success'):
                 product_data['local_1688_weight'] = weight_data.get('data', {})
             
-            result = storer.save_product(product_data)
+            result = storer.store(product_data)
             
             if result.get('success'):
                 logger.info(f"✅ 落库成功: 主货号={result.get('main_product_no')}")
@@ -154,7 +155,7 @@ class WorkflowRunner:
         
         try:
             optimizer = ListingOptimizer()
-            result = optimizer.optimize(product_id)
+            result = optimizer.optimize_product(product_id)
             
             if result.get('success'):
                 logger.info(f"✅ 优化成功")
