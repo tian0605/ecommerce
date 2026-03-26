@@ -1,0 +1,9 @@
+
+==================================================
+任务: TC-FLOW-001端到端测试
+执行脚本: /root/.openclaw/workspace-e-commerce/skills/workflow-runner/scripts/workflow_runner.py
+结果: 成功
+请提供 --url 或 --url-file 参数
+示例:
+  python workflow_runner.py --url 'https://detail.1688.com/offer/1027205078815.html'
+  python workflow_runner.py --url '...' --lightweight
