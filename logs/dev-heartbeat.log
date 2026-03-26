@@ -28366,3 +28366,46 @@ TypeError: string indices must be integers, not 'str'
 [2026-03-26 13:09:44] [Cookies告警] ⚠️ Cookies已过期（146小时），发送告警...
 [2026-03-26 13:09:44] [IMPROVEMENTS] 开始完善IMPROVEMENTS.md...
 [2026-03-26 13:09:44] [IMPROVEMENTS] 已添加实施步骤到IMPROVEMENTS.md
+[2026-03-26 13:11:48] ========== 开始开发心跳 ==========
+[2026-03-26 13:11:48] [Step 1] 检查collector-scraper模块状态...
+[2026-03-26 13:11:48]   scraper.py 存在
+[2026-03-26 13:11:48] [Step 2] 执行快速测试...
+2026-03-26 13:11:48,066 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-26 13:11:48,673 | collector-scraper | INFO | 浏览器启动成功
+2026-03-26 13:11:48,674 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-26 13:11:56,809 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260326_131156.png
+2026-03-26 13:11:56,822 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-26 13:12:01,881 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260326_131201.png
+2026-03-26 13:12:01,911 | collector-scraper | INFO | 提取到货源ID: 1031400982378
+2026-03-26 13:12:02,071 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-26 13:12:02,071 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-26 13:12:03,147 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2400}, {'name': '奶黄色', 'image': None, 'stock': 1950}], 'colorImages': {}, 'overallPrice': 24, 'overallStock': None, 'debug': {'stocksFound': [2400, 99999, 1031400982378, 1950, 99999, 10314009823783, 2000, 99989, 10314009823783, 2300, 99997, 10314009823783], 'validStocks': [2400, 1950, 2000, 99989, 2300, 99997], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-26 13:12:03,147 | collector-scraper | INFO | 有效库存: [2400, 1950, 2000, 99989, 2300, 99997], 颜色数: 0
+2026-03-26 13:12:03,147 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-26 13:12:04,711 | collector-scraper | INFO | 找到规格: {'颜色': ['组合【三件套】', '斜口【小号】X3', '带轮【中号】X3', '带轮【大号】X3']}
+2026-03-26 13:12:04,711 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-26 13:12:04,711 | collector-scraper | INFO |   SKU: {sku}
+2026-03-26 13:12:04,711 | collector-scraper | INFO |   SKU: {sku}
+2026-03-26 13:12:04,711 | collector-scraper | INFO |   SKU: {sku}
+2026-03-26 13:12:04,711 | collector-scraper | INFO |   SKU: {sku}
+2026-03-26 13:12:04,742 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '24.00'}，继续尝试其他方法
+2026-03-26 13:12:04,742 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-26 13:12:04,766 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '24.00'}，继续尝试方法3
+2026-03-26 13:12:04,767 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-26 13:12:04,780 | collector-scraper | INFO | 成功提取商品数据: 1031400982378
+2026-03-26 13:12:04,929 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1031400982378
+  标题: 厨房多功能收纳篮锅盖架置物架塑料锅具收纳架橱柜收纳盒储物架子
+  类目: 架子与置物架 (Shelves & Racks)
+  品牌: None
+  主图数量: 0
+  SKU数量: 4
+  描述长度: 142
+  物流: {'weight': '24.00'}
+============================================================
+[2026-03-26 13:12:04]   ✅ 货源ID提取正常
+[2026-03-26 13:12:04] [Step 3] 检查代码变更...
+[2026-03-26 13:12:05]   ⚠️ 有未提交的变更
