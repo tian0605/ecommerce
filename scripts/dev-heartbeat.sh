@@ -1,6 +1,8 @@
 #!/bin/bash
 #
-# CommerceFlow 心跳脚本
+# CommerceFlow 心跳脚本（task-manager 整合版）
+#
+# 基于 HEARTBEAT.md 规范
 # 监控 task_manager 产出结果，只做检测和报告，不执行任务
 #
 # 任务执行由 prod_task_cron.py 负责
@@ -31,109 +33,144 @@ with urllib.request.urlopen(req) as resp:
 " 2>/dev/null || log "飞书发送失败"
 }
 
-# 主执行
-run_heartbeat() {
-    log "========== 心跳开始 =========="
-    
-    # 生成心跳报告
-    REPORT=$(python3 << 'PYEOF'
+# ============================================================
+# 生成心跳报告（Python版本）
+# ============================================================
+generate_report() {
+    python3 << 'PYEOF'
 import sys
 sys.path.insert(0, '/root/.openclaw/workspace-e-commerce/scripts')
 from task_manager import TaskManager
+import psycopg2
 
 tm = TaskManager()
-import psycopg2
 conn = psycopg2.connect(host='localhost', database='ecommerce_data', user='superuser', password='Admin123!')
 cur = conn.cursor()
 
-# 1. 获取任务状态统计
-cur.execute("""
-    SELECT exec_state, COUNT(*) 
-    FROM tasks 
-    GROUP BY exec_state
-""")
-state_stats = {row[0]: row[1] for row in cur.fetchall()}
+# ========== 第一问：有没有需要处理的任务？ ==========
 
-# 2. 获取最近30分钟日志
-cur.execute("""
-    SELECT id, task_name, run_status, run_message, created_at
-    FROM main_logs 
-    WHERE created_at > NOW() - INTERVAL '30 minutes'
-    ORDER BY id DESC
-    LIMIT 20
-""")
-recent_logs = cur.fetchall()
+# 获取所有可执行任务
+actionable = tm.get_actionable_tasks(limit=50)
 
-# 3. 检查processing状态任务
+# 按优先级分类
+p0_tasks = [t for t in actionable if t.get('priority') == 'P0']
+p1_tasks = [t for t in actionable if t.get('priority') == 'P1']
+p2_tasks = [t for t in actionable if t.get('priority') == 'P2']
+
+# 检查processing状态
 cur.execute("""
     SELECT task_name, exec_state, last_executed_at
     FROM tasks 
-    WHERE exec_state = 'processing'
+    WHERE exec_state = 'PROCESSING'
 """)
 processing = cur.fetchall()
 
-# 4. 检查error_fix_pending任务
+# 检查requires_manual状态
 cur.execute("""
-    SELECT task_name, display_name, retry_count, last_error
+    SELECT task_name, display_name, fix_suggestion
     FROM tasks 
-    WHERE exec_state = 'error_fix_pending'
+    WHERE exec_state = 'REQUIRES_MANUAL'
 """)
-pending_fixes = cur.fetchall()
+manual_tasks = cur.fetchall()
 
-# 5. 检查following日志（正常运行中）
+# ========== 第二问：任务执行是否顺畅？ ==========
+
+# 检查最近24小时日志统计
 cur.execute("""
-    SELECT COUNT(*) FROM main_logs 
-    WHERE run_status = 'following' 
-    AND created_at > NOW() - INTERVAL '10 minutes'
+    SELECT run_status, COUNT(*)
+    FROM main_logs
+    WHERE created_at > NOW() - INTERVAL '24 hours'
+    GROUP BY run_status
 """)
-following_count = cur.fetchone()[0]
+stats = {row[0]: row[1] for row in cur.fetchall()}
+
+# 检查最近失败的任务
+cur.execute("""
+    SELECT task_name, exec_state, retry_count, last_error
+    FROM tasks 
+    WHERE exec_state IN ('ERROR_FIX_PENDING', 'NORMAL_CRASH')
+    AND updated_at > NOW() - INTERVAL '24 hours'
+    ORDER BY updated_at DESC
+    LIMIT 5
+""")
+failed_recent = cur.fetchall()
 
 cur.close()
 conn.close()
+tm.close()
 
-# 生成报告
+# ========== 生成报告 ==========
+
 report = []
-
-# 状态概览
 report.append("💓 CommerceFlow 心跳报告")
 report.append("")
-report.append("📊 任务状态统计:")
-for state, count in sorted(state_stats.items()):
-    emoji = {
-        'end': '✅',
-        'processing': '🔄',
-        'error_fix_pending': '🔧',
-        'new': '🆕',
-        'void': '❌'
-    }.get(state, '❓')
-    report.append(f"  {emoji} {state}: {count}")
+report.append("📋 第一问：有没有需要处理的任务？")
+
+if p0_tasks:
+    report.append("")
+    report.append(f"🔴 P0 立即处理 ({len(p0_tasks)} 个)")
+    for t in p0_tasks:
+        report.append(f"  - {t['task_name']} ({t.get('display_name', '')}) - {t['exec_state']}")
+
+if p1_tasks:
+    report.append("")
+    report.append(f"🟡 P1 今天处理 ({len(p1_tasks)} 个)")
+    for t in p1_tasks[:5]:
+        report.append(f"  - {t['task_name']}")
+
+if p2_tasks:
+    report.append("")
+    report.append(f"🟢 P2 本周优化 ({len(p2_tasks)} 个)")
+
+if manual_tasks:
+    report.append("")
+    report.append(f"🚨 需要人工介入 ({len(manual_tasks)} 个)")
+    for t in manual_tasks[:3]:
+        report.append(f"  - {t[0]}: {str(t[2])[:50] if t[2] else ''}")
 
 report.append("")
-report.append(f"🔄 processing任务: {len(processing)}")
-for row in processing:
-    report.append(f"  - {row[0]}: {row[2]}")
+report.append("----------")
+report.append("")
+report.append("📊 第二问：任务执行是否顺畅？")
+report.append("")
+report.append("执行统计（24小时）：")
+report.append(f"  🔄 running: {stats.get('running', 0)}")
+report.append(f"  ✅ success: {stats.get('success', 0)}")
+report.append(f"  ❌ failed: {stats.get('failed', 0)}")
+report.append(f"  👀 following: {stats.get('following', 0)}")
+report.append(f"  ⏭️  skipped: {stats.get('skipped', 0)}")
+
+if failed_recent:
+    report.append("")
+    report.append("⚠️ 最近失败任务：")
+    for f in failed_recent[:3]:
+        report.append(f"  - {f[0]} ({f[1]}, retry={f[2]})")
 
 report.append("")
-report.append(f"🔧 error_fix_pending任务: {len(pending_fixes)}")
-for row in pending_fixes[:5]:
-    report.append(f"  - {row[0]} (retry={row[2]}): {str(row[3])[:50] if row[3] else '无错误'}")
-
+report.append("----------")
 report.append("")
-report.append(f"📝 最近30分钟日志: {len(recent_logs)}条")
-if recent_logs:
-    latest = recent_logs[0]
-    report.append(f"  最新: ID:{latest[0]} {latest[2]} {latest[3][:50] if latest[3] else ''}")
 
-report.append("")
-if following_count > 0:
-    report.append(f"✅ {following_count}个任务正在正常运行")
-else:
-    report.append("⚠️ 无正常运行中的任务")
+# 汇总
+total_tasks = len(p0_tasks) + len(p1_tasks) + len(p2_tasks)
+report.append(f"📈 汇总：待处理:{total_tasks} | 运行中:{len(processing)} | 需人工:{len(manual_tasks)}")
+
+# 回复格式（符合HEARTBEAT.md规范）
+if total_tasks == 0 and len(processing) == 0 and len(manual_tasks) == 0:
+    report.append("")
+    report.append("HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0")
 
 print('\n'.join(report))
 PYEOF
-)
+}
 
+# ============================================================
+# 主执行
+# ============================================================
+run_heartbeat() {
+    log "========== 心跳开始 =========="
+    
+    REPORT=$(generate_report)
+    
     echo "$REPORT"
     log "$REPORT"
     
