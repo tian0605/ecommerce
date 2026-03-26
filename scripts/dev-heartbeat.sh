@@ -266,9 +266,9 @@ run_heartbeat() {
     HEARTBEAT_REPORT=$(python3 "$WORKSPACE/scripts/heartbeat_report.py" 2>/dev/null)
     send_feishu "$HEARTBEAT_REPORT"
     
-    # 5. 执行待办任务（从dev-task-queue.md读取）
+    # 5. 执行待办任务（从数据库读取）
     log "[Step 6] 检查并执行待办任务..."
-    execute_task_queue
+    python3 "$WORKSPACE/scripts/task_executor.py" >> "$task_log" 2>&1
     TASK_EXEC_RESULT=$?
     
     log "========== 心跳完成 =========="
