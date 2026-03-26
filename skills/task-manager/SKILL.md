@@ -272,6 +272,28 @@ log.finish('success', '处理完成')
 | failed | 执行失败 | 任务失败或被判定为卡死 |
 | skipped | 跳过 | 无待执行任务 |
 
+### Logger.finish() 状态更新
+
+**重要：** `log.finish()` 方法会强制更新 `run_status`，允许多次调用时状态被后续调用覆盖。
+
+```python
+# 错误示例（会导致状态不一致）
+log.finish("running")  # 第一次调用
+# ... 执行任务 ...
+log.finish("success")  # 第二次调用会覆盖
+
+# 正确示例：使用不同的Logger实例
+log_start = get_logger('task')
+log_start.set_task(task_name).finish("running")
+
+# 任务执行...
+
+log_end = get_logger('task')
+log_end.set_task(task_name).finish("success")
+```
+
+**注意：** 当前 prod_task_cron 使用单例Logger，在同一个任务执行流程中多次调用 `finish()`。修复后的代码会强制覆盖状态，确保最终状态正确。
+
 ### prod_task_cron 监控机制
 
 **功能：**
