@@ -259,7 +259,59 @@ log.finish('success', '处理完成')
 | 执行成功 | ✅ | `task_name` + "执行成功" |
 | 执行失败 | ✅ | `task_name` + "失败原因" |
 | 执行跳过 | ✅ | `task_name` + "跳过原因" |
-| 任务执行中 | ⚠️ | 子任务进度（通过 log.info() 打印） |
+| 任务执行中 | ✅ | `following` + "任务正常运行中" |
+| 任务卡死 | ✅ | `failed` + "任务执行超时" |
+
+### main_logs 表状态值
+
+| run_status | 含义 | 说明 |
+|------------|------|------|
+| running | 执行中 | 任务刚开始执行 |
+| following | 监控中 | 任务执行中，定时任务检查到仍在运行 |
+| success | 执行成功 | 任务正常完成 |
+| failed | 执行失败 | 任务失败或被判定为卡死 |
+| skipped | 跳过 | 无待执行任务 |
+
+### prod_task_cron 监控机制
+
+**功能：**
+1. **Popen实时输出**: 使用 `subprocess.Popen` 实时打印任务stdout
+2. **卡死检测**: 10分钟无日志判定为卡死
+3. **自动处理**: 卡死任务自动杀掉进程 + 重置为 error_fix_pending
+4. **following状态**: 执行中任务插入"正常运行"日志
+
+**卡死检测逻辑：**
+```python
+STUCK_TIMEOUT_MINUTES = 10
+
+def is_task_stuck(task_name: str) -> bool:
+    last_time = get_task_last_log_time(task_name)
+    if not last_time:
+        return False
+    return datetime.now() - last_time > timedelta(minutes=STUCK_TIMEOUT_MINUTES)
+
+def handle_processing_task(task_name):
+    if is_task_stuck(task_name):
+        kill_process(task_name)  # 杀掉进程
+        tm.update_task(task_name, status='failed', exec_state='error_fix_pending')
+        log.finish("failed")
+    else:
+        log.set_task(task_name).set_message("任务正常运行中").finish("following")
+```
+
+**执行流程：**
+```
+1. 检查 processing 状态任务
+   ↓
+2. is_task_stuck(task_name)?
+   ├─ Yes → 判定卡死 → 杀掉进程 → 重置状态 → failed日志
+   │
+   └─ No → 插入 following 日志
+           ↓
+3. 检查待执行任务 (get_actionable_tasks)
+   ↓
+4. 无任务 → skipped日志（仅当无processing任务时）
+```
 
 ### prod_task_cron 日志写入点
 

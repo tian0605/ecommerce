@@ -24,7 +24,7 @@ from logger import get_logger
 # 任务脚本映射
 TASK_SCRIPTS = {
     'TC-FLOW-001': {
-        'script': f'{WORKIPACE}/skills/workflow-runner/scripts/workflow_runner.py',
+        'script': f'{WORKSPACE}/skills/workflow-runner/scripts/workflow_runner.py',
         'args': ['--url', 'https://detail.1688.com/offer/1031400982378.html']
     },
 }
@@ -136,14 +136,16 @@ def run():
             else:
                 # 任务正常运行，插入日志
                 print(f"\n✅ {task_name} 运行正常，等待下次检查")
-                log.set_task(task_name).set_message(f"任务正常运行中，等待下一次检查").finish("running")
+                log.set_task(task_name).set_message(f"任务正常运行中，等待下一次检查").finish("following")
     
     # 获取可执行任务
     actionable = tm.get_actionable_tasks(limit=1)
     
     if not actionable:
         print("📋 无待执行任务")
-        log.set_message("无待执行任务").finish("skipped")
+        # 只有在没有processing任务时才插入skipped
+        if not processing_tasks:
+            log.set_message("无待执行任务").finish("skipped")
         tm.close()
         return
     
