@@ -115,7 +115,7 @@ class TaskManager:
         cur.close()
     
     def mark_start(self, task_name: str):
-        """标记任务开始"""
+        """标记任务开始，增加重试计数"""
         cur = self.conn.cursor()
         cur.execute("""
             UPDATE tasks 
@@ -123,6 +123,7 @@ class TaskManager:
                 exec_state = %s, 
                 last_executed_at = %s,
                 execution_count = COALESCE(execution_count, 0) + 1,
+                retry_count = COALESCE(retry_count, 0) + 1,
                 updated_at = %s
             WHERE task_name = %s
         """, ('running', 'processing', datetime.now(), datetime.now(), task_name))
@@ -138,11 +139,88 @@ class TaskManager:
         )
     
     def mark_error_fix_pending(self, task_name: str, error: str, fix: str = ""):
-        """标记需要修复"""
+        """标记需要修复（单个错误，单个子任务）"""
         self.update_task(task_name,
             status='failed',
             exec_state='error_fix_pending',
             last_error=error,
+            fix_suggestion=fix
+        )
+        # 自动创建一个子任务
+        self.create_fix_subtask(task_name, error, fix)
+    
+    def mark_void(self, task_name: str, reason: str = ""):
+        """标记任务为作废"""
+        self.update_task(task_name,
+            status='voided',
+            exec_state='void',
+            is_void=True
+        )
+
+    def create_fix_subtasks(self, task_name: str, errors: list):
+        """批量创建修复子任务（多个错误）- 含成功标准"""
+        for i, error_info in enumerate(errors):
+            if isinstance(error_info, dict):
+                error_msg = error_info.get('error', str(error_info))
+                fix_suggestion = error_info.get('fix', '')
+                success_criteria = error_info.get('success_criteria', f"修复{error_msg[:30]}成功")
+                analysis = error_info.get('analysis', '')
+                plan = error_info.get('plan', '')
+            else:
+                error_msg = str(error_info)
+                fix_suggestion = ''
+                success_criteria = f"修复{error_msg[:30]}成功"
+                analysis = ''
+                plan = ''
+            
+            sub_task_name = f"FIX-{task_name}-{i+1:03d}"
+            display_name = f"修复: {error_msg[:50]}"
+            
+            # 创建子任务
+            self.create_sub_task(
+                parent_task_id=task_name,
+                task_name=sub_task_name,
+                display_name=display_name,
+                description=f"错误: {error_msg}",
+                priority='P0',
+                fix_suggestion=fix_suggestion
+            )
+            
+            # 更新成功标准和分析
+            self.update_task(sub_task_name,
+                success_criteria=success_criteria,
+                analysis=analysis,
+                plan=plan
+            )
+        
+        # 更新父任务状态
+        error_summary = f"共{len(errors)}个问题"
+        self.update_task(task_name,
+            status='failed',
+            exec_state='error_fix_pending',
+            last_error=error_summary,
+            fix_suggestion=f"已创建{len(errors)}个子任务"
+        )
+    
+    def mark_void(self, task_name: str, reason: str = ""):
+        """标记任务为作废"""
+        self.update_task(task_name,
+            status='voided',
+            exec_state='void',
+            is_void=True
+        )
+
+    def create_fix_subtask(self, task_name: str, error: str, fix: str = ""):
+        """创建单个修复子任务"""
+        sub_task_name = f"FIX-{task_name}-001"
+        display_name = f"修复: {error[:50]}"
+        
+        self.create_sub_task(
+            parent_task_id=task_name,
+            task_name=sub_task_name,
+            display_name=display_name,
+            description=f"错误: {error}",
+            priority='P0',
             fix_suggestion=fix
         )
     

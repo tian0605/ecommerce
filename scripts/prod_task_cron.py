@@ -2,13 +2,19 @@
 """
 prod_task_cron - 独立任务执行定时器
 每30分钟执行一次，从数据库读取待办任务，按优先级执行
+
+自愈机制：
+1. 子任务失败 → 重试最多3次
+2. 3次仍失败 → 调用LLM分析错误
+3. LLM提出方案 → 创建新的解决方案子任务
+4. 旧子任务标记为"作废"
+5. 新子任务重试3次仍失败 → requires_manual
 """
 import sys
 import subprocess
 from pathlib import Path
 from datetime import datetime
 
-# 添加脚本目录到路径
 WORKSPACE = Path('/root/.openclaw/workspace-e-commerce')
 SCRIPTS_DIR = WORKSPACE / 'scripts'
 sys.path.insert(0, str(SCRIPTS_DIR))
@@ -22,27 +28,14 @@ TASK_SCRIPTS = {
         'script': f'{WORKSPACE}/skills/workflow-runner/scripts/workflow_runner.py',
         'args': ['--url', 'https://detail.1688.com/offer/1031400982378.html']
     },
-    'CIRCUIT-BREAKER': {
-        'script': f'{WORKSPACE}/scripts/circuit_breaker.sh'
-    },
-    'CONFIG-ENV': {
-        'script': f'{WORKSPACE}/scripts/create_config_env.sh'
-    },
-    'COOKIES-ALERT': {
-        'script': f'{WORKSPACE}/scripts/cookies_alert.sh'
-    },
-    'PRODUCT-ANALYSIS': {
-        'script': f'{WORKSPACE}/scripts/analyze_products.py'
-    },
-    'IMPROVEMENTS-MD': {
-        'script': f'{WORKSPACE}/scripts/update_improvements.sh'
-    },
-    # 子任务
-    'FIX-STEP6-UPDATE': {
-        'script': f'{WORKSPACE}/scripts/fix_step6_update.py',
-        'level': 'sub'
-    },
+    'CIRCUIT-BREAKER': {'script': f'{WORKSPACE}/scripts/circuit_breaker.sh'},
+    'CONFIG-ENV': {'script': f'{WORKSPACE}/scripts/create_config_env.sh'},
+    'COOKIES-ALERT': {'script': f'{WORKSPACE}/scripts/cookies_alert.sh'},
+    'PRODUCT-ANALYSIS': {'script': f'{WORKSPACE}/scripts/analyze_products.py'},
+    'IMPROVEMENTS-MD': {'script': f'{WORKSPACE}/scripts/update_improvements.sh'},
 }
+
+MAX_RETRIES = 3  # 最大重试次数
 
 
 def execute_task(task_name: str, script_info: dict) -> tuple:
@@ -103,21 +96,90 @@ def parse_workflow_result(output: str) -> dict:
     return result
 
 
-def create_fix_subtask(tm: TaskManager, parent_id: str, error_msg: str) -> str:
-    """为父任务创建修复子任务"""
-    task_name = f"FIX-{parent_id}-{datetime.now().strftime('%H%M%S')}"
-    display_name = f"修复: {error_msg[:40]}"
+def call_llm_analyzer(task_info: dict, error: str) -> dict:
+    """调用LLM分析错误并返回解决方案"""
+    try:
+        from error_analyzer import analyze_error
+        print(f"  🤖 调用LLM分析错误...")
+        solution = analyze_error(task_info, error)
+        if solution:
+            print(f"  ✅ LLM分析完成")
+            return solution
+        else:
+            print(f"  ❌ LLM分析失败")
+            return None
+    except Exception as e:
+        print(f"  ❌ LLM调用异常: {e}")
+        return None
+
+
+def handle_subtask_failure(tm: TaskManager, task: dict, error: str) -> str:
+    """
+    处理子任务失败
+    1. 检查重试次数
+    2. 未超3次 → 标记可重试
+    3. 超过3次 → 调用LLM → 创建解决方案子任务 → 旧任务作废
+    4. 仍失败 → requires_manual
+    """
+    task_name = task['task_name']
+    retry_count = task.get('retry_count', 0) or 0
+    task_level = task.get('task_level', 1)
     
-    tm.create_sub_task(
-        parent_task_id=parent_id,
-        task_name=task_name,
-        display_name=display_name,
-        description=f"自动创建的修复任务: {error_msg}",
-        priority="P0",
-        fix_suggestion=error_msg
-    )
+    print(f"  🔄 子任务 {task_name} 失败 (重试次数: {retry_count}/{MAX_RETRIES})")
     
-    return task_name
+    if retry_count < MAX_RETRIES:
+        # 未超过最大重试次数，标记为可重试
+        tm.update_task(task_name,
+            status='pending',
+            exec_state='normal_crash',
+            last_error=error
+        )
+        print(f"  ⏳ 标记为可重试")
+        return "retry"
+    else:
+        # 超过最大重试次数，调用LLM分析
+        print(f"  🔴 超过最大重试次数，调用LLM分析...")
+        
+        solution = call_llm_analyzer(task, error)
+        
+        if solution and solution.get('solution_steps'):
+            # 创建解决方案子任务
+            import uuid
+            sol_task_name = f"SOL-{task_name}-{uuid.uuid4().hex[:6].upper()}"
+            display_name = f"解决方案: {task.get('display_name', task_name)}"
+            
+            # 合并解决方案步骤
+            sol_steps = '\n'.join([f"{i+1}. {s}" for i, s in enumerate(solution.get('solution_steps', []))])
+            solution_text = f"根因: {solution.get('root_cause', '')}\n\n修复步骤:\n{sol_steps}\n\n验证: {solution.get('verification', '')}"
+            
+            tm.create_sub_task(
+                parent_task_id=task.get('parent_task_id') or task_name,
+                task_name=sol_task_name,
+                display_name=display_name,
+                description=f"LLM解决方案: {error}",
+                priority='P0',
+                fix_suggestion=solution_text
+            )
+            
+            # 更新任务解决方案字段
+            tm.update_task(sol_task_name, solution=solution_text)
+            
+            # 标记旧任务为作废
+            tm.mark_void(task_name, f"被解决方案任务替代: {sol_task_name}")
+            
+            print(f"  ✅ 已创建解决方案子任务: {sol_task_name}")
+            print(f"  🗑️ 旧任务已标记为作废: {task_name}")
+            
+            return "solution_created"
+        else:
+            # LLM分析失败或无法提供方案，标记为需要人工
+            tm.update_task(task_name,
+                status='failed',
+                exec_state='requires_manual',
+                last_error=f"LLM分析失败: {error}"
+            )
+            print(f"  👤 标记为需要人工介入")
+            return "requires_manual"
 
 
 def run():
@@ -126,7 +188,7 @@ def run():
     log.set_message("prod_task_cron启动")
     
     tm = TaskManager()
-    actionable = tm.get_actionable_tasks()
+    actionable = tm.get_actionable_tasks(limit=1)
     
     if not actionable:
         log.set_message("无待执行任务").finish("skipped")
@@ -145,46 +207,64 @@ def run():
         print(f"\n{'='*60}")
         print(f"处理任务: {display_name} (level={task_level}, state={exec_state})")
         
+        # 获取脚本
+        script_info = TASK_SCRIPTS.get(task_name)
+        
+        # 特殊处理：解决方案任务
+        if task_name.startswith('SOL-'):
+            script_info = {
+                'script': f'{WORKSPACE}/scripts/subtask_executor.py',
+                'args': [task_name]
+            }
+        
+        # 如果没有脚本但任务是level=2，使用subtask_executor
+        if not script_info and task_level == 2:
+            script_info = {
+                'script': f'{WORKSPACE}/scripts/subtask_executor.py',
+                'args': [task_name]
+            }
+        
+        if not script_info:
+            print(f"  ⚠️ 没有配置执行脚本，跳过")
+            continue
+        
         # 标记开始
         tm.mark_start(task_name)
-        
-        # 获取可执行任务（优先P0，每次最多2个）
-        script_info = TASK_SCRIPTS.get(task_name)
-        if not script_info:
-            print(f"  ⚠️ 没有配置执行脚本")
-            tm.mark_requires_manual(task_name, "未配置执行脚本")
-            continue
         
         # 执行
         success, output = execute_task(task_name, script_info)
         
-        # 解析结果（针对工作流任务）
-        if task_name == 'TC-FLOW-001':
-            wf_result = parse_workflow_result(output)
-            
-            if wf_result['success']:
-                tm.mark_end(task_name, "工作流全部成功")
-                log.set_message(f"{display_name} 成功").finish("success")
-                print(f"  ✅ 工作流成功")
-            else:
-                error_type = wf_result['error_type']
-                error_msg = wf_result['error_message']
-                
-                # 创建修复子任务
-                fix_task = create_fix_subtask(tm, task_name, error_msg)
-                print(f"  ❌ 工作流失败: {error_msg}")
-                print(f"  📝 已创建子任务: {fix_task}")
-                
-                tm.mark_error_fix_pending(task_name, error_msg, fix_task)
-                log.set_message(f"{display_name} 失败，创建子任务").finish("failed", error_msg)
+        if success:
+            # 执行成功
+            tm.mark_end(task_name, "执行成功")
+            print(f"  ✅ 执行成功")
+            log.set_message(f"{display_name} 成功").finish("success")
         else:
-            # 其他任务简单处理
-            if success:
-                tm.mark_end(task_name, "成功")
-                print(f"  ✅ 执行成功")
+            # 执行失败
+            print(f"  ❌ 执行失败")
+            
+            if task_level == 2:
+                # 子任务：使用自愈逻辑
+                result = handle_subtask_failure(tm, task, output[-500:])
+                log.set_message(f"{display_name} 失败: {result}")
+                log.set_content(output[-2000:])
+                log.finish("failed")
             else:
-                tm.mark_normal_crash(task_name, output[-200:])
-                print(f"  ⚠️ 执行失败: {output[-100:]}")
+                # 子任务失败时写入完整错误日志
+                log.set_message(f"{display_name} 失败: {result}")
+                log.set_content(output[-2000:])  # 保存更多错误信息
+                log.finish("failed")
+                
+                # 父任务：创建子任务
+                tm.create_fix_subtasks(task_name, [
+                    {'error': output[-200:], 'fix': output[-500:]}
+                ])
+                tm.update_task(task_name,
+                    status='failed',
+                    exec_state='error_fix_pending',
+                    last_error=output[-200:]
+                )
+                print(f"  📝 已创建修复子任务")
     
     tm.close()
     print(f"\n{'='*60}")

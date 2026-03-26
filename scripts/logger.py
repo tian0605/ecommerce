@@ -57,10 +57,18 @@ class Logger:
         return self
     
     def finish(self, status: str = "success", message: str = ""):
-        """完成日志记录"""
+        """完成日志记录
+        
+        Args:
+            status: running/success/failed/skipped
+            message: 简要信息
+        """
         if message:
             self.run_message = message
-        self.run_status = status
+        
+        # 根据log_level自动设置status
+        if not self.run_status or self.run_status == "running":
+            self.run_status = status
         
         end_time = datetime.now()
         duration_ms = int((end_time - self.start_time).total_seconds() * 1000)
@@ -82,8 +90,8 @@ class Logger:
                 end_time,
                 duration_ms,
                 self.run_status,
-                self.run_message[:500] if self.run_message else "",
-                self.run_content[-5000:] if self.run_content else ""
+                (self.run_message or "")[:500],
+                (self.run_content or "")[-5000:]
             ))
             conn.commit()
             cur.close()

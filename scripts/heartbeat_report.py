@@ -3,9 +3,8 @@
 import sys
 sys.path.insert(0, '/root/.openclaw/workspace-e-commerce/scripts')
 
-from task_manager import TaskManager, ExecState
-import json
-import re
+from task_manager import TaskManager
+from logger import get_logger
 from pathlib import Path
 from datetime import datetime
 
@@ -32,6 +31,7 @@ def parse_task_log():
             if len(parts) >= 2:
                 summary[parts[0].strip()] = parts[1].strip()
         if 'ERROR' in line and '失败' in line:
+            import re
             match = re.search(r'❌\s*(.+?)(?:\n|$)', line)
             if match:
                 err = match.group(1).strip()[:100]
@@ -43,6 +43,7 @@ def analyze_errors(errors):
     fixes = []
     for error in errors:
         for pattern, fix in ERROR_FIX_MAP:
+            import re
             if re.search(pattern, error, re.IGNORECASE):
                 if fix not in fixes:
                     fixes.append(fix)
@@ -51,14 +52,40 @@ def analyze_errors(errors):
 
 def generate_report():
     tm = TaskManager()
+    
+    # 获取所有任务和任务树
     all_tasks = tm.get_all_tasks()
-    actionable = tm.get_actionable_tasks()
+    actionable = tm.get_actionable_tasks(limit=2)
+    task_tree = tm.get_task_tree()
+    
     tm.close()
     
     task_result = parse_task_log()
     fixes = analyze_errors(task_result['errors']) if task_result and task_result.get('errors') else []
     
-    # 按状态分组
+    # 状态名称映射
+    state_names = {
+        'new': "🆕 新任务",
+        'error_fix_pending': "🔧 待修复",
+        'normal_crash': "🔄 可重试",
+        'requires_manual': "👤 需人工",
+        'processing': "⚙️ 执行中",
+        'end': "✅ 已完成"
+    }
+    
+    lines = []
+    lines.append("📊 **CommerceFlow 心跳报告**")
+    lines.append(f"⏰ {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    lines.append("━━━━━━━━━━━━━━━━━━━━━━")
+    
+    # 统计
+    total = len(all_tasks)
+    pending = len(actionable)
+    lines.append(f"📌 **任务状态**")
+    lines.append(f"  总计: {total} | 待执行: {pending}")
+    lines.append("")
+    
+    # 按状态分组显示
     by_state = {}
     for t in all_tasks:
         state = t['exec_state']
@@ -66,79 +93,72 @@ def generate_report():
             by_state[state] = []
         by_state[state].append(t)
     
-    state_names = {
-        ExecState.NEW: "🆕 新任务",
-        ExecState.ERROR_FIX_PENDING: "🔧 待修复",
-        ExecState.NORMAL_CRASH: "🔄 可重试",
-        ExecState.REQUIRES_MANUAL: "👤 需人工",
-        ExecState.PROCESSING: "⚙️ 执行中",
-        ExecState.END: "✅ 已完成"
-    }
+    # 待修复任务
+    error_tasks = by_state.get('error_fix_pending', [])
+    if error_tasks:
+        lines.append(f"**🔧 待修复** ({len(error_tasks)})")
+        for t in error_tasks:
+            lines.append(f"  • {t['display_name']}")
+            if t.get('fix_suggestion'):
+                lines.append(f"    → {t['fix_suggestion'][:50]}")
+            # 显示子任务
+            for child in task_tree:
+                if child['task_name'] == t['task_name']:
+                    for c in child.get('children', []):
+                        lines.append(f"    └── {c['display_name']} ({c['exec_state']})")
+        lines.append("")
     
-    report = []
-    report.append("📊 **CommerceFlow 心跳报告**")
-    report.append(f"⏰ {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-    report.append("━" * 22)
+    # 进行中任务
+    proc_tasks = by_state.get('processing', [])
+    if proc_tasks:
+        lines.append(f"**⚙️ 执行中** ({len(proc_tasks)})")
+        for t in proc_tasks:
+            lines.append(f"  • {t['display_name']}")
+        lines.append("")
     
-    # 上次执行结果
-    if task_result and task_result.get('summary'):
-        report.append("📋 **上次执行结果**")
-        for name, status in task_result['summary'].items():
-            report.append(f"  {status} {name}")
-        if task_result.get('errors'):
-            report.append("  ⚠️ 异常:")
-            for err in task_result['errors']:
-                report.append(f"    • {err[:80]}")
-        report.append("")
+    # 其他任务
+    other_tasks = [t for t in all_tasks if t['exec_state'] not in ['error_fix_pending', 'processing', 'end']]
+    if other_tasks:
+        lines.append(f"**🔄 其他** ({len(other_tasks)})")
+        for t in other_tasks:
+            lines.append(f"  • {t['display_name']} ({t['exec_state']})")
+        lines.append("")
     
-    # 任务状态
-    report.append("📌 **任务状态**")
-    total = len(all_tasks)
-    pending = len(by_state.get(ExecState.NEW, [])) + \
-              len(by_state.get(ExecState.ERROR_FIX_PENDING, [])) + \
-              len(by_state.get(ExecState.NORMAL_CRASH, [])) + \
-              len(by_state.get(ExecState.REQUIRES_MANUAL, []))
-    
-    report.append(f"  总计: {total} | 待执行: {pending}")
-    report.append("")
-    
-    # 显示各状态任务
-    for state in [ExecState.ERROR_FIX_PENDING, ExecState.NORMAL_CRASH, 
-                  ExecState.REQUIRES_MANUAL, ExecState.NEW, 
-                  ExecState.PROCESSING, ExecState.END]:
-        if state in by_state:
-            report.append(f"**{state_names[state]}** ({len(by_state[state])})")
-            for t in by_state[state]:
-                exec_time = t['last_executed_at'].strftime('%m-%d %H:%M') if t['last_executed_at'] else '从未'
-                if state == ExecState.ERROR_FIX_PENDING and t.get('fix_suggestion'):
-                    report.append(f"  • {t['display_name']}")
-                    report.append(f"    → {t['fix_suggestion']}")
-                elif state == ExecState.REQUIRES_MANUAL:
-                    err = t.get('last_error', '')[:40] if t.get('last_error') else ''
-                    report.append(f"  • {t['display_name']}")
-                    report.append(f"    ❌ {err}")
-                else:
-                    report.append(f"  • {t['display_name']} ({exec_time})")
-            report.append("")
+    # 已完成任务
+    completed = by_state.get('end', [])
+    if completed:
+        lines.append(f"**✅ 已完成** ({len(completed)})")
+        for t in completed[:5]:  # 最多显示5个
+            exec_time = t['last_executed_at'].strftime('%m-%d %H:%M') if t['last_executed_at'] else ''
+            lines.append(f"  • {t['display_name']} ({exec_time})")
+        if len(completed) > 5:
+            lines.append(f"  ... 还有 {len(completed)-5} 个")
+        lines.append("")
     
     # 本次计划
-    report.append("📋 **本次计划**")
     if actionable:
-        for t in actionable[:5]:
-            action = ""
-            if t['exec_state'] == ExecState.ERROR_FIX_PENDING:
-                action = f" → {t.get('fix_suggestion', '自动修复')}"
-            elif t['exec_state'] == ExecState.REQUIRES_MANUAL:
-                action = " → 需人工介入"
-            elif t['exec_state'] == ExecState.NORMAL_CRASH:
-                action = " → 自动重试"
-            report.append(f"  ▸ {t['display_name']}{action}")
+        lines.append("📋 **本次计划**")
+        for t in actionable:
+            lines.append(f"  ▸ {t['display_name']}")
+            if t.get('fix_suggestion'):
+                lines.append(f"    → {t['fix_suggestion'][:40]}")
     else:
-        report.append("  无待处理任务")
+        lines.append("📋 **本次计划**")
+        lines.append("  无待处理任务")
     
-    report.append("━" * 22)
-    report.append("✅ 心跳检查正常")
-    return '\n'.join(report)
+    lines.append("━━━━━━━━━━━━━━━━━━━━━━")
+    
+    # 检查日志错误
+    if fixes:
+        lines.append(f"⚠️ **发现{len(fixes)}个已知问题**")
+        for fix in fixes:
+            lines.append(f"  • {fix}")
+        lines.append("")
+    
+    lines.append("✅ 心跳检查正常")
+    
+    return "\n".join(lines)
 
 if __name__ == '__main__':
-    print(generate_report())
+    report = generate_report()
+    print(report)
