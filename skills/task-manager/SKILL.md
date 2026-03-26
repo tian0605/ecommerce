@@ -321,8 +321,35 @@ def run_with_popen(task_name: str, script_info: dict, on_line_callback=None) -> 
     proc.wait()
     return success, output
 
-# 调用时传入log.info作为回调
-run_with_popen(task_name, script_info, on_line_callback=log.info)
+# 调用时传入log.log_line作为回调（不是log.info！）
+run_with_popen(task_name, script_info, on_line_callback=log.log_line)
+```
+
+**重要：必须使用 `log.log_line()` 而不是 `log.info()`**
+
+| 方法 | 功能 | 说明 |
+|------|------|------|
+| `log.info()` | 打印到控制台 | 不写入数据库 |
+| `log.log_line()` | 写入main_logs | 每行实时写入 |
+
+**Logger.log_line() 实现：**
+```python
+def log_line(self, line: str):
+    """写入一行日志到main_logs（用于Popen实时回调）"""
+    if not line:
+        return
+    try:
+        conn = psycopg2.connect(**self.DB_CONFIG)
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO main_logs (log_type, task_name, run_status, run_message, created_at)
+            VALUES (%s, %s, %s, %s, NOW())
+        """, (self.log_type, self.task_name, 'running', line[:500]))
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print(f"[WARN] log_line failed: {e}")
 ```
 
 **卡死检测逻辑：**
