@@ -249,6 +249,57 @@ log.set_content('详细日志...')
 log.finish('success', '处理完成')
 ```
 
+## 卡死检测与自动修复
+
+### 检测逻辑
+
+```python
+STUCK_TIMEOUT_MINUTES = 10  # 10分钟无工作日志判定为卡死
+
+def is_task_stuck(task_name: str) -> bool:
+    """判断任务是否卡死（排除following日志）"""
+    last_time = get_task_last_log_time(task_name)
+    if not last_time:
+        return False
+    return datetime.now() - last_time > timedelta(minutes=STUCK_TIMEOUT_MINUTES)
+```
+
+### 卡死处理流程
+
+当检测到任务卡死时，自动执行以下操作：
+
+```
+1. 杀掉相关进程
+   kill_process(task_name)
+       ↓
+2. 创建子任务追踪修复
+   FIX-{task_name}-STUCK
+       ↓
+3. 父任务标记为 error_fix_pending
+   exec_state = 'error_fix_pending'
+       ↓
+4. 写入日志
+   "任务卡死，已创建修复子任务 FIX-xxx"
+```
+
+### 卡死 vs following
+
+| 场景 | 判断 | 动作 |
+|------|------|------|
+| 10分钟内有工作日志 | following | 正常，插入日志 |
+| 10分钟内无工作日志 | stuck | 杀进程+创建子任务+重置 |
+
+### 自动创建的卡死修复子任务
+
+```python
+fix_task_name = f"FIX-{task_name}-STUCK"
+tm.create_fix_subtasks(task_name, [{
+    'error': f'任务执行卡死（>{STUCK_TIMEOUT_MINUTES}分钟无响应）',
+    'fix': '检查Playwright浏览器稳定性，增加超时控制',
+    'success_criteria': '浏览器操作稳定，无卡死'
+}])
+```
+
 ## 日志机制
 
 ### 日志写入时机
