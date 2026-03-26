@@ -78,22 +78,21 @@ class TaskManager:
         cur.close()
         return tasks
     
-    def get_actionable_tasks(self, limit: int = 2) -> List[Dict]:
-        """获取可执行的任务（优先P0，再子任务，最多返回limit个）"""
+    def get_actionable_tasks(self) -> List[Dict]:
+        """获取可执行的任务（优先子任务，再父任务）"""
         cur = self.conn.cursor()
         cur.execute("""
             SELECT * FROM tasks 
             WHERE exec_state IN ('error_fix_pending', 'normal_crash', 'requires_manual', 'new')
             ORDER BY 
+                task_level DESC,  -- 优先处理子任务(level 2)
                 CASE priority 
                     WHEN 'P0' THEN 1 
                     WHEN 'P1' THEN 2 
                     WHEN 'P2' THEN 3 
                 END,
-                task_level DESC,  -- 同优先级优先处理子任务(level 2)
                 created_at
-            LIMIT %s
-        """, (limit,))
+        """)
         cols = [desc[0] for desc in cur.description]
         tasks = [dict(zip(cols, row)) for row in cur.fetchall()]
         cur.close()

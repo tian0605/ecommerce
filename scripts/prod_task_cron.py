@@ -148,7 +148,7 @@ def run():
         # 标记开始
         tm.mark_start(task_name)
         
-        # 获取脚本
+        # 获取可执行任务（优先P0，每次最多2个）
         script_info = TASK_SCRIPTS.get(task_name)
         if not script_info:
             print(f"  ⚠️ 没有配置执行脚本")

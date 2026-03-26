@@ -29140,3 +29140,53 @@ TypeError: string indices must be integers, not 'str'
 [2026-03-26 17:00:17]   ✅ 货源ID提取正常
 [2026-03-26 17:00:17] [Step 3] 检查代码变更...
 [2026-03-26 17:00:17]   ⚠️ 有未提交的变更
+[master 031869d] Heartbeat auto-commit 2026-03-26 17:00
+ 4 files changed, 362 insertions(+), 6 deletions(-)
+ create mode 100755 scripts/logger.py
+ create mode 100755 scripts/prod_task_cron.py
+[2026-03-26 17:00:18] [Step 4] 检查任务状态...
+[2026-03-26 17:00:18]   无
+[2026-03-26 17:00:18] [Step 5] 发送飞书通知...
+[2026-03-26 17:30:01] ========== 开始开发心跳 ==========
+[2026-03-26 17:30:01] [Step 1] 检查collector-scraper模块状态...
+[2026-03-26 17:30:01]   scraper.py 存在
+[2026-03-26 17:30:01] [Step 2] 执行快速测试...
+2026-03-26 17:30:01,538 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-26 17:30:02,142 | collector-scraper | INFO | 浏览器启动成功
+2026-03-26 17:30:02,142 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-26 17:30:10,290 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260326_173010.png
+2026-03-26 17:30:10,303 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-26 17:30:15,409 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260326_173015.png
+2026-03-26 17:30:15,438 | collector-scraper | INFO | 提取到货源ID: 1031400982378
+2026-03-26 17:30:15,611 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-26 17:30:15,611 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-26 17:30:16,641 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2400}, {'name': '奶黄色', 'image': None, 'stock': 1950}], 'colorImages': {}, 'overallPrice': 24, 'overallStock': None, 'debug': {'stocksFound': [2400, 99999, 1031400982378, 1950, 99999, 10314009823783, 2000, 99989, 10314009823783, 2300, 99997, 10314009823783], 'validStocks': [2400, 1950, 2000, 99989, 2300, 99997], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-26 17:30:16,641 | collector-scraper | INFO | 有效库存: [2400, 1950, 2000, 99989, 2300, 99997], 颜色数: 0
+2026-03-26 17:30:16,641 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-26 17:30:17,581 | collector-scraper | INFO | 找到规格: {'颜色': ['组合【三件套】', '斜口【小号】X3', '带轮【中号】X3', '带轮【大号】X3']}
+2026-03-26 17:30:17,581 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-26 17:30:17,581 | collector-scraper | INFO |   SKU: {sku}
+2026-03-26 17:30:17,581 | collector-scraper | INFO |   SKU: {sku}
+2026-03-26 17:30:17,581 | collector-scraper | INFO |   SKU: {sku}
+2026-03-26 17:30:17,581 | collector-scraper | INFO |   SKU: {sku}
+2026-03-26 17:30:17,598 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '24.00'}，继续尝试其他方法
+2026-03-26 17:30:17,598 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-26 17:30:17,619 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '24.00'}，继续尝试方法3
+2026-03-26 17:30:17,619 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-26 17:30:17,630 | collector-scraper | INFO | 成功提取商品数据: 1031400982378
+2026-03-26 17:30:17,719 | collector-scraper | INFO | 浏览器已关闭
+
+============================================================
+商品数据:
+  货源ID: 1031400982378
+  标题: 厨房多功能收纳篮锅盖架置物架塑料锅具收纳架橱柜收纳盒储物架子
+  类目: 架子与置物架 (Shelves & Racks)
+  品牌: None
+  主图数量: 0
+  SKU数量: 4
+  描述长度: 142
+  物流: {'weight': '24.00'}
+============================================================
+[2026-03-26 17:30:17]   ✅ 货源ID提取正常
+[2026-03-26 17:30:17] [Step 3] 检查代码变更...
+[2026-03-26 17:30:17]   ⚠️ 有未提交的变更
