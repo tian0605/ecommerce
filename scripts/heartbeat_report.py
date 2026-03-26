@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""生成心跳报告 - 包含上次执行结果和本次计划"""
+"""生成心跳报告 - 包含上次执行结果、异常分析和本次计划"""
 import json
+import re
 from pathlib import Path
 from datetime import datetime
 
@@ -8,20 +9,28 @@ STATE_FILE = Path('/root/.openclaw/workspace-e-commerce/logs/heartbeat_state.jso
 TASK_LOG = Path('/root/.openclaw/workspace-e-commerce/logs/task_exec.log')
 TASK_QUEUE = Path('/root/.openclaw/workspace-e-commerce/docs/dev-task-queue.md')
 
+# 错误到修复任务的映射
+ERROR_FIX_MAP = [
+    (r"ProductStorer.*no attribute.*save", "product-storer接口修复"),
+    (r"ListingOptimizer.*no attribute.*optimize", "listing-optimizer接口修复"),
+    (r"MiaoshouUpdater.*no attribute", "miaoshou-updater接口修复"),
+    (r"ProfitAnalyzer.*no attribute", "profit-analyzer接口修复"),
+    (r"'str' object has no attribute", "数据类型错误修复"),
+    (r"ModuleNotFoundError|No module named", "模块导入路径修复"),
+    (r"EPIPE|Browser.*crash", "浏览器稳定性修复"),
+]
+
 def load_last_state():
-    """加载上次心跳状态"""
     if STATE_FILE.exists():
         with open(STATE_FILE) as f:
             return json.load(f)
     return {}
 
 def save_state(state):
-    """保存当前状态"""
     with open(STATE_FILE, 'w') as f:
         json.dump(state, f, indent=2, ensure_ascii=False)
 
 def parse_task_log():
-    """解析任务执行日志"""
     if not TASK_LOG.exists():
         return None
     
@@ -32,14 +41,14 @@ def parse_task_log():
     # 提取步骤结果
     steps = {}
     for line in content.split('\n'):
-        if '【步骤' in line and '】' in line:
+        if '工作流结果汇总' in line:
+            break
+        if '【步骤' in line or '[步骤' in line:
             step = line.strip()
             if '✅' in line:
                 steps[step] = '✅'
             elif '❌' in line:
                 steps[step] = '❌'
-            else:
-                steps[step] = '🔄'
     
     # 提取汇总
     summary = {}
@@ -54,21 +63,24 @@ def parse_task_log():
     # 提取错误信息
     errors = []
     for line in content.split('\n'):
-        if '❌' in line and ('ERROR' in line or '失败' in line):
-            errors.append(line.strip()[:100])
+        if 'ERROR' in line and '失败' in line:
+            # 提取关键错误信息
+            match = re.search(r'❌\s*(.+?)(?:\n|$)', line)
+            if match:
+                err = match.group(1).strip()[:100]
+                if err not in errors:
+                    errors.append(err)
     
     return {
         'steps': steps,
         'summary': summary,
-        'errors': errors[:3],  # 最多3个错误
-        'has_content': True
+        'errors': errors[:5],
+        'has_content': bool(content.strip())
     }
 
 def parse_task_queue():
-    """解析任务队列"""
     if not TASK_QUEUE.exists():
         return []
-    
     content = TASK_QUEUE.read_text()
     pending = []
     for line in content.split('\n'):
@@ -77,13 +89,28 @@ def parse_task_queue():
             if len(parts) >= 3:
                 task = parts[2].strip().replace('**', '')
                 pending.append(task)
-    return pending[:5]  # 最多5个
+    return pending[:5]
+
+def analyze_errors_and_suggest_fixes(errors):
+    """分析错误并建议修复任务"""
+    fixes = []
+    for error in errors:
+        for pattern, fix_task in ERROR_FIX_MAP:
+            if re.search(pattern, error, re.IGNORECASE):
+                if fix_task not in fixes:
+                    fixes.append(fix_task)
+                break
+    return fixes
 
 def generate_report():
-    """生成报告"""
     last_state = load_last_state()
     task_result = parse_task_log()
     pending_tasks = parse_task_queue()
+    
+    # 分析错误并建议修复
+    suggested_fixes = []
+    if task_result and task_result.get('errors'):
+        suggested_fixes = analyze_errors_and_suggest_fixes(task_result['errors'])
     
     report = []
     report.append("📊 **CommerceFlow 心跳报告**")
@@ -91,20 +118,30 @@ def generate_report():
     report.append("━" * 20)
     
     # 上次执行结果
-    if task_result:
+    if task_result and task_result.get('summary'):
         report.append("📋 **上次执行结果**")
-        if task_result.get('summary'):
-            for name, status in task_result['summary'].items():
-                report.append(f"  {status} {name}")
+        for name, status in task_result['summary'].items():
+            report.append(f"  {status} {name}")
+        
         if task_result.get('errors'):
             report.append("  ⚠️ 异常:")
             for err in task_result['errors']:
-                report.append(f"    • {err}")
+                report.append(f"    • {err[:80]}")
         report.append("")
     
     # 本次计划
     report.append("📋 **本次计划**")
-    if pending_tasks:
+    
+    # 自动添加修复任务
+    if suggested_fixes:
+        report.append("  🔧 自动计划（基于上次错误）:")
+        for fix in suggested_fixes:
+            report.append(f"    ▸ {fix}")
+        if pending_tasks:
+            report.append("  📝 队列任务:")
+            for task in pending_tasks:
+                report.append(f"    ▸ {task}")
+    elif pending_tasks:
         for task in pending_tasks:
             report.append(f"  ▸ {task}")
     else:
