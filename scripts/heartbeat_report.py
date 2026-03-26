@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""生成心跳报告"""
+"""生成心跳报告 - 基于数据库的任务状态"""
+import sys
+sys.path.insert(0, '/root/.openclaw/workspace-e-commerce/scripts')
+
+from task_manager import TaskManager, generate_db_report
 import json
 import re
 from pathlib import Path
 from datetime import datetime
 
-STATE_FILE = Path('/root/.openclaw/workspace-e-commerce/logs/heartbeat_state.json')
 TASK_LOG = Path('/root/.openclaw/workspace-e-commerce/logs/task_exec.log')
-TASK_QUEUE = Path('/root/.openclaw/workspace-e-commerce/docs/dev-task-queue.md')
 
 ERROR_FIX_MAP = [
     (r"ProductStorer.*no attribute.*save", "product-storer接口修复"),
@@ -37,39 +39,6 @@ def parse_task_log():
                     errors.append(err)
     return {'summary': summary, 'errors': errors[:5]}
 
-def parse_all_tasks():
-    """解析所有任务及状态"""
-    if not TASK_QUEUE.exists():
-        return [], 0
-    content = TASK_QUEUE.read_text()
-    lines = content.split('\n')
-    tasks = []
-    in_today = False
-    in_table = False
-    
-    for line in lines:
-        if '## 📋 今日任务' in line:
-            in_today = True
-            continue
-        if in_today and line.startswith('## ') and '今日' not in line:
-            break
-        if in_today:
-            if '| # | 任务 |' in line:
-                in_table = True
-                continue
-            if '成功标准' in line:
-                in_table = False
-            if in_table and line.startswith('|') and '---' not in line:
-                parts = [p.strip() for p in line.split('|')]
-                if len(parts) >= 4 and parts[2]:
-                    task = parts[2].replace('**', '')
-                    status = parts[3]
-                    tasks.append((task, status))
-    
-    total = len(tasks)
-    completed = sum(1 for _, s in tasks if '✅' in s)
-    return tasks, total, completed
-
 def analyze_errors(errors):
     fixes = []
     for error in errors:
@@ -81,9 +50,17 @@ def analyze_errors(errors):
     return fixes
 
 def generate_report():
+    tm = TaskManager()
+    all_tasks = tm.get_all_tasks()
+    pending_tasks = tm.get_pending_tasks()
+    tm.close()
+    
     task_result = parse_task_log()
-    tasks, total, completed = parse_all_tasks()
     fixes = analyze_errors(task_result['errors']) if task_result and task_result.get('errors') else []
+    
+    total = len(all_tasks)
+    pending = len(pending_tasks)
+    completed = total - pending
     
     report = []
     report.append("📊 **CommerceFlow 心跳报告**")
@@ -101,23 +78,28 @@ def generate_report():
                 report.append(f"    • {err[:80]}")
         report.append("")
     
-    # 今日任务清单
-    if tasks:
-        report.append(f"📌 **今日任务清单** ({completed}/{total})")
-        for task, status in tasks:
-            emoji = "✅" if "✅" in status else "⬜"
-            report.append(f"  {emoji} {task}")
-        report.append("")
+    # 数据库任务状态
+    report.append(f"📌 **任务状态** ({completed}/{total})")
+    for t in all_tasks:
+        status_icon = {'completed': '✅', 'running': '🔄', 'pending': '⬜', 'failed': '❌'}.get(t['status'], '❓')
+        last_exec = t['last_executed_at'].strftime('%m-%d %H:%M') if t['last_executed_at'] else '从未'
+        if t['status'] == 'failed' and t['last_error']:
+            report.append(f"  {status_icon} {t['display_name']} | 上次:{last_exec}")
+            report.append(f"      ❌ {t['last_error'][:50]}")
+        elif t['status'] in ('pending', 'failed'):
+            report.append(f"  {status_icon} {t['display_name']} | 上次:{last_exec}")
+        else:
+            report.append(f"  {status_icon} {t['display_name']}")
+    report.append("")
     
     # 本次计划
     report.append("📋 **本次计划**")
     if fixes:
         for fix in fixes:
-            report.append(f"  ▸ {fix}")
-    elif tasks:
-        pending = [t for t, s in tasks if "⬜" in s]
-        for t in pending[:5]:
-            report.append(f"  ▸ {t}")
+            report.append(f"  🔧 {fix}")
+    elif pending_tasks:
+        for t in pending_tasks[:3]:
+            report.append(f"  ▸ {t['display_name']}")
     else:
         report.append("  无待处理任务")
     
