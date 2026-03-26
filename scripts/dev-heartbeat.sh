@@ -1,312 +1,146 @@
 #!/bin/bash
 #
-# CommerceFlow 开发心跳脚本
-# 每30分钟运行一次，自动迭代开发
+# CommerceFlow 心跳脚本
+# 监控 task_manager 产出结果，只做检测和报告，不执行任务
 #
-# 用法:
-#   ./dev-heartbeat.sh           # 正常运行
-#   ./dev-heartbeat.sh --status  # 查看状态
-#   ./dev-heartbeat.sh --stop    # 停止心跳
+# 任务执行由 prod_task_cron.py 负责
+# 心跳只负责监控和分析
 #
-
-set -e
 
 WORKSPACE="/root/.openclaw/workspace-e-commerce"
 LOG_FILE="$WORKSPACE/logs/dev-heartbeat.log"
-TASK_QUEUE="$WORKSPACE/docs/dev-task-queue.md"
-SCRAPER_DIR="/home/ubuntu/.openclaw/skills/collector-scraper"
-
-# 飞书通知配置
 FEISHU_WEBHOOK_URL="https://open.feishu.cn/open-apis/bot/v2/hook/6af7d281-ca31-42c6-ab88-5ba434404fb9"
-FEISHU_CHAT_ID="oc_cdff9eb5f5c8bd8151d20a17be309c23"
 
-# 确保日志目录存在
 mkdir -p "$WORKSPACE/logs"
 
-# 日志函数
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE"
 }
 
-# 发送飞书通知
 send_feishu() {
     local message="$1"
-    
-    if [ -z "$FEISHU_WEBHOOK_URL" ] || [ "$FEISHU_WEBHOOK_URL" == "https://open.feishu.cn/open-apis/bot/v2/hook/xxx" ]; then
-        log "  [飞书] 未配置webhook，跳过通知"
-        return
-    fi
-    
-    log "  [飞书] 正在发送通知..."
-    
-    # 使用Python脚本发送（更好地处理中文和emoji）
-    if python3 "$WORKSPACE/scripts/send_feishu.py" "$FEISHU_WEBHOOK_URL" "$message"; then
-        log "  [飞书] 通知发送成功"
-    else
-        log "  [飞书] 通知发送失败"
-    fi
+    python3 -c "
+import urllib.request
+import json
+msg = '''$message'''
+webhook = '$FEISHU_WEBHOOK_URL'
+payload = {'msg_type': 'text', 'content': {'text': msg}}
+req = urllib.request.Request(webhook, data=json.dumps(payload).encode(), headers={'Content-Type': 'application/json'})
+with urllib.request.urlopen(req) as resp:
+    print(resp.read().decode())
+" 2>/dev/null || log "飞书发送失败"
 }
 
-# 检查是否已有心跳在运行
-check_running() {
-    pgrep -f "dev-heartbeat.sh" | grep -v $$ | head -1
-}
-
-# 执行待办任务队列
-execute_task_queue() {
-    local task_queue="$WORKSPACE/docs/dev-task-queue.md"
-    local task_log="$WORKSPACE/logs/task_exec.log"
+# 主执行
+run_heartbeat() {
+    log "========== 心跳开始 =========="
     
-    # 检查任务队列文件
-    if [ ! -f "$task_queue" ]; then
-        log "  [任务队列] 文件不存在，跳过"
-        return 0
-    fi
-    
-    # 查找待执行的任务（状态=⬜）
-    local pending_tasks=$(grep -n "⬜ 待执行" "$task_queue" 2>/dev/null | head -5)
-    if [ -z "$pending_tasks" ]; then
-        log "  [任务队列] 无待执行任务"
-        return 0
-    fi
-    
-    log "  [任务队列] 发现待执行任务:"
-    echo "$pending_tasks" | while read line; do
-        log "    $line"
-    done
-    
-    # 获取第一个待执行任务的详细信息
-    local task_line=$(echo "$pending_tasks" | head -1 | cut -d: -f1)
-    if [ -z "$task_line" ]; then
-        log "  [任务队列] 无法解析任务行，跳过"
-        return 0
-    fi
-    
-    # 用Python解析任务名称（更可靠）
-    local task_name=$(python3 << 'PYEOF'
+    # 生成心跳报告
+    REPORT=$(python3 << 'PYEOF'
 import sys
-with open('/root/.openclaw/workspace-e-commerce/docs/dev-task-queue.md', 'r') as f:
-    lines = f.readlines()
-for i, line in enumerate(lines):
-    if '⬜ 待执行' in line:
-        parts = line.split('|')
-        if len(parts) >= 3:
-            print(parts[2].strip().replace('**', ''))
-            sys.exit(0)
+sys.path.insert(0, '/root/.openclaw/workspace-e-commerce/scripts')
+from task_manager import TaskManager
+
+tm = TaskManager()
+import psycopg2
+conn = psycopg2.connect(host='localhost', database='ecommerce_data', user='superuser', password='Admin123!')
+cur = conn.cursor()
+
+# 1. 获取任务状态统计
+cur.execute("""
+    SELECT exec_state, COUNT(*) 
+    FROM tasks 
+    GROUP BY exec_state
+""")
+state_stats = {row[0]: row[1] for row in cur.fetchall()}
+
+# 2. 获取最近30分钟日志
+cur.execute("""
+    SELECT id, task_name, run_status, run_message, created_at
+    FROM main_logs 
+    WHERE created_at > NOW() - INTERVAL '30 minutes'
+    ORDER BY id DESC
+    LIMIT 20
+""")
+recent_logs = cur.fetchall()
+
+# 3. 检查processing状态任务
+cur.execute("""
+    SELECT task_name, exec_state, last_executed_at
+    FROM tasks 
+    WHERE exec_state = 'processing'
+""")
+processing = cur.fetchall()
+
+# 4. 检查error_fix_pending任务
+cur.execute("""
+    SELECT task_name, display_name, retry_count, last_error
+    FROM tasks 
+    WHERE exec_state = 'error_fix_pending'
+""")
+pending_fixes = cur.fetchall()
+
+# 5. 检查following日志（正常运行中）
+cur.execute("""
+    SELECT COUNT(*) FROM main_logs 
+    WHERE run_status = 'following' 
+    AND created_at > NOW() - INTERVAL '10 minutes'
+""")
+following_count = cur.fetchone()[0]
+
+cur.close()
+conn.close()
+
+# 生成报告
+report = []
+
+# 状态概览
+report.append("💓 CommerceFlow 心跳报告")
+report.append("")
+report.append("📊 任务状态统计:")
+for state, count in sorted(state_stats.items()):
+    emoji = {
+        'end': '✅',
+        'processing': '🔄',
+        'error_fix_pending': '🔧',
+        'new': '🆕',
+        'void': '❌'
+    }.get(state, '❓')
+    report.append(f"  {emoji} {state}: {count}")
+
+report.append("")
+report.append(f"🔄 processing任务: {len(processing)}")
+for row in processing:
+    report.append(f"  - {row[0]}: {row[2]}")
+
+report.append("")
+report.append(f"🔧 error_fix_pending任务: {len(pending_fixes)}")
+for row in pending_fixes[:5]:
+    report.append(f"  - {row[0]} (retry={row[2]}): {str(row[3])[:50] if row[3] else '无错误'}")
+
+report.append("")
+report.append(f"📝 最近30分钟日志: {len(recent_logs)}条")
+if recent_logs:
+    latest = recent_logs[0]
+    report.append(f"  最新: ID:{latest[0]} {latest[2]} {latest[3][:50] if latest[3] else ''}")
+
+report.append("")
+if following_count > 0:
+    report.append(f"✅ {following_count}个任务正在正常运行")
+else:
+    report.append("⚠️ 无正常运行中的任务")
+
+print('\n'.join(report))
 PYEOF
 )
-    
-    if [ -z "$task_name" ]; then
-        task_name="未知任务"
-    fi
-    
-    log "  [任务队列] 执行任务: $task_name"
-    
-    case "$task_name" in
-        *"TC-FLOW-001"*|*"端到端测试"*|*"自动化上架"*|*"P0"*|*"立即执行"*)
-            log "  [任务] 执行: TC-FLOW-001 端到端自动化上架测试"
-            
-            # 分析上次执行情况（如果日志存在）
-            if [ -f "$task_log" ] && [ -s "$task_log" ]; then
-                log "  [分析] 检查上次执行情况..."
-                
-                # 运行Python分析脚本
-                local analysis=$(python3 "$WORKSPACE/scripts/analyze_task_failure.py" "$task_log" 2>/dev/null)
-                local error_type=$(echo "$analysis" | grep "^error_type=" | cut -d= -f2)
-                local action=$(echo "$analysis" | grep "^action=" | cut -d= -f2)
-                
-                log "  [分析] 错误类型: $error_type"
-                log "  [分析] 建议动作: $action"
-                
-                case "$action" in
-                    skip)
-                        log "  [决策] 技术错误需修复，跳过本次执行"
-                        local suggest=$(echo "$analysis" | grep "^原因:" | cut -d: -f2 | sed 's/^ *//')
-                        send_feishu "⚠️ TC-FLOW-001 阻塞\n错误类型: $error_type\n原因: $suggest\n等待修复后再执行"
-                        return 1
-                        ;;
-                    manual)
-                        log "  [决策] 需要人工介入"
-                        local suggest=$(echo "$analysis" | grep "^原因:" | cut -d: -f2 | sed 's/^ *//')
-                        send_feishu "🚨 TC-FLOW-001 需要人工介入\n错误类型: $error_type\n原因: $suggest\n请人工处理后再继续"
-                        return 1
-                        ;;
-                    retry|*)
-                        log "  [决策] 可重试，继续执行"
-                        ;;
-                esac
-            fi
-            
-            # 清空旧日志，开始新执行
-            > "$task_log"
-            
-            # 执行完整工作流测试
-            cd "$WORKSPACE/skills/workflow-runner/scripts"
-            python3 workflow_runner.py --url "https://detail.1688.com/offer/1031400982378.html" >> "$task_log" 2>&1
-            # 检查工作流实际结果（collect/scrape/weight必须都成功才算完成）
-            if grep -q "collect: ✅" "$task_log" && grep -q "scrape: ✅" "$task_log" && grep -q "weight: ✅" "$task_log"; then
-                log "  [任务] ✅ TC-FLOW-001 核心步骤完成"
-                sed -i '/TC-FLOW-001.*⬜ 待执行/s/⬜ 待执行/✅ 已完成/' "$task_queue"
-                send_feishu "✅ TC-FLOW-001 端到端测试完成！商品：https://detail.1688.com/offer/1031400982378.html"
-            else
-                log "  [任务] ⚠️ TC-FLOW-001 部分步骤失败，保持待执行状态"
-            fi
-            ;;
-        *"熔断"*)
-            log "  [任务] 执行: 熔断机制实现"
-            bash "$WORKSPACE/scripts/circuit_breaker.sh" >> "$task_log" 2>&1
-            if [ $? -eq 0 ]; then
-                log "  [任务] ✅ 熔断机制完成"
-                # 更新任务状态
-                sed -i "s/| ⬜ 待执行/| ✅ 已完成/" "$task_queue"
-                send_feishu "✅ 任务完成: 熔断机制实现"
-            else
-                log "  [任务] ❌ 熔断机制失败"
-            fi
-            ;;
-        *"config.env"*)
-            log "  [任务] 执行: config.env配置分离"
-            bash "$WORKSPACE/scripts/create_config_env.sh" >> "$task_log" 2>&1
-            if [ $? -eq 0 ]; then
-                log "  [任务] ✅ config.env完成"
-                sed -i "s/| ⬜ 待执行/| ✅ 已完成/" "$task_queue"
-                send_feishu "✅ 任务完成: config.env配置分离"
-            else
-                log "  [任务] ❌ config.env失败"
-            fi
-            ;;
-        *"Cookies"*)
-            log "  [任务] 执行: Cookies过期告警"
-            bash "$WORKSPACE/scripts/cookies_alert.sh" >> "$task_log" 2>&1
-            if [ $? -eq 0 ]; then
-                log "  [任务] ✅ Cookies告警完成"
-                sed -i "s/| ⬜ 待执行/| ✅ 已完成/" "$task_queue"
-            fi
-            ;;
-        *"商品数据"*)
-            log "  [任务] 执行: 商品数据分析"
-            python3 "$WORKSPACE/scripts/analyze_products.py" >> "$task_log" 2>&1
-            if [ $? -eq 0 ]; then
-                log "  [任务] ✅ 商品分析完成"
-                sed -i "s/| ⬜ 待执行/| ✅ 已完成/" "$task_queue"
-                send_feishu "✅ 任务完成: 商品数据分析"
-            fi
-            ;;
-        *"IMPROVEMENTS"*)
-            log "  [任务] 执行: 完善IMPROVEMENTS.md"
-            bash "$WORKSPACE/scripts/update_improvements.sh" >> "$task_log" 2>&1
-            if [ $? -eq 0 ]; then
-                log "  [任务] ✅ 完善完成"
-                sed -i "s/| ⬜ 待执行/| ✅ 已完成/" "$task_queue"
-                send_feishu "✅ 任务完成: 完善IMPROVEMENTS.md"
-            fi
-            ;;
-        *)
-            log "  [任务] 未知任务类型: $task_name，跳过"
-            ;;
-    esac
-    
-    return 0
-}
 
-# 主循环
-run_heartbeat() {
-    log "========== 开始开发心跳 =========="
+    echo "$REPORT"
+    log "$REPORT"
     
-    # 记录开始时间
-    START_TIME=$(date '+%Y-%m-%d %H:%M:%S')
-    
-    # 1. 检查collector-scraper问题
-    log "[Step 1] 检查collector-scraper模块状态..."
-    
-    SCRAPER_STATUS="✅"
-    if [ -f "$SCRAPER_DIR/scraper.py" ]; then
-        log "  scraper.py 存在"
-        
-        # 运行快速测试
-        log "[Step 2] 执行快速测试..."
-        cd "$SCRAPER_DIR"
-        timeout 90 python3 scraper.py --scrape 0 >> "$LOG_FILE" 2>&1 || log "  测试执行完成（可能有警告）"
-        
-        # 检查测试结果
-        if grep -q "货源ID: None" "$LOG_FILE" 2>/dev/null; then
-            log "  ⚠️ 发现问题：货源ID未提取"
-            SCRAPER_STATUS="⚠️ 货源ID未提取"
-        else
-            log "  ✅ 货源ID提取正常"
-        fi
-    else
-        log "  ❌ collector-scraper 模块未找到"
-        SCRAPER_STATUS="❌ 模块缺失"
-    fi
-    
-    # 2. 检查git状态
-    log "[Step 3] 检查代码变更..."
-    cd "$WORKSPACE"
-    GIT_STATUS="✅ 已同步"
-    if git status --porcelain 2>/dev/null | grep -q .; then
-        log "  ⚠️ 有未提交的变更"
-        GIT_STATUS="⚠️ 有变更待提交"
-        git add -A && git commit -m "Heartbeat auto-commit $(date '+%Y-%m-%d %H:%M')" 2>/dev/null || true
-        GIT_STATUS="✅ 已自动提交"
-    else
-        log "  ✅ 代码已是最新"
-    fi
-    
-    # 3. 从数据库读取任务状态
-    log "[Step 4] 检查任务状态..."
-    NEXT_TASKS=$(python3 "$WORKSPACE/scripts/get_next_tasks.py" 2>/dev/null || echo "无")
-    log "  $NEXT_TASKS"
-    
-    # 4. 发送飞书通知（包含上次结果+本次计划）
-    log "[Step 5] 发送飞书通知..."
-    HEARTBEAT_REPORT=$(python3 "$WORKSPACE/scripts/heartbeat_report.py" 2>/dev/null)
-    send_feishu "$HEARTBEAT_REPORT"
-    
-    # 5. 执行待办任务（从数据库读取）
-    log "[Step 6] 检查并执行待办任务..."
-    python3 "$WORKSPACE/scripts/task_executor.py" >> "$task_log" 2>&1
-    TASK_EXEC_RESULT=$?
+    # 发送飞书
+    send_feishu "$REPORT"
     
     log "========== 心跳完成 =========="
-    log ""
 }
 
-# 查看状态
-show_status() {
-    echo "=== CommerceFlow 开发状态 ==="
-    echo ""
-    echo "最后心跳: $(tail -1 $LOG_FILE 2>/dev/null || echo '无')"
-    echo ""
-    echo "当前任务:"
-    if [ -f "$TASK_QUEUE" ]; then
-        grep -E "^### |^\[#" "$TASK_QUEUE" | head -10
-    fi
-    echo ""
-    echo "最近日志:"
-    tail -20 "$LOG_FILE" 2>/dev/null || echo "无日志"
-}
-
-# 停止心跳
-stop_heartbeat() {
-    pid=$(check_running)
-    if [ -n "$pid" ]; then
-        kill "$pid"
-        echo "已停止心跳 (PID: $pid)"
-    else
-        echo "没有运行中的心跳"
-    fi
-}
-
-# 主入口
-case "${1:-}" in
-    --status)
-        show_status
-        ;;
-    --stop)
-        stop_heartbeat
-        ;;
-    *)
-        run_heartbeat
-        ;;
-esac
+run_heartbeat
