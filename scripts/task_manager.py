@@ -79,25 +79,52 @@ class TaskManager:
         return tasks
     
     def get_actionable_tasks(self, limit: int = 2) -> List[Dict]:
-        """获取可执行的任务（优先P0，再子任务，最多返回limit个）"""
+        """获取可执行的任务（优先P0，再子任务，最多返回limit个）
+        
+        父任务（level=1）只有在其所有子任务都完成（end或void）时才返回
+        """
         cur = self.conn.cursor()
+        
+        # 先获取所有可执行的任务
         cur.execute("""
             SELECT * FROM tasks 
-            WHERE exec_state IN ('error_fix_pending', 'normal_crash', 'requires_manual', 'new')
+            WHERE exec_state IN ('error_fix_pending', 'normal_crash', 'new')
             ORDER BY 
                 CASE priority 
                     WHEN 'P0' THEN 1 
                     WHEN 'P1' THEN 2 
                     WHEN 'P2' THEN 3 
                 END,
-                task_level DESC,  -- 同优先级优先处理子任务(level 2)
+                task_level DESC,
                 created_at
             LIMIT %s
-        """, (limit,))
+        """, (limit * 3,))  # 多取一些，后面过滤
+        
         cols = [desc[0] for desc in cur.description]
-        tasks = [dict(zip(cols, row)) for row in cur.fetchall()]
+        all_tasks = [dict(zip(cols, row)) for row in cur.fetchall()]
+        
+        # 过滤：排除父任务如果它还有未完成的子任务
+        result = []
+        for task in all_tasks:
+            if task.get('task_level') == 2:
+                # 子任务：直接返回
+                result.append(task)
+            else:
+                # 父任务：检查子任务是否都完成
+                cur.execute("""
+                    SELECT COUNT(*) FROM tasks 
+                    WHERE parent_task_id = %s 
+                    AND exec_state NOT IN ('end', 'void', 'requires_manual')
+                """, (task['task_name'],))
+                pending_count = cur.fetchone()[0]
+                
+                if pending_count == 0:
+                    # 所有子任务都完成了，可以执行父任务
+                    result.append(task)
+                # else: 还有子任务未完成，跳过父任务
+        
         cur.close()
-        return tasks
+        return result[:limit]
     
     # ========== 状态更新 ==========
     def update_task(self, task_name: str, **kwargs):
