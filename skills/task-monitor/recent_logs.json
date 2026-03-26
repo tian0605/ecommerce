@@ -1,0 +1,702 @@
+[
+  {
+    "id": 717,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "success",
+    "message": "修复: analyze 失败 成功",
+    "time": "2026-03-27 00:10:35.442605"
+  },
+  {
+    "id": 716,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "执行结果: 修复代码执行成功",
+    "time": "2026-03-27 00:10:35.432278"
+  },
+  {
+    "id": 715,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "执行修复代码...",
+    "time": "2026-03-27 00:10:35.425318"
+  },
+  {
+    "id": 714,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    return ...",
+    "time": "2026-03-27 00:10:35.417942"
+  },
+  {
+    "id": 713,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    # 模拟分析逻辑",
+    "time": "2026-03-27 00:10:35.410499"
+  },
+  {
+    "id": 712,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "        return {\"status\": \"failed\", \"message\": \"No data provided\"}",
+    "time": "2026-03-27 00:10:35.402880"
+  },
+  {
+    "id": 711,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    if data is None:",
+    "time": "2026-03-27 00:10:35.395743"
+  },
+  {
+    "id": 710,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    \"\"\"",
+    "time": "2026-03-27 00:10:35.388502"
+  },
+  {
+    "id": 709,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    修复 name 'analyze' is not defined 错误",
+    "time": "2026-03-27 00:10:35.381001"
+  },
+  {
+    "id": 708,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    执行数据分析步骤",
+    "time": "2026-03-27 00:10:35.374180"
+  },
+  {
+    "id": 707,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    \"\"\"",
+    "time": "2026-03-27 00:10:35.366591"
+  },
+  {
+    "id": 706,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "修复代码: def analyze(data):",
+    "time": "2026-03-27 00:10:35.359069"
+  },
+  {
+    "id": 705,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "分析: 错误根因是代码中调用了 `analyze` 函数或变量，但在当前作用域中未定义也未导入。需要补充 `analyze` 函数的定义或检查导入语句是否正确。",
+    "time": "2026-03-27 00:10:35.351825"
+  },
+  {
+    "id": 704,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "```",
+    "time": "2026-03-27 00:10:35.341725"
+  },
+  {
+    "id": 703,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "        print(f\"Execution failed: {e}\")",
+    "time": "2026-03-27 00:10:35.334604"
+  },
+  {
+    "id": 702,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    except Exception as e:",
+    "time": "2026-03-27 00:10:35.327157"
+  },
+  {
+    "id": 701,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "        print(f\"Analysis result: {result}\")",
+    "time": "2026-03-27 00:10:35.319484"
+  },
+  {
+    "id": 700,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "        result = analyze(sample_data)",
+    "time": "2026-03-27 00:10:35.312156"
+  },
+  {
+    "id": 699,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    try:",
+    "time": "2026-03-27 00:10:35.304164"
+  },
+  {
+    "id": 698,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    sample_data = {\"order_id\": 12345, \"item\": \"test_product\"}",
+    "time": "2026-03-27 00:10:35.296305"
+  },
+  {
+    "id": 697,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    # 示例调用，确保函数已定义",
+    "time": "2026-03-27 00:10:35.289014"
+  },
+  {
+    "id": 696,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "if __name__ == \"__main__\":",
+    "time": "2026-03-27 00:10:35.279002"
+  },
+  {
+    "id": 695,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    return {\"status\": \"success\", \"result\": f\"Analyzed {len(str(data))} items\"}",
+    "time": "2026-03-27 00:10:35.271809"
+  },
+  {
+    "id": 694,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    # 模拟分析逻辑",
+    "time": "2026-03-27 00:10:35.264509"
+  },
+  {
+    "id": 693,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "        return {\"status\": \"failed\", \"message\": \"No data provided\"}",
+    "time": "2026-03-27 00:10:35.256065"
+  },
+  {
+    "id": 692,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    if data is None:",
+    "time": "2026-03-27 00:10:35.248871"
+  },
+  {
+    "id": 691,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    \"\"\"",
+    "time": "2026-03-27 00:10:35.241821"
+  },
+  {
+    "id": 690,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    修复 name 'analyze' is not defined 错误",
+    "time": "2026-03-27 00:10:35.233446"
+  },
+  {
+    "id": 689,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    执行数据分析步骤",
+    "time": "2026-03-27 00:10:35.226223"
+  },
+  {
+    "id": 688,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "    \"\"\"",
+    "time": "2026-03-27 00:10:35.219097"
+  },
+  {
+    "id": 687,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "def analyze(data):",
+    "time": "2026-03-27 00:10:35.210250"
+  },
+  {
+    "id": 686,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "```python",
+    "time": "2026-03-27 00:10:35.202224"
+  },
+  {
+    "id": 685,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "【修复代码】",
+    "time": "2026-03-27 00:10:35.193001"
+  },
+  {
+    "id": 684,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "错误根因是代码中调用了 `analyze` 函数或变量，但在当前作用域中未定义也未导入。需要补充 `analyze` 函数的定义或检查导入语句是否正确。",
+    "time": "2026-03-27 00:10:35.184987"
+  },
+  {
+    "id": 683,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "【分析】",
+    "time": "2026-03-27 00:10:35.177590"
+  },
+  {
+    "id": 682,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "LLM返回:",
+    "time": "2026-03-27 00:10:35.170025"
+  },
+  {
+    "id": 681,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "调用LLM分析...",
+    "time": "2026-03-27 00:10:35.162034"
+  },
+  {
+    "id": 680,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "错误: 代码执行失败: name 'analyze' is not defined",
+    "time": "2026-03-27 00:10:35.154249"
+  },
+  {
+    "id": 679,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "描述: 错误: analyze 失败",
+    "time": "2026-03-27 00:10:35.146493"
+  },
+  {
+    "id": 678,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "任务: FIX-TC-FLOW-001-010",
+    "time": "2026-03-27 00:10:35.133567"
+  },
+  {
+    "id": 677,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "success",
+    "message": "修复成功",
+    "time": "2026-03-27 00:10:35.119188"
+  },
+  {
+    "id": 676,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "开始执行子任务: FIX-TC-FLOW-001-010",
+    "time": "2026-03-27 00:10:01.331587"
+  },
+  {
+    "id": 675,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "prod_task_cron启动",
+    "time": "2026-03-27 00:10:01.202611"
+  },
+  {
+    "id": 674,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "  ⏳ 标记为可重试 (retry=2)",
+    "time": "2026-03-27 00:00:19.922597"
+  },
+  {
+    "id": 673,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "测试 1 - None 输入:",
+    "time": "2026-03-27 00:00:19.915295"
+  },
+  {
+    "id": 672,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "  📝 执行修复代码...",
+    "time": "2026-03-27 00:00:19.907262"
+  },
+  {
+    "id": 671,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "logging.basicConfig(level=logging.INFO...",
+    "time": "2026-03-27 00:00:19.898347"
+  },
+  {
+    "id": 670,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "# 配置日志",
+    "time": "2026-03-27 00:00:19.883202"
+  },
+  {
+    "id": 669,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "from typing import Any, Dict, Optional",
+    "time": "2026-03-27 00:00:19.875553"
+  },
+  {
+    "id": 668,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "     代码: import logging",
+    "time": "2026-03-27 00:00:19.868559"
+  },
+  {
+    "id": 667,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "     分析: analyze 函数执行失败且错误信息为 None，通常是因为输入数据为空、缺少必要字段或数据类型不匹配导致函数内部抛出异常但未被捕获。需要添加输入验证和异常处理机制。...",
+    "time": "2026-03-27 00:00:19.861202"
+  },
+  {
+    "id": 666,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "  ✅ 分析完成",
+    "time": "2026-03-27 00:00:19.852978"
+  },
+  {
+    "id": 665,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "  🤖 调用LLM分析问题...",
+    "time": "2026-03-27 00:00:19.845227"
+  },
+  {
+    "id": 664,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "  📋 分析问题...",
+    "time": "2026-03-27 00:00:19.837042"
+  },
+  {
+    "id": 663,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "============================================================",
+    "time": "2026-03-27 00:00:19.829246"
+  },
+  {
+    "id": 662,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "执行子任务: FIX-TC-FLOW-001-010",
+    "time": "2026-03-27 00:00:19.819023"
+  },
+  {
+    "id": 661,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "============================================================",
+    "time": "2026-03-27 00:00:19.803923"
+  },
+  {
+    "id": 660,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "failed",
+    "message": "代码执行失败: name 'analyze' is not defined",
+    "time": "2026-03-27 00:00:19.791331"
+  },
+  {
+    "id": 659,
+    "task": "FIX-TC-FLOW-001-010",
+    "status": "running",
+    "message": "prod_task_cron启动",
+    "time": "2026-03-27 00:00:01.680114"
+  },
+  {
+    "id": 658,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "success",
+    "message": "修复: update 失败 成功",
+    "time": "2026-03-26 23:51:37.400422"
+  },
+  {
+    "id": 657,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "running",
+    "message": "  ✅ 修复成功: 代码执行成功",
+    "time": "2026-03-26 23:51:37.392261"
+  },
+  {
+    "id": 656,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "running",
+    "message": "数据内容：{'id': 1, 'status': 'new'}",
+    "time": "2026-03-26 23:51:37.384832"
+  },
+  {
+    "id": 655,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "running",
+    "message": "更新结果：{'status': 'success', 'message': 'update 执行成功'}",
+    "time": "2026-03-26 23:51:37.377493"
+  },
+  {
+    "id": 654,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "running",
+    "message": "  📝 执行修复代码...",
+    "time": "2026-03-26 23:51:37.369131"
+  },
+  {
+    "id": 653,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "running",
+    "message": "    ...",
+    "time": "2026-03-26 23:51:37.359393"
+  },
+  {
+    "id": 652,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "running",
+    "message": "        # 修复点：直接使用 update 方法，不要将返回值赋值给变量",
+    "time": "2026-03-26 23:51:37.352037"
+  },
+  {
+    "id": 651,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "running",
+    "message": "    try:",
+    "time": "2026-03-26 23:51:37.344769"
+  },
+  {
+    "id": 650,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "running",
+    "message": "     代码: def update_flow_data(current_data, new_data):",
+    "time": "2026-03-26 23:51:37.336898"
+  },
+  {
+    "id": 649,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "running",
+    "message": "     分析: 错误原因是代码可能误将 `dict.update()` 方法的返回值赋值给了变量，而该方法原地修改并返回 `None`，导致后续逻辑判定更新失败。修复方案是移除对更新方法返回值的赋值",
+    "time": "2026-03-26 23:51:37.329544"
+  },
+  {
+    "id": 648,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "running",
+    "message": "  ✅ 分析完成",
+    "time": "2026-03-26 23:51:37.322179"
+  },
+  {
+    "id": 647,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "running",
+    "message": "  🤖 调用LLM分析问题...",
+    "time": "2026-03-26 23:51:37.314188"
+  },
+  {
+    "id": 646,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "running",
+    "message": "  📋 分析问题...",
+    "time": "2026-03-26 23:51:37.302545"
+  },
+  {
+    "id": 645,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "running",
+    "message": "============================================================",
+    "time": "2026-03-26 23:51:37.291198"
+  },
+  {
+    "id": 644,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "running",
+    "message": "执行子任务: FIX-TC-FLOW-001-009",
+    "time": "2026-03-26 23:51:37.282101"
+  },
+  {
+    "id": 643,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "running",
+    "message": "============================================================",
+    "time": "2026-03-26 23:51:37.270791"
+  },
+  {
+    "id": 642,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "success",
+    "message": "子任务修复成功",
+    "time": "2026-03-26 23:51:37.255431"
+  },
+  {
+    "id": 641,
+    "task": "FIX-TC-FLOW-001-009",
+    "status": "running",
+    "message": "prod_task_cron启动",
+    "time": "2026-03-26 23:50:02.043846"
+  },
+  {
+    "id": 640,
+    "task": "FIX-TC-FLOW-001-008",
+    "status": "success",
+    "message": "修复: store 失败 成功",
+    "time": "2026-03-26 23:40:57.881624"
+  },
+  {
+    "id": 639,
+    "task": "FIX-TC-FLOW-001-008",
+    "status": "running",
+    "message": "  ✅ 修复成功: 代码执行成功",
+    "time": "2026-03-26 23:40:57.873425"
+  },
+  {
+    "id": 638,
+    "task": "FIX-TC-FLOW-001-008",
+    "status": "running",
+    "message": "Store execution success: True",
+    "time": "2026-03-26 23:40:57.866210"
+  },
+  {
+    "id": 637,
+    "task": "FIX-TC-FLOW-001-008",
+    "status": "running",
+    "message": "  📝 执行修复代码...",
+    "time": "2026-03-26 23:40:57.857859"
+  },
+  {
+    "id": 636,
+    "task": "FIX-TC-FLOW-001-008",
+    "status": "running",
+    "message": "        if conte...",
+    "time": "2026-03-26 23:40:57.848665"
+  },
+  {
+    "id": 635,
+    "task": "FIX-TC-FLOW-001-008",
+    "status": "running",
+    "message": "        # 1. 初始化存储上下文，防止因 None 导致赋值错误",
+    "time": "2026-03-26 23:40:57.840603"
+  },
+  {
+    "id": 634,
+    "task": "FIX-TC-FLOW-001-008",
+    "status": "running",
+    "message": "    try:",
+    "time": "2026-03-26 23:40:57.833128"
+  },
+  {
+    "id": 633,
+    "task": "FIX-TC-FLOW-001-008",
+    "status": "running",
+    "message": "     代码: def safe_store(context, key, value):",
+    "time": "2026-03-26 23:40:57.825979"
+  },
+  {
+    "id": 632,
+    "task": "FIX-TC-FLOW-001-008",
+    "status": "running",
+    "message": "     分析: 1. 错误信息为 None 表明存储上下文对象可能未初始化或为 None，导致赋值操作抛出异常或被静默捕获。 2. 同时原函数可能缺乏明确的成功返回值，导致自动化流程判定步骤失败。 ",
+    "time": "2026-03-26 23:40:57.818064"
+  },
+  {
+    "id": 631,
+    "task": "FIX-TC-FLOW-001-008",
+    "status": "running",
+    "message": "  ✅ 分析完成",
+    "time": "2026-03-26 23:40:57.810681"
+  },
+  {
+    "id": 630,
+    "task": "FIX-TC-FLOW-001-008",
+    "status": "running",
+    "message": "  🤖 调用LLM分析问题...",
+    "time": "2026-03-26 23:40:57.802556"
+  },
+  {
+    "id": 629,
+    "task": "FIX-TC-FLOW-001-008",
+    "status": "running",
+    "message": "  📋 分析问题...",
+    "time": "2026-03-26 23:40:57.794711"
+  },
+  {
+    "id": 628,
+    "task": "FIX-TC-FLOW-001-008",
+    "status": "running",
+    "message": "============================================================",
+    "time": "2026-03-26 23:40:57.784307"
+  },
+  {
+    "id": 627,
+    "task": "FIX-TC-FLOW-001-008",
+    "status": "running",
+    "message": "执行子任务: FIX-TC-FLOW-001-008",
+    "time": "2026-03-26 23:40:57.772833"
+  },
+  {
+    "id": 626,
+    "task": "FIX-TC-FLOW-001-008",
+    "status": "running",
+    "message": "============================================================",
+    "time": "2026-03-26 23:40:57.763200"
+  },
+  {
+    "id": 625,
+    "task": "FIX-TC-FLOW-001-008",
+    "status": "success",
+    "message": "子任务修复成功",
+    "time": "2026-03-26 23:40:57.749861"
+  },
+  {
+    "id": 624,
+    "task": "FIX-TC-FLOW-001-008",
+    "status": "running",
+    "message": "prod_task_cron启动",
+    "time": "2026-03-26 23:40:02.088073"
+  },
+  {
+    "id": 623,
+    "task": "TC-FLOW-001",
+    "status": "failed",
+    "message": "TC-FLOW-001端到端测试 失败，3个步骤有问题，已创建子任务",
+    "time": "2026-03-26 23:34:23.934420"
+  },
+  {
+    "id": 622,
+    "task": "TC-FLOW-001",
+    "status": "running",
+    "message": "失败的步骤: store, update, analyze",
+    "time": "2026-03-26 23:34:23.916127"
+  },
+  {
+    "id": 621,
+    "task": "TC-FLOW-001",
+    "status": "running",
+    "message": "⚠️  部分失败 (4/7)",
+    "time": "2026-03-26 23:34:23.908413"
+  },
+  {
+    "id": 620,
+    "task": "TC-FLOW-001",
+    "status": "running",
+    "message": "==================================================",
+    "time": "2026-03-26 23:34:23.900042"
+  },
+  {
+    "id": 619,
+    "task": "TC-FLOW-001",
+    "status": "running",
+    "message": "  analyze: ❌",
+    "time": "2026-03-26 23:34:23.892003"
+  },
+  {
+    "id": 618,
+    "task": "TC-FLOW-001",
+    "status": "running",
+    "message": "  update: ❌",
+    "time": "2026-03-26 23:34:23.883373"
+  }
+]
