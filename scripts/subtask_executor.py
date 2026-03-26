@@ -101,19 +101,40 @@ def parse_fix_response(content: str) -> dict:
 
 
 def execute_fix_code(code: str, task_name: str) -> tuple:
-    """执行修复代码"""
+    """执行修复代码，并持久化到文件"""
     if not code:
         return False, "没有修复代码"
     
     try:
-        # 创建执行环境
-        exec_globals = {'__name__': '__fix__'}
+        # 1. 持久化代码到文件
+        fixes_dir = Path('/root/.openclaw/workspace-e-commerce/scripts/fixes')
+        fixes_dir.mkdir(exist_ok=True)
+        
+        # 生成文件名：fix_{task_name}.py
+        safe_name = task_name.replace('-', '_').replace(':', '_')
+        fix_file = fixes_dir / f'fix_{safe_name}.py'
+        
+        # 写入文件（包含执行入口）
+        with open(fix_file, 'w') as f:
+            f.write(code)
+            f.write(f'\n# 执行入口：apply_fix()\n')
+            f.write('def apply_fix():\n')
+            f.write('    pass  # 入口函数\n')
+        
+        print(f"修复代码已持久化: {fix_file}")
+        
+        # 2. 加载并执行
+        exec_globals = {'__name__': '__fix__', 'fix_file': str(fix_file)}
         exec_locals = {}
         
-        # 执行代码
-        exec(code, exec_globals, exec_locals)
+        # 先加载持久化的代码
+        with open(fix_file, 'r') as f:
+            fix_code = f.read()
         
-        return True, "修复代码执行成功"
+        # 执行代码
+        exec(fix_code, exec_globals, exec_locals)
+        
+        return True, f"修复代码执行成功 (已持久化到 {fix_file})"
         
     except Exception as e:
         return False, f"执行错误: {str(e)}"

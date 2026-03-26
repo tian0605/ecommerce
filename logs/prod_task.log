@@ -880,3 +880,108 @@ if __name__ == "__main__":
 
 ============================================================
 📋 prod_task_cron 执行完成
+📋 发现 1 个待执行任务
+
+============================================================
+处理任务: TC-FLOW-001端到端测试 (level=1, state=error_fix_pending)
+2026-03-27 00:20:01,740 | workflow-runner | WARNING | 部分模块导入失败: cannot import name 'LLM_API_KEY' from 'llm_config' (/root/.openclaw/workspace-e-commerce/config/llm_config.py)
+2026-03-27 00:20:01,741 | workflow-runner | INFO | ============================================================
+2026-03-27 00:20:01,741 | workflow-runner | INFO | 🚀 自动化工作流开始
+2026-03-27 00:20:01,742 | workflow-runner | INFO | ============================================================
+2026-03-27 00:20:01,742 | workflow-runner | INFO | ==================================================
+2026-03-27 00:20:01,742 | workflow-runner | INFO | [步骤1] 妙手采集认领
+2026-03-27 00:20:01,742 | workflow-runner | INFO | ==================================================
+2026-03-27 00:20:01,743 | miaoshou-collector | INFO | 已加载cookies
+2026-03-27 00:20:02,407 | miaoshou-collector | INFO | 浏览器启动成功
+2026-03-27 00:20:02,408 | miaoshou-collector | INFO | [Step 1] 访问产品采集页面
+2026-03-27 00:20:09,639 | miaoshou-collector | INFO | 截图: /home/ubuntu/work/tmp/miaoshou_collector_test/step1_page_20260327_002009.png
+2026-03-27 00:20:09,640 | miaoshou-collector | INFO | [Step 2] 输入1688链接: https://detail.1688.com/offer/1031400982378.html
+2026-03-27 00:20:09,814 | miaoshou-collector | INFO | 截图: /home/ubuntu/work/tmp/miaoshou_collector_test/step2_link_filled_20260327_002009.png
+2026-03-27 00:20:09,814 | miaoshou-collector | INFO | [Step 3] 点击'采集并自动认领'
+2026-03-27 00:20:09,843 | miaoshou-collector | INFO | 等待30秒让采集完成...
+2026-03-27 00:20:39,946 | miaoshou-collector | INFO | 截图: /home/ubuntu/work/tmp/miaoshou_collector_test/step3_after_collect_20260327_002039.png
+2026-03-27 00:20:39,946 | miaoshou-collector | INFO | [Step 4] 访问Shopee采集箱验证商品
+2026-03-27 00:20:48,500 | miaoshou-collector | INFO | 截图: /home/ubuntu/work/tmp/miaoshou_collector_test/step4_shopee_box_20260327_002048.png
+2026-03-27 00:20:48,500 | miaoshou-collector | INFO | [Step 5] 在Shopee采集箱中查找商品 1031400982378
+2026-03-27 00:20:48,501 | miaoshou-collector | INFO |   第1次查找...
+2026-03-27 00:20:51,519 | miaoshou-collector | INFO | ✓ 在Shopee采集箱中找到商品: 1031400982378
+2026-03-27 00:20:51,663 | miaoshou-collector | INFO | 截图: /home/ubuntu/work/tmp/miaoshou_collector_test/product_1031400982378_20260327_002051.png
+2026-03-27 00:20:51,663 | miaoshou-collector | INFO | ✅ 采集完成!
+2026-03-27 00:20:51,764 | miaoshou-collector | INFO | 浏览器已关闭
+2026-03-27 00:20:51,764 | workflow-runner | INFO | ✅ 采集成功
+2026-03-27 00:20:53,765 | workflow-runner | INFO | ==================================================
+2026-03-27 00:20:53,765 | workflow-runner | INFO | [步骤2] 提取商品数据
+2026-03-27 00:20:53,765 | workflow-runner | INFO | ==================================================
+2026-03-27 00:20:53,765 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-27 00:20:54,626 | collector-scraper | INFO | 浏览器启动成功
+2026-03-27 00:20:54,626 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-27 00:21:02,759 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260327_002102.png
+2026-03-27 00:21:02,777 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-27 00:21:07,932 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260327_002107.png
+2026-03-27 00:21:07,966 | collector-scraper | INFO | 提取到货源ID: 1031400982378
+2026-03-27 00:21:08,131 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-27 00:21:08,132 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-27 00:21:09,211 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2400}, {'name': '奶黄色', 'image': None, 'stock': 1950}], 'colorImages': {}, 'overallPrice': 24, 'overallStock': None, 'debug': {'stocksFound': [2400, 99999, 1031400982378, 1950, 99999, 10314009823783, 2000, 99989, 10314009823783, 2300, 99997, 10314009823783], 'validStocks': [2400, 1950, 2000, 99989, 2300, 99997], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-27 00:21:09,211 | collector-scraper | INFO | 有效库存: [2400, 1950, 2000, 99989, 2300, 99997], 颜色数: 0
+2026-03-27 00:21:09,212 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-27 00:21:10,244 | collector-scraper | INFO | 找到规格: {'颜色': ['组合【三件套】', '斜口【小号】X3', '带轮【中号】X3', '带轮【大号】X3']}
+2026-03-27 00:21:10,244 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-27 00:21:10,244 | collector-scraper | INFO |   SKU: {sku}
+2026-03-27 00:21:10,244 | collector-scraper | INFO |   SKU: {sku}
+2026-03-27 00:21:10,244 | collector-scraper | INFO |   SKU: {sku}
+2026-03-27 00:21:10,244 | collector-scraper | INFO |   SKU: {sku}
+2026-03-27 00:21:10,275 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '24.00'}，继续尝试其他方法
+2026-03-27 00:21:10,275 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-27 00:21:10,304 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '24.00'}，继续尝试方法3
+2026-03-27 00:21:10,304 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-27 00:21:10,318 | collector-scraper | INFO | 成功提取商品数据: 1031400982378
+2026-03-27 00:21:10,438 | collector-scraper | INFO | 浏览器已关闭
+2026-03-27 00:21:10,439 | workflow-runner | INFO | ✅ 提取成功: 货源ID=1031400982378
+2026-03-27 00:21:10,439 | workflow-runner | INFO | ==================================================
+2026-03-27 00:21:10,439 | workflow-runner | INFO | [步骤3] 本地1688服务获取重量/尺寸
+2026-03-27 00:21:10,439 | workflow-runner | INFO | ==================================================
+2026-03-27 00:21:10,526 | workflow-runner | INFO | ✅ 获取成功: 4 个SKU
+2026-03-27 00:21:10,526 | workflow-runner | INFO |    - 组合【三件套】: 41g, NonexNonexNonecm
+2026-03-27 00:21:10,526 | workflow-runner | INFO |    - 斜口【小号】X3: 41g, NonexNonexNonecm
+2026-03-27 00:21:10,527 | workflow-runner | INFO |    - 带轮【中号】X3: 41g, NonexNonexNonecm
+2026-03-27 00:21:10,527 | workflow-runner | INFO |    - 带轮【大号】X3: 41g, NonexNonexNonecm
+2026-03-27 00:21:11,527 | workflow-runner | INFO | ==================================================
+2026-03-27 00:21:11,527 | workflow-runner | INFO | [步骤4] 数据落库
+2026-03-27 00:21:11,527 | workflow-runner | INFO | ==================================================
+2026-03-27 00:21:11,557 | product-storer | INFO | 生成主货号: 四000001 / 新格式: AL0001001260000003
+2026-03-27 00:21:11,569 | product-storer | WARNING | 商品已存在 (ID: 19, product_id: 三000001)
+2026-03-27 00:21:11,570 | workflow-runner | WARNING | ⚠️ 落库返回: {'success': False, 'product_id': '四000001', 'product_id_new': 'AL0001001260000003', 'message': '商品已存在 (ID: 19, product_id: 三000001)', 'data': {'alibaba_product_id': '1031400982378', 'title': '厨房多功能收纳篮锅盖架置物架塑料锅具收纳架橱柜收纳盒储物架子', 'description': '材质：PP\n品牌：炬程\n产品类别：厨房储物篮\n适用范围：遥控器,杂志,文具,水果,包包,化妆品,蔬菜,面包,玩具,杂物,化妆用品/首饰,书籍杂志,耳机线/电线\n风格：简约风\n是否进口：否\n产地：台州\n专利：否\n颜色：组合【三件套】,斜口【小号】X3,带轮【中号】X3,带轮【大号】X3', 'category': '架子与置物架 (Shelves & Racks)', 'brand': None, 'origin': None, 'skus': [{'name': '组合【三件套】', 'color': '组合【三件套】', 'size': '', 'price': 24, 'stock': 2400, 'image': None}, {'name': '斜口【小号】X3', 'color': '斜口【小号】X3', 'size': '', 'price': 24, 'stock': 1950, 'image': None}, {'name': '带轮【中号】X3', 'color': '带轮【中号】X3', 'size': '', 'price': 24, 'stock': 2000, 'image': None}, {'name': '带轮【大号】X3', 'color': '带轮【大号】X3', 'size': '', 'price': 24, 'stock': 99989, 'image': None}], 'main_images': [], 'sku_images': [], 'detail_images': [], 'logistics': {'weight': '24.00'}, 'raw_data': {'dialog_text': ' 厨房多功能收纳篮锅盖架置物架塑料锅具收纳架橱柜收纳盒储物架子 \n1031400982378\n 脏衣服收纳袋收纳筐折叠收纳箱束口脏衣篮搬家衣服被子整理箱宿舍 \n1026137274944\n 日式复古风实木竹编收纳筐客厅桌面收纳盒家居书本零食杂物收纳框 \n1027205078815\n 加大鞋子收纳鞋架省空间鞋架鞋柜可调节双层鞋托架男士款分层隔板 \n965854175819\n 鏡櫃下抽屜式收納盒 浴室化妝品收納 透明可傾斜33度開啟 \n1026640656479\n共 5 条\n前往页\n查看来源信息\n合并模式\n源数据\n跨境全球\n基本信息\n类目&属性\n销售属性\n产品图片\n产品视频\n物流信息\n基本信息\n产品标题\nAI生成\n推荐关键词\nAbc\n 60/180\n简易描述\nAI生成\n242/5000\n编辑图文描述 \n主货号\n产品状况\n全新\n二手\n类目&属性\n类目\n应用至相同类目产品\n属性\n*品牌\n同步品牌\n原产地\n(Region of Origin)\n保修期限\n(Warranty Duration)\n特点\n(Feature)\n材质\n(Material)\n塑料\n图案\n(Pattern)\n保修类型\n(Warranty Type)\n状态\n(Condition)\n古董收藏\n(Antique Collection)\n组装\n(Assembly)\n可折叠家具\n(Foldable Furniture)\n可承重量\n(Supported Weight)\n衣柜门种类\n(Wardrobe Door Type)\n*\n尺寸（长 x 宽 x 高）\n(Dimension (L x W x H))\nSafety Mark注册号\n(Safety Mark)\nBSMI\n(BSMI)\n数量\n(Quantity)\n包装尺寸\n(indication)\n生产商\n(Manufacturer/trader name)\n生产商地址\n(Manufacturer/trader address)\nCustom Product\n(Custom Product)\nQuantity per Pack\n(Quantity per Pack)\nNumber Of Layers\n(Number Of Layers)\nUse\n(Use)\nPlacement\n(Placement)\nSetting\n(Setting)\nInstallment\n(Installment)\nWith Wheel\n(With Wheel)\nWith Drawer\n(With Drawer)\nShape\n(Shape)\nModel\n(Model)\nColor\n(Color)\nCertification/License\n(Certification/License)\nAssembly ID\n(Assembly ID)\ncountry of origins\n(country of origins)\nTires Size (Installation)\n(Tires Size (Installation))\n销售属性\n 单品\n 多规格\n 新增销售规格引用SKU模板 批量修改SKU名称\n规格一\n4/14\n12/30\n12/30\n12/30\n12/30\n添加选项\nSKU列表 （4个）\n按SKU配置出货天数\n颜色\n货源价格\n批量\n全球价格\n批量\n全球库存\n批量\n平台SKU\n自动更多\n重量\n批量\n组合【三件套】\nCNY\nCNY\n21/100\n斜口【小号】X3\nCNY\nCNY\n22/100\n带轮【中号】X3\nCNY\nCNY\n22/100\n带轮【大号】X3\nCNY\nCNY\n22/100\n产品图片\n产品图片 （已选9张）\n 图片翻译\n 消除水印\n 图片编辑  上传图片批量删除 导出图片  添加水印 \n选中前9张 \n显示大图预览\n显示图片尺寸\n图片格式：JPG, JPEG, PNG; 图片大小不能超过3M；图片建议尺寸：800x800；可拖拽移动图片；\n发布时最多上传前9张\n800 x 800\nAI\n800 x 800\nAI\n800 x 800\nAI\n800 x 800\nAI\n1033 x 1033\nAI\n800 x 800\nAI\n800 x 800\nAI\n800 x 800\nAI\n800 x 800\nAI\n750 x 300\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n1240 x 1920\nAI\n1500 x 496\nAI\nSKU图片\n批量传图删除全部\n 消除水印\n 图片编辑  图片翻译 导出图片  添加水印 \n全选\n图片格式：JPG, JPEG, PNG; 图片大小不能超过3M；图片建议尺寸：800x800；\n组合【三件套】\nAI\n斜口【小号】X3\nAI\n带轮【中号】X3\nAI\n带轮【大号】X3\nAI\n产品视频\n产品视频\n 视频翻译\n AI图生视频\n 剪辑视频\n一键生成\n制作视频\n要求说明:\n 视频像素不超过1280×1280px，视频时长10s~60s，大小必须小于30M，格式为MP4;\n本地上传\n本地上传\n本地上传\n物流信息\n包裹重量\n包裹尺寸\n长\t\nCM\n宽\t\nCM\n高\t\nCM\n发货时间\n天内发货 ( 可填写1,4到10天 )\n引用模板 \n取 消一键翻译 保存并发布保存修改跨境全球'}, 'local_1688_weight': {}}, 'sku_ids': [], 'sku_message': '', 'image_upload': {}}
+2026-03-27 00:21:11,570 | workflow-runner | WARNING | 落库失败，继续后续步骤
+2026-03-27 00:21:11,570 | workflow-runner | INFO | ==================================================
+2026-03-27 00:21:11,570 | workflow-runner | INFO | [步骤5] Listing优化
+2026-03-27 00:21:11,570 | workflow-runner | INFO | ==================================================
+2026-03-27 00:21:11,570 | workflow-runner | ERROR | ❌ 优化失败: name 'ListingOptimizer' is not defined
+2026-03-27 00:21:11,570 | workflow-runner | INFO | ==================================================
+2026-03-27 00:21:11,570 | workflow-runner | INFO | [步骤6] 回写妙手ERP
+2026-03-27 00:21:11,570 | workflow-runner | INFO | ==================================================
+2026-03-27 00:21:11,570 | workflow-runner | ERROR | ❌ 回写失败: name 'MiaoshouUpdater' is not defined
+2026-03-27 00:21:11,571 | workflow-runner | INFO | ==================================================
+2026-03-27 00:21:11,571 | workflow-runner | INFO | [步骤7] 利润分析
+2026-03-27 00:21:11,571 | workflow-runner | INFO | ==================================================
+2026-03-27 00:21:11,571 | workflow-runner | ERROR | ❌ 分析失败: name 'ProfitAnalyzer' is not defined
+2026-03-27 00:21:11,571 | workflow-runner | INFO | ============================================================
+2026-03-27 00:21:11,571 | workflow-runner | INFO | 🏁 工作流完成
+2026-03-27 00:21:11,571 | workflow-runner | INFO | ============================================================
+
+==================================================
+工作流结果汇总:
+==================================================
+  collect: ✅
+  scrape: ✅
+  weight: ✅
+  store: ❌
+  optimize: ❌
+  update: ❌
+  analyze: ❌
+==================================================
+⚠️  部分失败 (3/7)
+失败的步骤: store, optimize, update, analyze
+  ❌ 执行失败
+
+============================================================
+📋 prod_task_cron 执行完成
