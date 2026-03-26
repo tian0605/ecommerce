@@ -186,8 +186,17 @@ class TaskManager:
         )
 
     def create_fix_subtasks(self, task_name: str, errors: list):
-        """批量创建修复子任务（多个错误）- 含成功标准"""
-        for i, error_info in enumerate(errors):
+        """批量创建修复子任务（多个错误）- 含成功标准
+        
+        如果对应的子任务已存在（且状态为end），则重新创建新的子任务
+        """
+        # 获取现有子任务
+        existing_subs = self.get_sub_tasks(task_name)
+        existing_names = {sub['display_name'].replace('修复: ', '').strip() for sub in existing_subs}
+        
+        sub_count = len(existing_subs)
+        
+        for error_info in errors:
             if isinstance(error_info, dict):
                 error_msg = error_info.get('error', str(error_info))
                 fix_suggestion = error_info.get('fix', '')
@@ -201,8 +210,13 @@ class TaskManager:
                 analysis = ''
                 plan = ''
             
-            sub_task_name = f"FIX-{task_name}-{i+1:03d}"
-            display_name = f"修复: {error_msg[:50]}"
+            # 检查是否已存在对应的子任务
+            short_error = error_msg[:50]
+            
+            # 生成新的子任务名（避免与现有冲突）
+            sub_count += 1
+            sub_task_name = f"FIX-{task_name}-{sub_count:03d}"
+            display_name = f"修复: {short_error}"
             
             # 创建子任务
             self.create_sub_task(
