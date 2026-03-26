@@ -276,9 +276,32 @@ log.finish('success', '处理完成')
 
 **功能：**
 1. **Popen实时输出**: 使用 `subprocess.Popen` 实时打印任务stdout
-2. **卡死检测**: 10分钟无日志判定为卡死
-3. **自动处理**: 卡死任务自动杀掉进程 + 重置为 error_fix_pending
-4. **following状态**: 执行中任务插入"正常运行"日志
+2. **实时日志写入**: 每行stdout实时写入main_logs（通过on_line_callback）
+3. **卡死检测**: 10分钟无日志判定为卡死
+4. **自动处理**: 卡死任务自动杀掉进程 + 重置为 error_fix_pending
+5. **following状态**: 执行中任务插入"正常运行"日志
+
+**Popen实时日志实现：**
+```python
+def run_with_popen(task_name: str, script_info: dict, on_line_callback=None) -> tuple:
+    """使用Popen执行任务，实时输出
+    
+    Args:
+        on_line_callback: 每行输出的回调函数，签名为 (line: str) -> None
+    """
+    proc = subprocess.Popen(cmd, stdout=PIPE, stderr=STDOUT, text=True, bufsize=1)
+    
+    for line in proc.stdout:
+        print(line, end='')  # 实时打印到控制台
+        if on_line_callback:
+            on_line_callback(line.rstrip())  # 实时写入main_logs
+    
+    proc.wait()
+    return success, output
+
+# 调用时传入log.info作为回调
+run_with_popen(task_name, script_info, on_line_callback=log.info)
+```
 
 **卡死检测逻辑：**
 ```python
