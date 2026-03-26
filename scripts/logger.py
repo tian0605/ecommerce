@@ -66,9 +66,8 @@ class Logger:
         if message:
             self.run_message = message
         
-        # 根据log_level自动设置status
-        if not self.run_status or self.run_status == "running":
-            self.run_status = status
+        # 强制更新状态（允许从running更新，也允许后续更新）
+        self.run_status = status
         
         end_time = datetime.now()
         duration_ms = int((end_time - self.start_time).total_seconds() * 1000)
