@@ -21,7 +21,7 @@ import time
 from pathlib import Path
 
 # 添加shared模块路径
-sys.path.insert(0, str(Path(__file__).parent / 'skills' / 'shared'))
+sys.path.insert(0, '/home/ubuntu/.openclaw/skills/shared')
 
 from logger import setup_logger
 import db
