@@ -19,6 +19,73 @@ class TaskManager:
     def close(self):
         self.conn.close()
     
+    def on_task_success(self, task_name: str):
+        """当任务成功时，更新文档形成长久记忆
+        
+        自动提取成功经验并更新：
+        - skills/*/SKILL.md（相关技能文档）
+        - docs/KNOWLEDGE.md（知识库）
+        - docs/AGENTS.md（智能执行标准）
+        """
+        import os
+        import json
+        from datetime import datetime
+        
+        task = self.get_task(task_name)
+        if not task:
+            return
+        
+        workspace = '/root/.openclaw/workspace-e-commerce'
+        success_record = {
+            'task_name': task_name,
+            'display_name': task.get('display_name', ''),
+            'success_criteria': task.get('success_criteria', ''),
+            'completed_at': datetime.now().isoformat(),
+            'description': task.get('description', '')
+        }
+        
+        # 1. 更新 docs/KNOWLEDGE.md
+        knowledge_file = f'{workspace}/docs/KNOWLEDGE.md'
+        if os.path.exists(knowledge_file):
+            with open(knowledge_file, 'r') as f:
+                content = f.read()
+            
+            # 在文件开头添加成功记录
+            new_entry = f"""
+## {task_name} - {task.get('display_name', '')}
+**时间**: {datetime.now().strftime('%Y-%m-%d %H:%M')}
+**成功标准**: {task.get('success_criteria', '')}
+**描述**: {task.get('description', '')}
+
+"""
+            with open(knowledge_file, 'w') as f:
+                f.write(new_entry + content)
+        
+        # 2. 如果是父任务，更新 AGENTS.md
+        if task.get('task_level') == 1:
+            agents_file = f'{workspace}/docs/AGENTS.md'
+            if os.path.exists(agents_file):
+                with open(agents_file, 'r') as f:
+                    content = f.read()
+                
+                # 在成功案例部分添加记录
+                new_entry = f"""
+### {task_name} ({datetime.now().strftime('%Y-%m-%d')})
+**描述**: {task.get('description', '')}
+**成功标准**: {task.get('success_criteria', '')}
+**关键执行参数**: 待补充
+
+"""
+                # 找到"成功案例"部分并插入
+                if '## 成功案例' in content:
+                    content = content.replace(
+                        '## 成功案例',
+                        f'## 成功案例{new_entry}'
+                    )
+                    with open(agents_file, 'w') as f:
+                        f.write(content)
+        
+        print(f"✅ 已更新长久记忆: {task_name}")    
     # ========== 基础CRUD ==========
     def get_task(self, task_name: str) -> Optional[Dict]:
         """获取单个任务"""

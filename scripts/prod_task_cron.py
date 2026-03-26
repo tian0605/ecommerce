@@ -194,6 +194,8 @@ def run():
             tm.mark_end(task_name, "执行成功")
             print(f"  ✅ 执行成功")
             log.set_message(f"{display_name} 成功").finish("success")
+            # 更新长久记忆
+            tm.on_task_success(task_name)
         else:
             print(f"  ❌ 执行失败")
             
