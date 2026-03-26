@@ -277,16 +277,10 @@ run_heartbeat() {
     fi
     log "  下一个任务: $NEXT_TASK"
     
-    # 4. 发送飞书通知
+    # 4. 发送飞书通知（包含上次结果+本次计划）
     log "[Step 5] 发送飞书通知..."
-    send_feishu "📊 CommerceFlow 心跳报告
-⏰ $START_TIME
-━━━━━━━━━━━━━━━
-🔧 模块状态: $SCRAPER_STATUS
-📝 Git状态: $GIT_STATUS
-📋 下一个任务: $NEXT_TASK
-━━━━━━━━━━━━━━━
-✅ 心跳执行正常"
+    HEARTBEAT_REPORT=$(python3 "$WORKSPACE/scripts/heartbeat_report.py" 2>/dev/null)
+    send_feishu "$HEARTBEAT_REPORT"
     
     # 5. 执行待办任务（从dev-task-queue.md读取）
     log "[Step 6] 检查并执行待办任务..."
