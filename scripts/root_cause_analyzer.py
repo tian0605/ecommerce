@@ -3,6 +3,8 @@
 root_cause_analyzer.py - 根因分析器
 
 当父任务重试3次仍失败时，调用LLM分析最近日志，找出真正根因
+
+支持循环分析：修复后再次失败会重新分析新根因
 """
 import sys
 import requests
@@ -25,15 +27,22 @@ SYSTEM_PROMPT = """你是一个专业的电商运营自动化系统错误分析�
 【分析要求】
 1. 识别日志中的错误模式
 2. 找出真正的根因（不是表面错误）
-3. 给出具体的修复方案
+3. 如果有多个独立问题，都要找出来
 
 【输出格式】
 ```
 【根因分析】
-1-3句话说明真正的根本原因
+1-3句话说明真正的根本原因（如果有多个问题，用1.2.3.列出）
+
+【问题列表】
+- 问题1: 具体描述
+- 问题2: 具体描述
+...
 
 【修复方案】
-具体可执行的修复步骤
+1. 修复问题1的具体步骤
+2. 修复问题2的具体步骤
+...
 
 【优先级】
 P0/P1/P2
@@ -125,7 +134,7 @@ def analyze(task_name: str) -> dict:
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": user_prompt}
                 ],
-                "max_tokens": LLM_CONFIG.get('max_tokens', 1500),
+                "max_tokens": LLM_CONFIG.get('max_tokens', 2000),
                 "temperature": 0.3
             },
             timeout=120
@@ -149,10 +158,11 @@ def analyze(task_name: str) -> dict:
 
 
 def parse_analysis(content: str) -> dict:
-    """解析LLM分析结果"""
+    """解析LLM分析结果，支持多个问题"""
     result = {
         'root_cause': '',
-        'fix_steps': '',
+        'problems': [],  # 多个问题列表
+        'fix_steps': [],
         'priority': 'P1'
     }
     
@@ -163,6 +173,8 @@ def parse_analysis(content: str) -> dict:
         line = line.strip()
         if '根因分析' in line:
             current_section = 'root'
+        elif '问题列表' in line:
+            current_section = 'problems'
         elif '修复方案' in line or '解决方案' in line:
             current_section = 'fix'
         elif '优先级' in line:
@@ -170,8 +182,18 @@ def parse_analysis(content: str) -> dict:
         elif line and current_section:
             if current_section == 'root':
                 result['root_cause'] += line + ' '
+            elif current_section == 'problems':
+                if line.startswith('-') or line.startswith('•') or line[0].isdigit():
+                    problem = line.lstrip('-•0123456789. ')
+                    if problem:
+                        result['problems'].append(problem)
             elif current_section == 'fix':
-                result['fix_steps'] += line + '\n'
+                if line.startswith('-') or line.startswith('•') or line[0].isdigit():
+                    step = line.lstrip('-•0123456789. ')
+                    if step:
+                        result['fix_steps'].append(step)
+                elif result['fix_steps']:
+                    result['fix_steps'][-1] += ' ' + line
             elif current_section == 'priority':
                 if 'P0' in line:
                     result['priority'] = 'P0'
@@ -179,7 +201,15 @@ def parse_analysis(content: str) -> dict:
                     result['priority'] = 'P1'
     
     result['root_cause'] = result['root_cause'].strip()
-    result['fix_steps'] = result['fix_steps'].strip()
+    result['fix_steps'] = [s.strip() for s in result['fix_steps'] if s.strip()]
+    
+    # 如果没有解析到问题列表，从根因中尝试提取
+    if not result['problems'] and result['root_cause']:
+        # 尝试从根因中找多个问题
+        parts = result['root_cause'].split('。')
+        for part in parts:
+            if '问题' in part or '错误' in part or '原因' in part:
+                result['problems'].append(part.strip())
     
     return result
 
@@ -193,5 +223,12 @@ if __name__ == '__main__':
     if result:
         print(f"\n解析结果:")
         print(f"根因: {result['root_cause']}")
-        print(f"修复: {result['fix_steps']}")
+        print(f"问题数: {len(result['problems'])}")
+        for i, p in enumerate(result['problems'], 1):
+            print(f"  问题{i}: {p}")
+        print(f"修复步骤: {len(result['fix_steps'])}")
+        for i, s in enumerate(result['fix_steps'], 1):
+            print(f"  {i}. {s}")
         print(f"优先级: {result['priority']}")
+        sys.exit(0)
+    sys.exit(1)

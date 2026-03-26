@@ -211,7 +211,7 @@ def run():
                 
                 if retry_count >= 3:
                     # 重试3次以上，先进行根因分析
-                    print(f"  ⚠️ 父任务重试{retry_count}次，先进行根因分析...")
+                    print(f"  [ROOT CAUSE] 父任务重试{retry_count}次，先进行根因分析...")
                     
                     # 调用根因分析器
                     import subprocess
@@ -221,10 +221,46 @@ def run():
                     )
                     
                     if result.returncode == 0:
-                        print(f"  📊 根因分析完成，请查看日志")
+                        print(f"  [ROOT CAUSE] 根因分析完成")
+                        
+                        # 分析结果已输出到stdout，可以从中提取问题
+                        # 创建针对性修复子任务
+                        failed_steps = []
+                        
+                        # 从根因分析结果中提取问题
+                        lines_out = result.stdout.split('\n')
+                        in_problems = False
+                        for ln in lines_out:
+                            if '问题数:' in ln:
+                                in_problems = True
+                                continue
+                            if in_problems and ln.strip().startswith(('1.', '2.', '3.', '4.', '5.')):
+                                prob = ln.strip()[3:].strip()
+                                if prob and len(prob) > 5:
+                                    failed_steps.append({
+                                        'error': f"根因问题: {prob[:80]}",
+                                        'fix': f"请根据根因分析修复此问题",
+                                        'success_criteria': f"问题已解决，任务不再报此错误"
+                                    })
+                            elif in_problems and '修复步骤' in ln:
+                                break
+                        
+                        if failed_steps:
+                            print(f"  [ROOT CAUSE] 从分析结果创建{len(failed_steps)}个修复子任务")
+                        else:
+                            print(f"  [ROOT CAUSE] 未解析到明确问题，使用默认处理")
+                            # 默认创建Step级别的修复任务
+                            for step in ['store', 'optimize', 'update', 'analyze']:
+                                if step in result.stdout.lower():
+                                    failed_steps.append({
+                                        'error': f"Step失败: {step}",
+                                        'fix': f"检查{step}步骤代码",
+                                        'success_criteria': f"{step}执行成功"
+                                    })
                     else:
-                        print(f"  ⚠️ 根因分析执行异常: {result.stderr[:200]}")
+                        print(f"  [ROOT CAUSE] 根因分析执行异常: {result.stderr[:200]}")
                 
+                # 解析失败步骤，创建多个子任务
                 # 解析失败步骤，创建多个子任务
                 # 父任务失败：解析失败步骤，创建多个子任务
                 failed_steps = []
