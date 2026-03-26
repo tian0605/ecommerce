@@ -214,3 +214,74 @@
 
 ✅ TC-FLOW-001 运行正常，等待下次检查
 📋 无待执行任务
+
+📋 发现 1 个执行中任务
+
+⏰ TC-FLOW-001 已卡死超过10分钟
+  🔪 已杀掉 TC-FLOW-001 相关进程
+📋 发现 1 个待执行任务
+
+============================================================
+处理任务: TC-FLOW-001端到端测试 (level=1, state=error_fix_pending)
+2026-03-26 22:00:01,626 | workflow-runner | INFO | ============================================================
+2026-03-26 22:00:01,628 | workflow-runner | INFO | 🚀 自动化工作流开始
+2026-03-26 22:00:01,628 | workflow-runner | INFO | ============================================================
+2026-03-26 22:00:01,628 | workflow-runner | INFO | ==================================================
+2026-03-26 22:00:01,628 | workflow-runner | INFO | [步骤1] 妙手采集认领
+2026-03-26 22:00:01,628 | workflow-runner | INFO | ==================================================
+2026-03-26 22:00:01,633 | miaoshou-collector | INFO | 已加载cookies
+2026-03-26 22:00:03,358 | miaoshou-collector | INFO | 浏览器启动成功
+2026-03-26 22:00:03,359 | miaoshou-collector | INFO | [Step 1] 访问产品采集页面
+2026-03-26 22:00:10,391 | miaoshou-collector | INFO | 截图: /home/ubuntu/work/tmp/miaoshou_collector_test/step1_page_20260326_220010.png
+2026-03-26 22:00:10,392 | miaoshou-collector | INFO | [Step 2] 输入1688链接: https://detail.1688.com/offer/1031400982378.html
+2026-03-26 22:00:10,555 | miaoshou-collector | INFO | 截图: /home/ubuntu/work/tmp/miaoshou_collector_test/step2_link_filled_20260326_220010.png
+2026-03-26 22:00:10,556 | miaoshou-collector | INFO | [Step 3] 点击'采集并自动认领'
+2026-03-26 22:00:10,582 | miaoshou-collector | INFO | 等待30秒让采集完成...
+2026-03-26 22:00:40,683 | miaoshou-collector | INFO | 截图: /home/ubuntu/work/tmp/miaoshou_collector_test/step3_after_collect_20260326_220040.png
+2026-03-26 22:00:40,683 | miaoshou-collector | INFO | [Step 4] 访问Shopee采集箱验证商品
+2026-03-26 22:00:49,141 | miaoshou-collector | INFO | 截图: /home/ubuntu/work/tmp/miaoshou_collector_test/step4_shopee_box_20260326_220048.png
+2026-03-26 22:00:49,142 | miaoshou-collector | INFO | [Step 5] 在Shopee采集箱中查找商品 1031400982378
+2026-03-26 22:00:49,142 | miaoshou-collector | INFO |   第1次查找...
+2026-03-26 22:00:52,148 | miaoshou-collector | INFO | ✓ 在Shopee采集箱中找到商品: 1031400982378
+2026-03-26 22:00:52,266 | miaoshou-collector | INFO | 截图: /home/ubuntu/work/tmp/miaoshou_collector_test/product_1031400982378_20260326_220052.png
+2026-03-26 22:00:52,267 | miaoshou-collector | INFO | ✅ 采集完成!
+2026-03-26 22:00:52,371 | miaoshou-collector | INFO | 浏览器已关闭
+2026-03-26 22:00:52,371 | workflow-runner | INFO | ✅ 采集成功
+2026-03-26 22:00:54,371 | workflow-runner | INFO | ==================================================
+2026-03-26 22:00:54,372 | workflow-runner | INFO | [步骤2] 提取商品数据
+2026-03-26 22:00:54,372 | workflow-runner | INFO | ==================================================
+2026-03-26 22:00:54,373 | collector-scraper | INFO | 从备用位置加载cookies: /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
+2026-03-26 22:00:54,996 | collector-scraper | INFO | 浏览器启动成功
+2026-03-26 22:00:54,997 | collector-scraper | INFO | 爬取商品 (index=0)...
+2026-03-26 22:01:03,258 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/list_before_edit_20260326_220103.png
+2026-03-26 22:01:03,274 | collector-scraper | INFO | 点击第 1 个商品的编辑按钮
+2026-03-26 22:01:08,531 | collector-scraper | INFO | 截图: /home/ubuntu/work/tmp/collector_scraper_test/edit_dialog_20260326_220108.png
+2026-03-26 22:01:08,569 | collector-scraper | INFO | 提取到货源ID: 1031400982378
+2026-03-26 22:01:08,751 | collector-scraper | INFO | JS查找图片Tab: []
+2026-03-26 22:01:08,751 | collector-scraper | INFO | Tab提取失败，使用兜底逻辑提取图片
+2026-03-26 22:01:09,915 | collector-scraper | INFO | JS提取SKU: {'skus': [{'name': '奶白色', 'image': None, 'stock': 2400}, {'name': '奶黄色', 'image': None, 'stock': 1950}], 'colorImages': {}, 'overallPrice': 24, 'overallStock': None, 'debug': {'stocksFound': [2400, 99999, 1031400982378, 1950, 99999, 10314009823783, 2000, 99989, 10314009823783, 2300, 99997, 10314009823783], 'validStocks': [2400, 1950, 2000, 99989, 2300, 99997], 'colorCount': 0, 'imgDebug': None, 'elImageCount': None}}
+2026-03-26 22:01:09,916 | collector-scraper | INFO | 有效库存: [2400, 1950, 2000, 99989, 2300, 99997], 颜色数: 0
+2026-03-26 22:01:09,916 | collector-scraper | INFO | JS提取失败，使用兜底逻辑
+2026-03-26 22:01:11,005 | collector-scraper | INFO | 找到规格: {'颜色': ['组合【三件套】', '斜口【小号】X3', '带轮【中号】X3', '带轮【大号】X3']}
+2026-03-26 22:01:11,005 | collector-scraper | INFO | 提取到 {len(skus)} 个SKU
+2026-03-26 22:01:11,005 | collector-scraper | INFO |   SKU: {sku}
+2026-03-26 22:01:11,005 | collector-scraper | INFO |   SKU: {sku}
+2026-03-26 22:01:11,005 | collector-scraper | INFO |   SKU: {sku}
+2026-03-26 22:01:11,005 | collector-scraper | INFO |   SKU: {sku}
+2026-03-26 22:01:11,027 | collector-scraper | INFO | JavaScript提取到部分物流信息: {'weight': '24.00'}，继续尝试其他方法
+2026-03-26 22:01:11,027 | collector-scraper | INFO | 尝试方法2: 查找物流区域数值型input
+2026-03-26 22:01:11,049 | collector-scraper | INFO | 方法2提取到部分物流信息: {'weight': '24.00'}，继续尝试方法3
+2026-03-26 22:01:11,049 | collector-scraper | INFO | 尝试方法3: 从SKU规格解析尺寸
+2026-03-26 22:01:11,065 | collector-scraper | INFO | 成功提取商品数据: 1031400982378
+2026-03-26 22:01:11,202 | collector-scraper | INFO | 浏览器已关闭
+2026-03-26 22:01:11,202 | workflow-runner | INFO | ✅ 提取成功: 货源ID=1031400982378
+2026-03-26 22:01:11,202 | workflow-runner | INFO | ==================================================
+2026-03-26 22:01:11,202 | workflow-runner | INFO | [步骤3] 本地1688服务获取重量/尺寸
+2026-03-26 22:01:11,202 | workflow-runner | INFO | ==================================================
+无法连接到本地服务，请检查隧道是否建立
+2026-03-26 22:01:11,206 | workflow-runner | WARNING | ⚠️ 获取失败: None
+2026-03-26 22:01:12,206 | workflow-runner | INFO | ==================================================
+2026-03-26 22:01:12,206 | workflow-runner | INFO | [步骤4] 数据落库
+2026-03-26 22:01:12,206 | workflow-runner | INFO | ==================================================
+2026-03-26 22:01:12,233 | product-storer | INFO | 生成主货号: 三000002 / 新格式: AL0001001260000003
+2026-03-26 22:01:12,243 | product-storer | WARNING | 商品已存在 (ID: 19, product_id: 三000001)

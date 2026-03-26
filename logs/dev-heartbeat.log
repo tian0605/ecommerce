@@ -29643,3 +29643,36 @@ TypeError: string indices must be integers, not 'str'
 
 ✅ 1个任务正在正常运行
 [2026-03-26 21:42:03] ========== 心跳完成 ==========
+[2026-03-26 22:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📊 任务状态统计:
+  ✅ end: 8
+  🔄 processing: 1
+
+🔄 processing任务: 1
+  - TC-FLOW-001: 2026-03-26 21:48:24.958027
+
+🔧 error_fix_pending任务: 0
+
+📝 最近30分钟日志: 20条
+  最新: ID:86 following 任务正常运行中，等待下一次检查
+
+✅ 2个任务正在正常运行
+[2026-03-26 22:00:01] 💓 CommerceFlow 心跳报告
+
+📊 任务状态统计:
+  ✅ end: 8
+  🔄 processing: 1
+
+🔄 processing任务: 1
+  - TC-FLOW-001: 2026-03-26 21:48:24.958027
+
+🔧 error_fix_pending任务: 0
+
+📝 最近30分钟日志: 20条
+  最新: ID:86 following 任务正常运行中，等待下一次检查
+
+✅ 2个任务正在正常运行
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-26 22:00:04] ========== 心跳完成 ==========
