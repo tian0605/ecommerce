@@ -24,10 +24,10 @@
 ls -la /home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json
 
 # 2. 本地1688服务
-curl http://127.0.0.1:9090/health
+curl http://127.0.0.1:8080/health
 
 # 3. SSH隧道
-ss -tlnp | grep 9090
+ss -tlnp | grep 8080
 ```
 
 #### 🟡 P1 质量问题（当天处理）
@@ -264,7 +264,7 @@ fi
 
 # 即使Cookies失败，也继续检查其他前置条件
 llm_status="OK"
-if ! curl -s --max-time 5 "http://127.0.0.1:9090/health" | grep -q "ok"; then
+if ! curl -s --max-time 5 "http://127.0.0.1:8080/health" | grep -q "ok"; then
     echo "⚠️ 本地1688服务离线"
     llm_status="FAILED"
 fi

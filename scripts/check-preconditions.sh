@@ -20,7 +20,7 @@ fi
 # 条件2: 本地服务
 echo ""
 echo "[条件2] 本地1688服务"
-if curl -s --max-time 5 http://127.0.0.1:9090/health > /tmp/health_check.json 2>&1; then
+if curl -s --max-time 5 http://127.0.0.1:8080/health > /tmp/health_check.json 2>&1; then
     STATUS=$(cat /tmp/health_check.json)
     echo "  ✅ 本地服务正常"
     echo "     响应: $STATUS"
@@ -31,8 +31,8 @@ fi
 # 条件3: 隧道
 echo ""
 echo "[条件3] SSH隧道"
-if ss -tlnp 2>/dev/null | grep -q "127.0.0.1:9090"; then
-    echo "  ✅ 隧道已建立 (127.0.0.1:9090 LISTEN)"
+if ss -tlnp 2>/dev/null | grep -q "127.0.0.1:8080"; then
+    echo "  ✅ 隧道已建立 (127.0.0.1:8080 LISTEN)"
 else
     echo "  ❌ 隧道未建立"
 fi

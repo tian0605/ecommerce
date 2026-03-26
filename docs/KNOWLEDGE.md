@@ -14,9 +14,9 @@
 **关键配置：**
 ```bash
 # SSH隧道
-ssh -L 9090:127.0.0.1:9090 user@remote_server
-# 本地服务端口：9090
-# 远程调用：http://127.0.0.1:9090/get_weight?url=xxx
+ssh -L 8080:127.0.0.1:8080 user@remote_server
+# 本地服务端口：8080
+# 远程调用：http://127.0.0.1:8080/get_weight?url=xxx
 ```
 
 ### 妙手ERP虚拟表格数据提取

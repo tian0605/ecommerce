@@ -22,8 +22,8 @@
 ## Key Details
 
 - 妙手ERP Cookies: `/home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json`
-- 本地爬虫服务端口: 9090
-- 1688权重服务器端口: 9090
+- 本地爬虫服务端口: 8080
+- 1688权重服务器端口: 8080
 
 ## Danger Zone Log
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # CommerceFlow 开发心跳脚本
-# 每10分钟运行一次，自动迭代开发
+# 每30分钟运行一次，自动迭代开发
 #
 # 用法:
 #   ./dev-heartbeat.sh           # 正常运行
@@ -84,7 +84,8 @@ execute_task_queue() {
     
     # 读取任务名称（向上查找 ### 或 ## 标题）
     local task_name=""
-    for ((i=$task_line-1; i>=1; i--)); do
+    local search_start=$task_line
+    for ((i=$search_start-1; i>=1; i--)); do
         local line=$(sed -n "${i}p" "$task_queue")
         if echo "$line" | grep -qE "^## |^### "; then
             task_name=$(echo "$line" | sed 's/^#* *//' | tr -d '\n')
@@ -100,6 +101,21 @@ execute_task_queue() {
     
     # 根据任务名称执行对应脚本
     case "$task_name" in
+        *"TC-FLOW-001"*|*"端到端测试"*|*"自动化上架"*)
+            log "  [任务] 执行: TC-FLOW-001 端到端自动化上架测试"
+            # 执行完整工作流测试
+            cd /root/.openclaw/workspace-e-commerce/skills/workflow-runner/scripts
+            python3 workflow_runner.py --url "https://detail.1688.com/offer/1031400982378.html" >> "$task_log" 2>&1
+            if [ $? -eq 0 ]; then
+                log "  [任务] ✅ TC-FLOW-001 完成"
+                # 更新任务状态（只更新包含"TC-FLOW"的行）
+                sed -i '/TC-FLOW-001.*⬜ 待执行/s/⬜ 待执行/✅ 已完成/' "$task_queue"
+                send_feishu "✅ TC-FLOW-001 端到端测试完成！商品：https://detail.1688.com/offer/1031400982378.html"
+            else
+                log "  [任务] ❌ TC-FLOW-001 失败，查看日志: $task_log"
+                send_feishu "❌ TC-FLOW-001 端到端测试失败，请检查日志"
+            fi
+            ;;
         *"熔断"*)
             log "  [任务] 执行: 熔断机制实现"
             bash "$WORKSPACE/scripts/circuit_breaker.sh" >> "$task_log" 2>&1

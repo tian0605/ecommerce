@@ -22,7 +22,7 @@
 
 **检查方式：**
 ```bash
-curl http://127.0.0.1:9090/health
+curl http://127.0.0.1:8080/health
 ```
 
 **预期响应：** `{"service":"1688-weight-fetcher","status":"ok"}`
@@ -40,17 +40,17 @@ python local-1688-weight-server.py
 
 **检查方式：**
 ```bash
-ss -tlnp | grep 9090
+ss -tlnp | grep 8080
 ```
 
-**预期：** 显示 `127.0.0.1:9090` 监听中
+**预期：** 显示 `127.0.0.1:8080` 监听中
 
 **MobaXterm隧道配置：**
 ```
 类型: Local port forward
-Local port: 9090
+Local port: 8080
 Remote server: 127.0.0.1
-Remote port: 9090
+Remote port: 8080
 ```
 
 ---
@@ -69,14 +69,14 @@ else
 fi
 
 # 条件2: 本地服务
-if curl -s --max-time 5 http://127.0.0.1:9090/health > /dev/null 2>&1; then
+if curl -s --max-time 5 http://127.0.0.1:8080/health > /dev/null 2>&1; then
     echo "✅ 条件2: 本地服务正常"
 else
     echo "❌ 条件2: 本地服务未启动"
 fi
 
 # 条件3: 隧道
-if ss -tlnp | grep -q 9090; then
+if ss -tlnp | grep -q 8080; then
     echo "✅ 条件3: 隧道已建立"
 else
     echo "❌ 条件3: 隧道未建立"
