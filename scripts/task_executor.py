@@ -25,23 +25,31 @@ TASK_SCRIPTS = {
     'COOKIES-ALERT': f'{WORKSPACE}/scripts/cookies_alert.sh',
     'PRODUCT-ANALYSIS': f'{WORKSPACE}/scripts/analyze_products.py',
     'IMPROVEMENTS-MD': f'{WORKSPACE}/scripts/update_improvements.sh',
-    'TC-FLOW-001': f'{WORKSPACE}/skills/workflow-runner/scripts/workflow_runner.py',
+    'TC-FLOW-001': {
+        'script': f'{WORKSPACE}/skills/workflow-runner/scripts/workflow_runner.py',
+        'args': ['--url', 'https://detail.1688.com/offer/1031400982378.html']
+    },
 }
 
-def execute_task(task_name: str, script_path: str, task_log: Path) -> tuple:
+def execute_task(task_name: str, script_path: str, task_log: Path, args: list = None) -> tuple:
     """执行任务，返回(成功bool, 输出str)"""
+    if args is None:
+        args = []
+    
     try:
         if script_path.endswith('.py'):
+            cmd = ['python3', script_path] + args
             result = subprocess.run(
-                ['python3', script_path],
+                cmd,
                 capture_output=True,
                 text=True,
                 timeout=300,
                 cwd=WORKSPACE
             )
         else:
+            cmd = ['bash', script_path] + args
             result = subprocess.run(
-                ['bash', script_path],
+                cmd,
                 capture_output=True,
                 text=True,
                 timeout=300,
@@ -74,8 +82,9 @@ def run():
         # 标记开始
         tm.mark_start(task_name)
         
-        # 确定要执行的脚本
+        # 确定要执行的脚本和参数
         script = None
+        script_args = []
         
         # 如果是error_fix_pending，尝试执行fix脚本
         if exec_state == ExecState.ERROR_FIX_PENDING:
@@ -84,7 +93,12 @@ def run():
         
         # 否则执行对应的任务脚本
         if not script:
-            script = TASK_SCRIPTS.get(task_name)
+            task_script = TASK_SCRIPTS.get(task_name)
+            if isinstance(task_script, dict):
+                script = task_script.get('script')
+                script_args = task_script.get('args', [])
+            else:
+                script = task_script
         
         if not script:
             print(f"  ⚠️ 没有找到对应脚本")
@@ -99,7 +113,7 @@ def run():
         
         # 执行
         print(f"  执行: {script}")
-        success, output = execute_task(task_name, script, TASK_LOG)
+        success, output = execute_task(task_name, script, TASK_LOG, script_args)
         
         # 追加日志
         with open(TASK_LOG, 'a') as f:

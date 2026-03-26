@@ -253,13 +253,10 @@ run_heartbeat() {
         log "  ✅ 代码已是最新"
     fi
     
-    # 3. 读取任务队列
-    log "[Step 4] 检查任务队列..."
-    NEXT_TASK="无"
-    if [ -f "$TASK_QUEUE" ]; then
-        NEXT_TASK=$(grep -E "^### |^\[ DONE" "$TASK_QUEUE" 2>/dev/null | head -1 || echo "无")
-    fi
-    log "  下一个任务: $NEXT_TASK"
+    # 3. 从数据库读取任务状态
+    log "[Step 4] 检查任务状态..."
+    NEXT_TASKS=$(python3 "$WORKSPACE/scripts/get_next_tasks.py" 2>/dev/null || echo "无")
+    log "  $NEXT_TASKS"
     
     # 4. 发送飞书通知（包含上次结果+本次计划）
     log "[Step 5] 发送飞书通知..."
