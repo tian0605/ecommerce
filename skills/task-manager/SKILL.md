@@ -203,6 +203,36 @@ def get_actionable_tasks():
 | `subtask_executor.py` | 子任务执行器（AI自愈） |
 | `error_analyzer.py` | LLM错误分析器 |
 
+## 配置文件
+
+### LLM模型配置
+
+```python
+# config/llm_config.py
+LLM_CONFIG = {
+    'api_key': 'sk-914c1a9a5f054ab4939464389b5b791f',
+    'base_url': 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+    'model': 'qwen3.5-plus',
+    'max_tokens': 2000,
+    'temperature': 0.3,
+    'timeout': 120
+}
+```
+
+### 提示词配置
+
+提示词独立管理在 `config/prompts/` 目录：
+
+| 文件 | 用途 |
+|------|------|
+| `error_analyzer_system.txt` | 错误分析系统提示词 |
+| `error_analyzer_user.txt` | 错误分析用户模板 |
+| `subtask_executor_system.txt` | 子任务执行系统提示词 |
+
+### 修改提示词
+
+修改提示词只需编辑对应的 `.txt` 文件，无需修改代码。
+
 ## 使用方法
 
 ### Python调用
