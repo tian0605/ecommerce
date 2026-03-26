@@ -147,7 +147,7 @@ class WorkflowRunner:
             logger.error(f"❌ 落库失败: {e}")
             return {'success': False, 'error': str(e)}
     
-    def step5_optimize(self, product_id: str) -> dict:
+    def step5_optimize(self, product_id: str, product_data: dict = None) -> dict:
         """步骤5: Listing优化"""
         logger.info("=" * 50)
         logger.info("[步骤5] Listing优化")
@@ -155,7 +155,10 @@ class WorkflowRunner:
         
         try:
             optimizer = ListingOptimizer()
-            result = optimizer.optimize_product(product_id)
+            # 传递商品数据字典，而不是仅product_id
+            if product_data is None:
+                product_data = {'product_id': product_id, 'alibaba_product_id': product_id}
+            result = optimizer.optimize_product(product_data)
             
             if result.get('success'):
                 logger.info(f"✅ 优化成功")
@@ -167,7 +170,7 @@ class WorkflowRunner:
             logger.error(f"❌ 优化失败: {e}")
             return {'success': False, 'error': str(e)}
     
-    def step6_update(self, product_id: str) -> dict:
+    def step6_update(self, product_id: str, product_data: dict = None) -> dict:
         """步骤6: 回写妙手"""
         logger.info("=" * 50)
         logger.info("[步骤6] 回写妙手ERP")

@@ -1,0 +1,22 @@
+
+==================================================
+任务: TC-FLOW-001端到端测试
+执行脚本: /root/.openclaw/workspace-e-commerce/skills/workflow-runner/scripts/workflow_runner.py
+结果: 成功
+频\n 视频翻译\n AI图生视频\n 剪辑视频\n一键生成\n制作视频\n要求说明:\n 视频像素不超过1280×1280px，视频时长10s~60s，大小必须小于30M，格式为MP4;\n本地上传\n本地上传\n本地上传\n物流信息\n包裹重量\n包裹尺寸\n长\t\nCM\n宽\t\nCM\n高\t\nCM\n发货时间\n天内发货 ( 可填写1,4到10天 )\n引用模板 \n取 消一键翻译 保存并发布保存修改跨境全球'}, 'local_1688_weight': {}}, 'sku_ids': [], 'sku_message': '', 'image_upload': {}}
+2026-03-26 13:28:05,301 | workflow-runner | WARNING | 落库失败，继续后续步骤
+2026-03-26 13:28:05,301 | workflow-runner | INFO | ==================================================
+2026-03-26 13:28:05,301 | workflow-runner | INFO | [步骤5] Listing优化
+2026-03-26 13:28:05,301 | workflow-runner | INFO | ==================================================
+2026-03-26 13:28:05,301 | workflow-runner | ERROR | ❌ 优化失败: string indices must be integers, not 'str'
+2026-03-26 13:28:05,301 | workflow-runner | INFO | ==================================================
+2026-03-26 13:28:05,301 | workflow-runner | INFO | [步骤6] 回写妙手ERP
+2026-03-26 13:28:05,301 | workflow-runner | INFO | ==================================================
+2026-03-26 13:28:05,302 | workflow-runner | ERROR | ❌ 回写失败: 'str' object has no attribute 'get'
+2026-03-26 13:28:05,302 | workflow-runner | INFO | ==================================================
+2026-03-26 13:28:05,302 | workflow-runner | INFO | [步骤7] 利润分析
+2026-03-26 13:28:05,302 | workflow-runner | INFO | ==================================================
+2026-03-26 13:28:05,315 | workflow-runner | WARNING | ⚠️ 分析返回: {'product_id': '三000002', 'alibaba_product_id': '三000002', 'title': '', 'purchase_price_cny': None, 'weight_kg': None, 'suggested_price_twd': None, 'suggested_price_cny': None, 'total_cost_cny': None, 'profit_cny': None, 'profit_rate': None, 'status': 'pending', 'message': '无法获取采购价'}
+2026-03-26 13:28:05,316 | workflow-runner | INFO | ============================================================
+2026-03-26 13:28:05,316 | workflow-runner | INFO | 🏁 工作流完成
+2026-03-26 13:28:05,316 | workflow-runner | INFO | ============================================================
