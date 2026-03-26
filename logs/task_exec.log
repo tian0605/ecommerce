@@ -1,0 +1,28 @@
+
+============================================================
+任务: TC-FLOW-001端到端测试
+执行脚本: /root/.openclaw/workspace-e-commerce/skills/workflow-runner/scripts/workflow_runner.py
+退出码: 0
+============================================================
+】X3\nCNY\nCNY\n22/100\n带轮【大号】X3\nCNY\nCNY\n22/100\n产品图片\n产品图片 （已选9张）\n 图片翻译\n 消除水印\n 图片编辑  上传图片批量删除 导出图片  添加水印 \n选中前9张 \n显示大图预览\n显示图片尺寸\n图片格式：JPG, JPEG, PNG; 图片大小不能超过3M；图片建议尺寸：800x800；可拖拽移动图片；\n发布时最多上传前9张\n800 x 800\nAI\n800 x 800\nAI\n800 x 800\nAI\n800 x 800\nAI\n1033 x 1033\nAI\n800 x 800\nAI\n800 x 800\nAI\n800 x 800\nAI\n800 x 800\nAI\n750 x 300\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n790 x 1200\nAI\n1240 x 1920\nAI\n1500 x 496\nAI\nSKU图片\n批量传图删除全部\n 消除水印\n 图片编辑  图片翻译 导出图片  添加水印 \n全选\n图片格式：JPG, JPEG, PNG; 图片大小不能超过3M；图片建议尺寸：800x800；\n组合【三件套】\nAI\n斜口【小号】X3\nAI\n带轮【中号】X3\nAI\n带轮【大号】X3\nAI\n产品视频\n产品视频\n 视频翻译\n AI图生视频\n 剪辑视频\n一键生成\n制作视频\n要求说明:\n 视频像素不超过1280×1280px，视频时长10s~60s，大小必须小于30M，格式为MP4;\n本地上传\n本地上传\n本地上传\n物流信息\n包裹重量\n包裹尺寸\n长\t\nCM\n宽\t\nCM\n高\t\nCM\n发货时间\n天内发货 ( 可填写1,4到10天 )\n引用模板 \n取 消一键翻译 保存并发布保存修改跨境全球'}, 'local_1688_weight': {}}, 'sku_ids': [], 'sku_message': '', 'image_upload': {}}
+2026-03-26 15:17:55,275 | workflow-runner | WARNING | 落库失败，继续后续步骤
+2026-03-26 15:17:55,275 | workflow-runner | INFO | ==================================================
+2026-03-26 15:17:55,275 | workflow-runner | INFO | [步骤5] Listing优化
+2026-03-26 15:17:55,275 | workflow-runner | INFO | ==================================================
+2026-03-26 15:17:55,276 | listing-optimizer | INFO | 优化标题: ...
+2026-03-26 15:19:14,070 | listing-optimizer | INFO | 优化描述...
+2026-03-26 15:21:14,082 | listing-optimizer | ERROR | curl failed: 
+2026-03-26 15:21:14,082 | listing-optimizer | INFO | 优化完成: 三000002
+2026-03-26 15:21:14,082 | workflow-runner | INFO | ✅ 优化成功
+2026-03-26 15:21:14,082 | workflow-runner | INFO | ==================================================
+2026-03-26 15:21:14,082 | workflow-runner | INFO | [步骤6] 回写妙手ERP
+2026-03-26 15:21:14,082 | workflow-runner | INFO | ==================================================
+2026-03-26 15:21:14,082 | miaoshou-updater | ERROR | 没有阿里巴巴商品ID
+2026-03-26 15:21:14,082 | workflow-runner | WARNING | ⚠️ 回写返回: False
+2026-03-26 15:21:14,083 | workflow-runner | INFO | ==================================================
+2026-03-26 15:21:14,083 | workflow-runner | INFO | [步骤7] 利润分析
+2026-03-26 15:21:14,083 | workflow-runner | INFO | ==================================================
+2026-03-26 15:21:14,098 | workflow-runner | WARNING | ⚠️ 分析返回: {'product_id': '三000002', 'alibaba_product_id': '三000002', 'title': '', 'purchase_price_cny': None, 'weight_kg': None, 'suggested_price_twd': None, 'suggested_price_cny': None, 'total_cost_cny': None, 'profit_cny': None, 'profit_rate': None, 'status': 'pending', 'message': '无法获取采购价'}
+2026-03-26 15:21:14,099 | workflow-runner | INFO | ============================================================
+2026-03-26 15:21:14,099 | workflow-runner | INFO | 🏁 工作流完成
+2026-03-26 15:21:14,099 | workflow-runner | INFO | ============================================================

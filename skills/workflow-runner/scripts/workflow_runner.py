@@ -178,14 +178,17 @@ class WorkflowRunner:
         
         try:
             updater = MiaoshouUpdater()
-            result = updater.update_product(product_id)
+            # 传递商品字典，不是仅product_id
+            if product_data is None:
+                product_data = {'alibaba_product_id': product_id}
+            result = updater.update_product(product_data)
             
-            if result.get('success'):
+            if result:
                 logger.info(f"✅ 回写成功")
+                return {'success': True}
             else:
-                logger.warning(f"⚠️ 回写返回: {result}")
-            
-            return result
+                logger.warning(f"⚠️ 回写返回: False")
+                return {'success': False}
         except Exception as e:
             logger.error(f"❌ 回写失败: {e}")
             return {'success': False, 'error': str(e)}
@@ -269,7 +272,9 @@ class WorkflowRunner:
         results['optimize'] = r5
         
         # 步骤6: 回写
-        r6 = self.step6_update(product_id)
+        # 使用 step4 的返回数据
+        store_data = r4 if isinstance(r4, dict) else {'product_id': product_id, 'alibaba_product_id': product_id}
+        r6 = self.step6_update(product_id, store_data)
         results['update'] = r6
         
         # 步骤7: 利润分析
@@ -324,7 +329,9 @@ class WorkflowRunner:
         results['optimize'] = r5
         
         # 步骤6: 回写
-        r6 = self.step6_update(product_id)
+        # 使用 step4 的返回数据
+        store_data = r4 if isinstance(r4, dict) else {'product_id': product_id, 'alibaba_product_id': product_id}
+        r6 = self.step6_update(product_id, store_data)
         results['update'] = r6
         
         # 步骤7: 利润分析
