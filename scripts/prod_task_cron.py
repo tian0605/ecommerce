@@ -190,7 +190,7 @@ def run():
         log.finish("running")
         
         # 使用Popen执行
-        success, output = run_with_popen(task_name, script_info, on_line_callback=log.info)
+        success, output = run_with_popen(task_name, script_info, on_line_callback=log.log_line)
         
         if success:
             tm.mark_end(task_name, "执行成功")

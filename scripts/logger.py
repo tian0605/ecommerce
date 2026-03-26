@@ -35,6 +35,25 @@ class Logger:
     def info(self, msg: str):
         print(f"[INFO] {msg}")
     
+    def log_line(self, line: str):
+        """写入一行日志到main_logs（用于Popen实时回调）"""
+        if not line:
+            return
+        
+        # 写入main_logs（不等待finish）
+        try:
+            conn = psycopg2.connect(**self.DB_CONFIG)
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO main_logs (log_type, task_name, run_status, run_message, created_at)
+                VALUES (%s, %s, %s, %s, NOW())
+            """, (self.log_type, self.task_name, 'running', line[:500]))
+            conn.commit()
+            cur.close()
+            conn.close()
+        except Exception as e:
+            print(f"[WARN] log_line failed: {e}")
+    
     def error(self, msg: str):
         print(f"[ERROR] {msg}")
         self.log_level = "ERROR"
