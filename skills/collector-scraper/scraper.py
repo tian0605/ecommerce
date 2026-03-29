@@ -870,7 +870,14 @@ class CollectorScraper:
                                         sku_price = spec_val
                                         break
                             elif len(prices_to_use) > 1:
-                                sku_price = prices_to_use[idx % len(prices_to_use)]
+                                # 根据规格索引进价（allPrices是按规格顺序的：[100L价格, 140L价格]）
+                                # 如果size_name包含"100L"用第一个价格，包含"140L"用第二个价格
+                                if '100L' in size_name:
+                                    sku_price = prices_to_use[0]
+                                elif '140L' in size_name:
+                                    sku_price = prices_to_use[1] if len(prices_to_use) > 1 else prices_to_use[0]
+                                else:
+                                    sku_price = prices_to_use[idx % len(prices_to_use)]
                             
                             for color_name, img_url in color_images.items():
                                 sku_name = f"{color_name}-{size_name}" if size_name else color_name
