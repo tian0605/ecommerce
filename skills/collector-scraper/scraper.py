@@ -638,7 +638,6 @@ class CollectorScraper:
                     });
                     
                     // 2.5 尝试查找规格对应的价格表
-                    // 1688有些商品会在选择规格后显示对应价格
                     const specPriceMap = {};
                     const specPriceEls = document.querySelectorAll('[class*="spec"] [class*="price"], [class*="price"] [class*="spec"]');
                     specPriceEls.forEach(function(el) {
@@ -759,14 +758,6 @@ class CollectorScraper:
 
                 # 处理提取结果
                 color_images = js_result.get('colorImages', {})
-                price = js_result.get('overallPrice')
-                stock = js_result.get('overallStock')
-                valid_stocks = js_result.get('debug', {}).get('validStocks', [])
-
-                logger.info(f"有效库存: {valid_stocks}, 颜色数: {len(color_images)}")
-
-                # 处理提取结果
-                color_images = js_result.get('colorImages', {})
                 all_prices = js_result.get('allPrices', [])
                 spec_price_map = js_result.get('specPriceMap', {})
                 price = js_result.get('overallPrice')
@@ -777,7 +768,28 @@ class CollectorScraper:
                 logger.info(f"规格价格映射: {spec_price_map}")
 
                 # 构建SKU列表 - 修复多规格维度组合
-                if color_images or specs:
+                if color_images:
+                    # 如果有规格维度，先提取规格列表
+                    inputs = body.query_selector_all('input')
+                    specs = {}
+                    current_spec_name = None
+                    
+                    for inp in inputs:
+                        try:
+                            ph = inp.get_attribute('placeholder') or ''
+                            val = inp.input_value() or ''
+                            if '请输入规格名称' == ph and val:
+                                current_spec_name = val
+                                if current_spec_name not in specs:
+                                    specs[current_spec_name] = []
+                            elif '请输入选项名称' == ph and val and current_spec_name:
+                                if val not in specs[current_spec_name]:
+                                    specs[current_spec_name].append(val)
+                        except: pass
+                    
+                    spec_names = [k for k in specs.keys() if k != '颜色']  # 排除颜色维度
+                    
+                    if spec_names and len(all_combinations := []) == 0:
                         # 有多规格维度，进行笛卡尔积
                         def cartesian_product(dimensions, idx=0, combo=None):
                             if combo is None:
@@ -796,7 +808,6 @@ class CollectorScraper:
                     
                     if all_combinations:
                         # 颜色 × 规格 组合，尝试分配不同价格
-                        # 如果有多个价格，按规格分配；否则用统一价格
                         prices_to_use = all_prices if all_prices else ([price] if price else [26.8])
                         
                         for idx, combo in enumerate(all_combinations):
@@ -805,16 +816,14 @@ class CollectorScraper:
                                 size_name = size_name.split('：')[0].strip()
                             
                             # 尝试从spec_price_map获取对应价格
-                            sku_price = price  # 默认用统一价格
+                            sku_price = price
                             if spec_price_map:
-                                for spec_key, spec_price in spec_price_map.items():
-                                    if size_name and size_name in spec_key:
-                                        sku_price = spec_price
+                                for spec_key, spec_val in spec_price_map.items():
+                                    if size_name and size_name in str(spec_key):
+                                        sku_price = spec_val
                                         break
                             elif len(prices_to_use) > 1:
-                                # 如果有多个价格，按索引分配（假设顺序对应）
-                                price_idx = idx % len(prices_to_use)
-                                sku_price = prices_to_use[price_idx]
+                                sku_price = prices_to_use[idx % len(prices_to_use)]
                             
                             for color_name, img_url in color_images.items():
                                 sku_name = f"{color_name}-{size_name}" if size_name else color_name
