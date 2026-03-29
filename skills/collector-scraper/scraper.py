@@ -639,20 +639,58 @@ class CollectorScraper:
                     
                     // 2.5 尝试查找规格对应的价格表
                     const specPriceMap = {};
-                    const specPriceEls = document.querySelectorAll('[class*="spec"] [class*="price"], [class*="price"] [class*="spec"]');
-                    specPriceEls.forEach(function(el) {
-                        const text = el.innerText || '';
-                        const priceMatch = text.match(/(\d+\.?\d*)/);
-                        if (priceMatch) {
-                            const parent = el.closest('[class*="spec"]') || el.parentElement;
-                            if (parent) {
-                                const specName = parent.innerText.split('\n')[0] || parent.className;
-                                if (!specPriceMap[specName] || parseFloat(priceMatch[1]) < specPriceMap[specName]) {
-                                    specPriceMap[specName] = parseFloat(priceMatch[1]);
+                    
+                    // 方法1：通过规格元素内嵌价格
+                    const specContainers = document.querySelectorAll('[class*="spec"], [class*="sku"], [class*="option"]');
+                    specContainers.forEach(function(container) {
+                        const priceEl = container.querySelector('[class*="price"], .price, [class*="amount"]');
+                        if (priceEl) {
+                            const priceText = priceEl.innerText || '';
+                            const priceMatch = priceText.match(/(\d+\.?\d*)/);
+                            if (priceMatch && parseFloat(priceMatch[1]) > 0 && parseFloat(priceMatch[1]) < 10000) {
+                                const specNameEl = container.querySelector('[class*="name"], [class*="text"], span, div');
+                                let specName = '';
+                                if (specNameEl) {
+                                    specName = specNameEl.innerText.split('\n')[0].trim().substring(0, 30);
+                                }
+                                if (!specName || specName.length < 2) {
+                                    specName = container.innerText.split('\n')[0].trim().substring(0, 30);
+                                }
+                                if (specName && specName.length > 1) {
+                                    if (!specPriceMap[specName] || parseFloat(priceMatch[1]) < specPriceMap[specName]) {
+                                        specPriceMap[specName] = parseFloat(priceMatch[1]);
+                                    }
                                 }
                             }
                         }
                     });
+                    
+                    // 方法2：表格形式的规格价格
+                    const tableRows = document.querySelectorAll('table tr, .table-row, [class*="row"]');
+                    tableRows.forEach(function(row) {
+                        const cells = row.querySelectorAll('td, [class*="cell"]');
+                        if (cells.length >= 2) {
+                            let specName = '';
+                            let price = null;
+                            cells.forEach(function(cell) {
+                                const text = cell.innerText || '';
+                                const priceMatch = text.match(/(\d+\.?\d*)/);
+                                if (priceMatch && parseFloat(priceMatch[1]) > 0 && parseFloat(priceMatch[1]) < 10000) {
+                                    if (!price) {
+                                        price = parseFloat(priceMatch[1]);
+                                    }
+                                } else if (text.trim().length > 0 && text.trim().length < 30) {
+                                    specName = text.trim();
+                                }
+                            });
+                            if (specName && price) {
+                                if (!specPriceMap[specName] || price < specPriceMap[specName]) {
+                                    specPriceMap[specName] = price;
+                                }
+                            }
+                        }
+                    });
+                    
                     result.specPriceMap = specPriceMap;
                     
                     // 3. 直接查找所有img元素并调试
