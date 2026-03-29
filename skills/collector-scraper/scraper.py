@@ -637,55 +637,64 @@ class CollectorScraper:
                         }
                     });
                     
-                    // 2.5 尝试查找规格对应的价格表
+                    // 2.5 尝试查找妙手编辑对话框中的SKU表格
                     const specPriceMap = {};
                     
-                    // 方法1：通过规格元素内嵌价格
-                    const specContainers = document.querySelectorAll('[class*="spec"], [class*="sku"], [class*="option"]');
-                    specContainers.forEach(function(container) {
-                        const priceEl = container.querySelector('[class*="price"], .price, [class*="amount"]');
-                        if (priceEl) {
-                            const priceText = priceEl.innerText || '';
-                            const priceMatch = priceText.match(/(\d+\.?\d*)/);
-                            if (priceMatch && parseFloat(priceMatch[1]) > 0 && parseFloat(priceMatch[1]) < 10000) {
-                                const specNameEl = container.querySelector('[class*="name"], [class*="text"], span, div');
-                                let specName = '';
-                                if (specNameEl) {
-                                    specName = specNameEl.innerText.split('\n')[0].trim().substring(0, 30);
-                                }
-                                if (!specName || specName.length < 2) {
-                                    specName = container.innerText.split('\n')[0].trim().substring(0, 30);
-                                }
-                                if (specName && specName.length > 1) {
-                                    if (!specPriceMap[specName] || parseFloat(priceMatch[1]) < specPriceMap[specName]) {
-                                        specPriceMap[specName] = parseFloat(priceMatch[1]);
-                                    }
-                                }
-                            }
-                        }
-                    });
-                    
-                    // 方法2：表格形式的规格价格
-                    const tableRows = document.querySelectorAll('table tr, .table-row, [class*="row"]');
-                    tableRows.forEach(function(row) {
-                        const cells = row.querySelectorAll('td, [class*="cell"]');
+                    // 方法1：查找SKU编辑表格中的行（包含规格名称和价格）
+                    // 妙手ERP的SKU表格通常在 el-table 或类似表格容器中
+                    const skuTableRows = document.querySelectorAll('.el-table__body-wrapper tr, .sku-table tr, [class*="sku"] tr, table tbody tr');
+                    skuTableRows.forEach(function(row) {
+                        const cells = row.querySelectorAll('td, .cell');
                         if (cells.length >= 2) {
                             let specName = '';
                             let price = null;
                             cells.forEach(function(cell) {
                                 const text = cell.innerText || '';
+                                // 价格通常在单元格内，可能是 "¥26.8" 或 "26.8" 格式
                                 const priceMatch = text.match(/(\d+\.?\d*)/);
                                 if (priceMatch && parseFloat(priceMatch[1]) > 0 && parseFloat(priceMatch[1]) < 10000) {
-                                    if (!price) {
-                                        price = parseFloat(priceMatch[1]);
+                                    // 排除明显的非价格数字（如库存数量>1000的）
+                                    const num = parseFloat(priceMatch[1]);
+                                    if (num > 0 && num < 100 && !text.includes('库存') && !text.includes('stock')) {
+                                        if (!price) {
+                                            price = num;
+                                        }
                                     }
-                                } else if (text.trim().length > 0 && text.trim().length < 30) {
-                                    specName = text.trim();
+                                }
+                                // 规格名称通常在第一个或前面的单元格
+                                if (text.trim() && text.trim().length > 1 && text.trim().length < 50) {
+                                    if (!specName || specName.length < text.trim().length) {
+                                        const cleanText = text.trim().replace(/\n.*$/, '').substring(0, 30);
+                                        if (cleanText.length > 1 && !/^\d+$/.test(cleanText)) {
+                                            specName = cleanText;
+                                        }
+                                    }
                                 }
                             });
                             if (specName && price) {
-                                if (!specPriceMap[specName] || price < specPriceMap[specName]) {
+                                // 清理规格名称，移除价格后缀
+                                specName = specName.replace(/[\d.]+$/, '').trim();
+                                if (specName.length > 1) {
                                     specPriceMap[specName] = price;
+                                }
+                            }
+                        }
+                    });
+                    
+                    // 方法2：查找表格单元格中的价格-规格配对
+                    const priceCells = document.querySelectorAll('td[class*="price"], td[class*="amount"], .cell-price');
+                    priceCells.forEach(function(cell) {
+                        const text = cell.innerText || '';
+                        const priceMatch = text.match(/(\d+\.?\d*)/);
+                        if (priceMatch && parseFloat(priceMatch[1]) > 0 && parseFloat(priceMatch[1]) < 100) {
+                            const row = cell.closest('tr');
+                            if (row) {
+                                const firstCell = row.querySelector('td:first-child, .cell-name');
+                                if (firstCell) {
+                                    let specName = firstCell.innerText.trim().split('\n')[0].substring(0, 30);
+                                    if (specName && specName.length > 1) {
+                                        specPriceMap[specName] = parseFloat(priceMatch[1]);
+                                    }
                                 }
                             }
                         }
