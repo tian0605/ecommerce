@@ -2,6 +2,72 @@
 
 ---
 
+## 🎯 核心模式：Tasks-Driven 工作流
+
+**tasks 表是所有任务的核心载体，所有工作都以任务为基础。**
+
+### 任务类型
+
+| 类型 | task_type | 说明 | 典型场景 |
+|------|-----------|------|----------|
+| **常规任务** | `常规` | 预定义步骤的工作流 | 1688商品采集→发布 |
+| **临时任务** | `临时任务` | 开放式任务，agent自主执行 | 复杂分析、研究、探索 |
+| **修复任务** | `修复` | 错误修复，最高优先级 | 失败任务重试 |
+| **创造任务** | `创造` | 探索性工作，最低优先级 | 新功能尝试 |
+
+### 临时任务（TEMP）— 主要工作方法 ⭐
+
+**适用场景：** 复杂任务、长时任务、开放式任务（无法预定义步骤的任务）
+
+**特点：**
+- 由 agent 自主决定执行方式
+- 支持断点续传
+- 超时自动恢复
+- 完成后主动通知
+
+**执行流程：**
+```
+[用户发送复杂任务]
+    ↓
+[创建 TEMP 任务 + 立即响应用户]
+    ↓
+[后台异步执行，定期更新 checkpoint]
+    ↓
+[完成后推送飞书通知]
+```
+
+**Checkpoint 规则：**
+- 每完成一个步骤 → 更新 checkpoint
+- 每10分钟心跳 → 自动续命
+- 超时判定：last_executed_at + expected_duration + buffer(10分钟) 无更新
+
+**示例：**
+```python
+# 创建 TEMP 任务
+tm.create_temp_task(
+    task_name=f"TEMP-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+    display_name='竞品分析',
+    description='深度分析竞品店铺数据',
+    expected_duration=120,  # 2小时
+    priority='P1',
+    success_criteria='输出完整分析报告'
+)
+
+# 执行过程中定期更新
+tm.update_checkpoint(task_name, {
+    'current_step': 'Step 2: 抓取商品',
+    'completed_steps': ['初始化', 'Step 1: 店铺信息'],
+    'output_data': {'已抓取': 150},
+    'next_action': '继续抓取...'
+})
+
+# 完成后
+tm.mark_end(task_name, '任务完成')
+send_feishu('🎉 任务完成通知')
+```
+
+---
+
 ## 🚀 快速决策树（心跳专用）
 
 **用户请求处理流程：**
@@ -11,6 +77,7 @@
   ↓
 判断请求类型
   ├─ 1688链接 → Step 1-8完整工作流
+  ├─ TEMP任务创建 → 后台异步执行
   ├─ 任务检查 → HEARTBEAT.md三问机制
   ├─ 商品ID查询 → 数据库查询
   └─ 其他 → 记录到TODO，人工确认
@@ -299,6 +366,7 @@ CREATE TABLE product_skus (
 - **未经询问不要运行破坏性命令。**
 - `trash` > `rm`（可恢复优于永远消失）
 - **有疑问时，询问。**
+- **所有调试优化必须持久化到技能代码，禁止仅在内存/临时脚本中修改。**
 
 ---
 
@@ -394,7 +462,7 @@ CREATE TABLE product_skus (
 ### 基本信息
 - **身份**：反爬突破专家
 - **位置**：本地机器（用户桌面）
-- **模型**：MiniMax-M2.5
+- **模型**：MiniMax-M2.7
 - **协作端口**：18789
 
 ### 能力范围
@@ -530,50 +598,91 @@ miaoshou-updater ERP对话框 (千克/kg)
 |------|-----|
 | 完整工作流文档 | https://pcn0wtpnjfsd.feishu.cn/docx/UVlkd1NHrorLumxC8K7cLMBUnDe |
 | 利润分析表格 | https://pcn0wtpnjfsd.feishu.cn/base/DyzjbfaZZaYeJls6lDFc5DavnPd |
+| **截图专用文档** | https://pcn0wtpnjfsd.feishu.cn/docx/YqXFdAK76ogY95xtCFWcoq44n9e |
+
+---
+
+### 📸 截图发送规则
+
+**重要：所有截图必须上传到截图专用文档，不要发到群里！**
+
+截图流程：
+1. 先用 `feishu_doc(action="upload_image", doc_token="YqXFdAK76ogY95xtCFWcoq44n9e", ...)` 上传到文档
+2. 再用 `feishu_doc(action="append", doc_token="YqXFdAK76ogY95xtCFWcoq44n9e", ...)` 添加说明
+3.群里只发文字说明，不发截图图片
 
 ---
 
 ## 🤖 LLM模型配置
 
-> **qwen3.5-plus 支持视觉理解**（已验证，2026-03-26）
-> 阿里云官方文档确认：qwen3.5-plus 同时支持文本和图像输入，无需切换到专门的VL模型。
+> **主力模型：Doubao Seed 2.0**（2026-03-28更新）
+> Primary: Doubao Seed（支持文本+视觉）
+> Fallback: DeepSeek Chat（Doubao失败时自动切换）
+
+> **MiniMax-M2.7 增强能力**（已验证，2026-03-27）
+> - Text to Speech HD：高保真语音合成
+> - image-01：图像生成能力
 
 ### 模型配置（config/llm_config.py）
 
 ```python
-LLM_API_KEY = 'sk-914c1a9a5f054ab4939464389b5b791f'
-LLM_BASE_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1'
-DEFAULT_MODEL = 'qwen3.5-plus'  # 文本+视觉统一模型
+LLM_API_KEY = 'sk-2f2c6f05d33741acb27453a828651323'
+LLM_BASE_URL = 'https://api.deepseek.com'
+DEFAULT_MODEL = 'doubao-seed-2-0-pro-260215'  # 主力模型
+
+# Fallback 配置：Doubao失败时切换到DeepSeek
+FALLBACK_MODELS = {
+    'doubao-seed-2-0-pro-260215': 'deepseek-chat',
+}
 
 MODELS = {
-    'qwen3.5-plus': {
-        'name': 'qwen3.5-plus',
-        'description': '主力模型，推荐日常使用，支持视觉理解',
+    'doubao-seed-2-0-pro-260215': {
+        'name': 'doubao-seed-2-0-pro-260215',
+        'description': '主力模型（文本+视觉，支持推理）',
+        'api_base': 'https://ark.cn-beijing.volces.com/api/v3',
+        'api_key': '05ee7f57-9541-40d1-8021-69a6a81b2c95',
         'cost_per_1k_tokens': 0.001,
-        'max_tokens': 1500,
-        'temperature': 0.7,
-        'vision': True,  # 支持视觉理解
+    },
+    'deepseek-chat': {
+        'name': 'deepseek-chat',
+        'description': '备用模型（纯文本）',
+        'cost_per_1k_tokens': 0.001,
+    },
+    'MiniMax-M2.7': {
+        'name': 'MiniMax-M2.7',
+        'description': 'TTS HD + 图像生成',
+        'tts_hd': True,
+        'image_gen': True,
     },
 }
 
 TASK_MODELS = {
-    'title_optimization': 'qwen3.5-plus',
-    'description_optimization': 'qwen3.5-plus',
-    'debug': 'qwen3-plus',
-    'vision': 'qwen3.5-plus',           # 视觉理解
-    'image_understanding': 'qwen3.5-plus',  # 图片理解
+    # 所有文本任务都用 Doubao，失败时自动Fallback到DeepSeek
+    'error_analyzer': 'doubao-seed-2-0-pro-260215',
+    'subtask_executor': 'doubao-seed-2-0-pro-260215',
+    'listing_optimizer': 'doubao-seed-2-0-pro-260215',
+    'profit_analyzer': 'doubao-seed-2-0-pro-260215',
+    'tts': 'MiniMax-M2.7',
+    'image_gen': 'MiniMax-M2.7',
 }
 ```
+
+### MiniMax-M2.7 能力说明
+
+| 能力 | 说明 | 调用方式 |
+|------|------|---------|
+| **Text to Speech HD** | 高保真语音合成 | `tts` tool（自动调用） |
+| **image-01** | 图像生成 | MiniMax API `/v1/images/generations` |
 
 ### 视觉理解调用示例
 
 ```python
-# 发送图片供AI分析
+# 发送图片供AI分析（使用 Doubao Seed）
 response = requests.post(
-    f"{LLM_BASE_URL}/chat/completions",
-    headers={"Authorization": f"Bearer {LLM_API_KEY}"},
+    "https://ark.cn-beijing.volces.com/api/v3/chat/completions",
+    headers={"Authorization": "Bearer 05ee7f57-9541-40d1-8021-69a6a81b2c95"},
     json={
-        "model": "qwen3.5-plus",
+        "model": "doubao-seed-2-0-pro-260215",
         "messages": [{
             "role": "user",
             "content": [
@@ -586,12 +695,146 @@ response = requests.post(
 )
 ```
 
-### 优势
+---
 
-- **统一模型**：文本生成 + 视觉理解 使用同一个模型
-- **成本降低**：无需调用多个API
-- **配置简单**：无需维护多个模型配置
-- **效果一致**：文本和视觉理解风格统一
+## 已安装技能（Agent Skills）
+
+### 技能清单
+
+| 技能 | 功能 | 状态 | 配置 |
+|------|------|------|------|
+| find-skills | 技能发现和安装 | ✅ | 无需配置 |
+| proactive-agent | 主动代理、预见需求 | ✅ | working-buffer.md ✅ |
+| self-improving-agent | 自我提升、错误记录 | ✅ | hooks已启用 ✅ |
+| skill-vetter | 技能安全审查 | ✅ | 无需配置 |
+| cron | 定时任务调度 | ✅ | jobs.json ✅ |
+| tavily-search | AI网络搜索 | ✅ | TAVILY_API_KEY ✅ |
+| using-superpowers | 技能使用规范 | ✅ | 无需配置 |
+| summarize | URL/文件摘要 | ⏸️ | 未安装 |
+| agent-browser | 浏览器自动化 | ✅ | 已安装 |
+| capability-evolver | 能力进化引擎 | ⏸️ | 需注册evomap.ai |
+
+### 技能使用指南
+
+#### 1. find-skills（技能发现）
+**触发：** 用户提到"技能"、"找技能"、"install skill"等
+```bash
+clawhub search <skill-name>
+clawhub install <skill-name> --dir skills/
+```
+
+#### 2. proactive-agent（主动代理）
+**配置：** 已创建 `memory/working-buffer.md`
+**原则：**
+- WAL Protocol：收到纠正/决定时先写文件再回复
+- Working Buffer：上下文>60%时记录每条消息
+- Autonomous Crons：后台自动执行
+
+#### 3. self-improving-agent（自我提升）
+**触发时机：**
+- 命令/操作失败 → 记录到 `.learnings/ERRORS.md`
+- 用户纠正 → 记录到 `.learnings/LEARNINGS.md` (category: correction)
+- 发现更好方法 → 记录到 `.learnings/LEARNINGS.md` (category: best_practice)
+
+#### 4. skill-vetter（技能审查）
+**使用：** 安装任何技能前必须审查
+**检查项：**
+- 红旗：curl/wget到未知URL、请求凭据、使用eval()
+- 风险分类：LOW/MEDIUM/HIGH/EXTREME
+
+#### 5. cron（定时任务）
+```bash
+python3 scripts/add_job.py           # 添加任务
+python3 scripts/list_jobs.py         # 列出任务
+python3 scripts/next_run.py          # 查看下次运行
+```
+**存储：** `memory/cron/jobs.json`
+
+### 任务执行器（crontab配置）
+
+| 任务类型 | 脚本 | 频率 | 说明 |
+|---------|------|------|------|
+| **常规任务** | prod_task_cron.py | `*/10 * * * *` | 执行 task_type='常规' 的工作流任务 |
+| **临时任务** | prod_task_cron.py | `*/10 * * * *` | 执行 task_type='临时任务'（开放式，长时任务） |
+| **修复任务** | fix_task_cron.py | `*/1 * * * *` | 执行 task_type='修复' 的错误修复任务 |
+| **心跳检查** | dev-heartbeat.sh | `*/30 * * * *` | 系统前置条件检查 + 超时TEMP重置 |
+| **健康检查** | workflow_health_check.sh | `0 */2 * * *` | 工作流健康检查 |
+| **日志同步** | sync_logs_to_feishu.py | `*/10 * * * *` | 同步日志到飞书 |
+
+**注意**：
+- **常规类任务**（AUTO-LISTING-* 工作流）由 prod_task_cron 处理
+- **临时任务**（TEMP-* 开放式任务）由 prod_task_cron 处理，支持断点续传
+- **修复类任务**（FIX-* 错误修复）由 fix_task_cron 处理
+- 两者分开，避免修复任务被常规任务阻塞
+
+#### 6. mem0-memory（记忆系统）
+```bash
+# 添加记忆（自动识别触发类型）
+python skills/mem0-memory/scripts/mem0_wrapper.py add <user_id> "<内容>"
+
+# 搜索记忆
+python skills/mem0-memory/scripts/mem0_wrapper.py search <user_id> "<query>" [--limit 5]
+
+# 获取所有记忆
+python skills/mem0-memory/scripts/mem0_wrapper.py get_all <user_id>
+
+# 检索+生成回答
+python skills/mem0-memory/scripts/mem0_wrapper.py chat <user_id> "<问题>" [--limit 5]
+```
+**配置：** Ollama qwen2.5:1.5b + nomic-embed-text + Chroma
+
+**10维触发体系：** 习惯、价值观、能力、目标、约束、进度、偏好、标准、反馈、情绪等
+
+**使用场景：**
+- 回复前检索相关记忆，增强上下文
+- 从对话中提取用户偏好，存入mem0
+- 跨会话恢复上下文
+
+#### 7. tavily-search（AI搜索）
+```bash
+cd skills/tavily-search
+node scripts/search.mjs "查询内容" -n 5
+node scripts/search.mjs "查询内容" --deep
+```
+**配置：** `config.env` 中的 `TAVILY_API_KEY`
+
+#### 8. using-superpowers（技能使用规范）
+**核心规则：** 在执行任何响应或操作之前，必须先检查是否有相关技能。
+
+#### 9. agent-browser（浏览器自动化）
+```bash
+agent-browser open <url>           # 打开页面
+agent-browser snapshot -i          # 获取可交互元素
+agent-browser click @e1            # 点击元素
+agent-browser fill @e2 "text"     # 填写表单
+```
+
+#### 10. github（GitHub集成）
+```bash
+gh pr checks <number> --repo owner/repo   # 检查PR CI状态
+gh run list --repo owner/repo --limit 10   # 列出workflow runs
+gh issue list --repo owner/repo            # 列出issues
+gh api repos/owner/repo/pulls/<number>     # API查询
+```
+
+#### 11. prompt-engineering（提示词工程）
+```bash
+# LLM提示词结构：Role + Task + Constraints + Output Format
+infsh app run openrouter/claude-sonnet-45 --input '{...}'
+
+# 常用技巧
+# - Chain-of-Thought: 逐步思考
+# - Few-Shot: 提供示例
+# - Output Format: 指定输出格式
+```
+
+### API Key配置
+
+| 服务 | 配置文件 | 变量名 |
+|------|---------|--------|
+| Tavily搜索 | `config/config.env` | `TAVILY_API_KEY` |
+| LLM (DashScope) | `config/config.env` | `LLM_API_KEY` |
+| 飞书 | `config/config.env` | `FEISHU_WEBHOOK_URL` |
 
 ---
 

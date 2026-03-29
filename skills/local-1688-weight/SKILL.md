@@ -50,28 +50,35 @@ curl -X POST http://127.0.0.1:9090/fetch-weight \
 ```json
 {
   "success": true,
-  "sku_count": 3,
+  "sku_count": 4,
   "sku_list": [
     {
-      "sku_name": "深棕色-大号35*25*16cm",
-      "weight_g": 627,
-      "length_cm": 32.5,
-      "width_cm": 23.5,
-      "height_cm": 16.5
+      "sku_name": "组合【三件套】",
+      "weight_g": 910,
+      "length_cm": 41,
+      "width_cm": 21.5,
+      "height_cm": 36
     },
     {
-      "sku_name": "深棕色-小号30*20*14cm",
-      "weight_g": 845,
-      "length_cm": 38.5,
-      "width_cm": 26.0,
-      "height_cm": 18.5
+      "sku_name": "斜口【小号】X3",
+      "weight_g": 825,
+      "length_cm": 41,
+      "width_cm": 21.5,
+      "height_cm": 36
     },
     {
-      "sku_name": "深棕色-一套（大小号）",
-      "weight_g": 1369,
-      "length_cm": 38.5,
-      "width_cm": 26.0,
-      "height_cm": 18.5
+      "sku_name": "带轮【中号】X3",
+      "weight_g": 912,
+      "length_cm": 41,
+      "width_cm": 21.5,
+      "height_cm": 36
+    },
+    {
+      "sku_name": "带轮【大号】X3",
+      "weight_g": 975,
+      "length_cm": 41,
+      "width_cm": 21.5,
+      "height_cm": 36
     }
   ]
 }
@@ -79,12 +86,17 @@ curl -X POST http://127.0.0.1:9090/fetch-weight \
 
 ## 数据字段说明
 
+**sku_list 中每个SKU的数据：**
+
 | 字段 | 单位 | 说明 |
 |------|------|------|
-| `weight_g` | 克(g) | 商品重量 |
+| `sku_name` | - | SKU名称（如 组合【三件套】、斜口【小号】X3） |
+| `weight_g` | 克(g) | **per-SKU重量**，每个SKU独立重量 |
 | `length_cm` | 厘米(cm) | 包装长度 |
 | `width_cm` | 厘米(cm) | 包装宽度 |
 | `height_cm` | 厘米(cm) | 包装高度 |
+
+**重要**：现在支持 per-SKU 独立权重，不再是所有SKU共用一个重量。
 
 ## 前置条件
 

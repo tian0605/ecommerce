@@ -1,1 +1,28 @@
 __pycache__/
+
+# 敏感配置文件
+config/config.env
+config/*.json
+!config/prompts/*.md
+
+# Cookies和密钥
+*.json
+!skills/**/SKILL.md
+
+# 日志
+logs/*.log
+
+# 临时文件
+temp/
+*.tmp
+
+# Python
+*.pyc
+__pycache__/
+*.py[cod]
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

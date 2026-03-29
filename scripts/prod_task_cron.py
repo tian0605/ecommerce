@@ -174,10 +174,48 @@ def run():
             }
         
         if not script_info and task_level == 2:
+            # level=2 子任务使用 workflow_executor（常规工作流执行器）
             script_info = {
-                'script': f'{WORKSPACE}/scripts/subtask_executor.py',
+                'script': f'{WORKSPACE}/scripts/workflow_executor.py',
                 'args': [task_name]
             }
+        
+        if not script_info and task_level == 1:
+            # 检查是否是临时任务
+            task_type = task.get('task_type', '')
+            if task_type == '临时任务':
+                # 临时任务使用专门的执行器
+                script_info = {
+                    'script': f'{WORKSPACE}/scripts/temp_task_executor.py',
+                    'args': [task_name]
+                }
+            else:
+                # level=1 父任务：检查是否有子任务
+                children = tm.get_sub_tasks(task_name)
+                if children:
+                    # 有子任务，标记父任务为processing，等待子任务执行
+                    pending_children = [c for c in children if c['exec_state'] in ('new', 'processing')]
+                    if pending_children:
+                        tm.mark_start(task_name)
+                        log.finish("running")
+                        print(f"  [workflow] 父任务有 {len(pending_children)} 个待执行子任务，标记processing")
+                        log.set_message(f"父任务processing，等待{len(pending_children)}个子任务").finish("following")
+                        # 继续处理（不continue），会检查子任务
+                    else:
+                        # 所有子任务都完成了
+                        all_done = all(c['exec_state'] in ('end', 'void') for c in children)
+                        if all_done:
+                            tm.mark_end(task_name, "所有子任务完成")
+                            print(f"  ✅ 所有子任务完成，父任务结束")
+                            log.set_message("所有子任务完成").finish("success")
+                            continue
+                        else:
+                            print(f"  ⚠️ 父任务有子任务但状态异常，跳过")
+                            continue
+                else:
+                    # 没有子任务，也没有配置脚本
+                    print(f"  ⚠️ 没有配置执行脚本，跳过")
+                    continue
         
         if not script_info:
             print(f"  ⚠️ 没有配置执行脚本，跳过")
@@ -199,10 +237,12 @@ def run():
         else:
             print(f"  ❌ 执行失败")
             
+            # level=2 任务的失败由 workflow_executor 处理（标记 error_fix_pending）
+            # fix_task_cron 会自动创建 FIX 子任务
+            # 无需在此处理
             if task_level == 2:
-                from prod_task_cron import handle_subtask_failure
-                result = handle_subtask_failure(tm, task, output[-500:])
-                log.set_message(f"{display_name} 失败: {result}").finish("failed")
+                print(f"  [workflow] level=2任务失败，由fix_task_cron处理")
+                log.set_message(f"{display_name} 失败，由fix_task_cron处理").finish("failed")
             else:
                 # 父任务失败处理
                 # 获取重试次数
@@ -278,6 +318,8 @@ def run():
                     # 创建多个修复子任务
                     tm.create_fix_subtasks(task_name, failed_steps)
                     log.set_message(f"{display_name} 失败，{len(failed_steps)}个步骤有问题，已创建子任务").finish("failed")
+                    # 重要：设置error_fix_pending停止重试循环
+                    tm.update_task(task_name, exec_state='error_fix_pending')
                 else:
                     # 无法解析失败步骤
                     tm.update_task(task_name,

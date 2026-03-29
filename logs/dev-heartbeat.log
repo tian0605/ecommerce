@@ -29936,3 +29936,5166 @@ HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
 📈 汇总：待处理:6 | 运行中:0 | 需人工:0
 {"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
 [2026-03-27 00:30:02] ========== 心跳完成 ==========
+[2026-03-27 01:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (4 个)
+  - FIX-TC-FLOW-001-014 (修复: store 失败) - new
+  - FIX-TC-FLOW-001-015 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-016 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-017 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 1101
+  ✅ success: 28
+  ❌ failed: 30
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:4 | 运行中:0 | 需人工:0
+[2026-03-27 01:00:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (4 个)
+  - FIX-TC-FLOW-001-014 (修复: store 失败) - new
+  - FIX-TC-FLOW-001-015 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-016 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-017 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 1101
+  ✅ success: 28
+  ❌ failed: 30
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:4 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 01:00:02] ========== 心跳完成 ==========
+[2026-03-27 01:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - FIX-TC-FLOW-001-017 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 1569
+  ✅ success: 34
+  ❌ failed: 30
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+[2026-03-27 01:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - FIX-TC-FLOW-001-017 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 1569
+  ✅ success: 34
+  ❌ failed: 30
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 01:30:02] ========== 心跳完成 ==========
+[2026-03-27 02:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (6 个)
+  - FIX-TC-FLOW-001-019 (修复: 2026-03-27 01 失败) - new
+  - FIX-TC-FLOW-001-020 (修复: 2026-03-27 01 失败) - new
+  - FIX-TC-FLOW-001-021 (修复: store 失败) - new
+  - FIX-TC-FLOW-001-022 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-023 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-024 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 1958
+  ✅ success: 38
+  ❌ failed: 31
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:6 | 运行中:0 | 需人工:0
+[2026-03-27 02:00:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (6 个)
+  - FIX-TC-FLOW-001-019 (修复: 2026-03-27 01 失败) - new
+  - FIX-TC-FLOW-001-020 (修复: 2026-03-27 01 失败) - new
+  - FIX-TC-FLOW-001-021 (修复: store 失败) - new
+  - FIX-TC-FLOW-001-022 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-023 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-024 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 1958
+  ✅ success: 38
+  ❌ failed: 31
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:6 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 02:00:02] ========== 心跳完成 ==========
+[2026-03-27 02:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (3 个)
+  - FIX-TC-FLOW-001-022 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-023 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-024 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 2322
+  ✅ success: 44
+  ❌ failed: 31
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:3 | 运行中:0 | 需人工:0
+[2026-03-27 02:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (3 个)
+  - FIX-TC-FLOW-001-022 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-023 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-024 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 2322
+  ✅ success: 44
+  ❌ failed: 31
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:3 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 02:30:02] ========== 心跳完成 ==========
+[2026-03-27 03:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 2826
+  ✅ success: 49
+  ❌ failed: 32
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+[2026-03-27 03:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 2826
+  ✅ success: 49
+  ❌ failed: 32
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 03:00:01] ========== 心跳完成 ==========
+[2026-03-27 03:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (6 个)
+  - FIX-TC-FLOW-001-026 (修复: 2026-03-27 03 失败) - new
+  - FIX-TC-FLOW-001-027 (修复: 2026-03-27 03 失败) - new
+  - FIX-TC-FLOW-001-028 (修复: store 失败) - new
+  - FIX-TC-FLOW-001-029 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-030 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-031 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 3024
+  ✅ success: 52
+  ❌ failed: 34
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:6 | 运行中:0 | 需人工:0
+[2026-03-27 03:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (6 个)
+  - FIX-TC-FLOW-001-026 (修复: 2026-03-27 03 失败) - new
+  - FIX-TC-FLOW-001-027 (修复: 2026-03-27 03 失败) - new
+  - FIX-TC-FLOW-001-028 (修复: store 失败) - new
+  - FIX-TC-FLOW-001-029 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-030 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-031 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 3024
+  ✅ success: 52
+  ❌ failed: 34
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:6 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 03:30:02] ========== 心跳完成 ==========
+[2026-03-27 04:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (4 个)
+  - FIX-TC-FLOW-001-028 (修复: store 失败) - new
+  - FIX-TC-FLOW-001-029 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-030 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-031 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 3361
+  ✅ success: 58
+  ❌ failed: 34
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:4 | 运行中:0 | 需人工:0
+[2026-03-27 04:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (4 个)
+  - FIX-TC-FLOW-001-028 (修复: store 失败) - new
+  - FIX-TC-FLOW-001-029 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-030 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-031 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 3361
+  ✅ success: 58
+  ❌ failed: 34
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:4 | 运行中:0 | 需人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 04:00:02] ========== 心跳完成 ==========
+[2026-03-27 04:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (3 个)
+  - FIX-TC-FLOW-001-031 (修复: analyze 失败) - new
+  - FIX-FIX-TC-FLOW-001-029-001 (修复: 执行错误: name 'wraps' is not defined) - new
+  - FIX-FIX-TC-FLOW-001-030-001 (修复: 执行错误: name 'wraps' is not defined) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 3914
+  ✅ success: 62
+  ❌ failed: 36
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:3 | 运行中:0 | 需人工:0
+[2026-03-27 04:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (3 个)
+  - FIX-TC-FLOW-001-031 (修复: analyze 失败) - new
+  - FIX-FIX-TC-FLOW-001-029-001 (修复: 执行错误: name 'wraps' is not defined) - new
+  - FIX-FIX-TC-FLOW-001-030-001 (修复: 执行错误: name 'wraps' is not defined) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 3914
+  ✅ success: 62
+  ❌ failed: 36
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:3 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 04:30:01] ========== 心跳完成 ==========
+[2026-03-27 05:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (2 个)
+  - FIX-FIX-FIX-TC-FLOW-001-030-001-001 (修复: 执行错误: name 'wraps' is not defined) - new
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 4148
+  ✅ success: 66
+  ❌ failed: 38
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:2 | 运行中:0 | 需人工:0
+[2026-03-27 05:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (2 个)
+  - FIX-FIX-FIX-TC-FLOW-001-030-001-001 (修复: 执行错误: name 'wraps' is not defined) - new
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 4148
+  ✅ success: 66
+  ❌ failed: 38
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:2 | 运行中:0 | 需人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 05:00:04] ========== 心跳完成 ==========
+[2026-03-27 05:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 4300
+  ✅ success: 71
+  ❌ failed: 39
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 05:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 4300
+  ✅ success: 71
+  ❌ failed: 39
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 05:30:02] ========== 心跳完成 ==========
+[2026-03-27 06:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (5 个)
+  - FIX-TC-FLOW-001-034 (修复: 2026-03-27 05 失败) - new
+  - FIX-TC-FLOW-001-035 (修复: store 失败) - new
+  - FIX-TC-FLOW-001-036 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-037 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-038 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 4632
+  ✅ success: 75
+  ❌ failed: 40
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:5 | 运行中:0 | 需人工:0
+[2026-03-27 06:00:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (5 个)
+  - FIX-TC-FLOW-001-034 (修复: 2026-03-27 05 失败) - new
+  - FIX-TC-FLOW-001-035 (修复: store 失败) - new
+  - FIX-TC-FLOW-001-036 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-037 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-038 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 4632
+  ✅ success: 75
+  ❌ failed: 40
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:5 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 06:00:02] ========== 心跳完成 ==========
+[2026-03-27 06:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (2 个)
+  - FIX-TC-FLOW-001-038 (修复: analyze 失败) - new
+  - FIX-FIX-TC-FLOW-001-036-001 (修复: 执行错误: name 'wraps' is not defined) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 5120
+  ✅ success: 80
+  ❌ failed: 41
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:2 | 运行中:0 | 需人工:0
+[2026-03-27 06:30:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (2 个)
+  - FIX-TC-FLOW-001-038 (修复: analyze 失败) - new
+  - FIX-FIX-TC-FLOW-001-036-001 (修复: 执行错误: name 'wraps' is not defined) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 5120
+  ✅ success: 80
+  ❌ failed: 41
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:2 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 06:30:02] ========== 心跳完成 ==========
+[2026-03-27 07:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (2 个)
+  - FIX-FIX-FIX-TC-FLOW-001-036-001-001 (修复: 执行错误: name 'wraps' is not defined) - new
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 5545
+  ✅ success: 85
+  ❌ failed: 42
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:2 | 运行中:0 | 需人工:0
+[2026-03-27 07:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (2 个)
+  - FIX-FIX-FIX-TC-FLOW-001-036-001-001 (修复: 执行错误: name 'wraps' is not defined) - new
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 5545
+  ✅ success: 85
+  ❌ failed: 42
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:2 | 运行中:0 | 需人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 07:00:03] ========== 心跳完成 ==========
+[2026-03-27 07:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (7 个)
+  - FIX-TC-FLOW-001-039 (修复: 2026-03-27 07 失败) - new
+  - FIX-TC-FLOW-001-040 (修复: 2026-03-27 07 失败) - new
+  - FIX-TC-FLOW-001-041 (修复: 2026-03-27 07 失败) - new
+  - FIX-TC-FLOW-001-042 (修复: store 失败) - new
+  - FIX-TC-FLOW-001-043 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-044 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-045 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 5748
+  ✅ success: 88
+  ❌ failed: 44
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:7 | 运行中:0 | 需人工:0
+[2026-03-27 07:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (7 个)
+  - FIX-TC-FLOW-001-039 (修复: 2026-03-27 07 失败) - new
+  - FIX-TC-FLOW-001-040 (修复: 2026-03-27 07 失败) - new
+  - FIX-TC-FLOW-001-041 (修复: 2026-03-27 07 失败) - new
+  - FIX-TC-FLOW-001-042 (修复: store 失败) - new
+  - FIX-TC-FLOW-001-043 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-044 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-045 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 5748
+  ✅ success: 88
+  ❌ failed: 44
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:7 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 07:30:02] ========== 心跳完成 ==========
+[2026-03-27 08:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (3 个)
+  - FIX-TC-FLOW-001-043 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-044 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-045 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 6020
+  ✅ success: 94
+  ❌ failed: 44
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:3 | 运行中:0 | 需人工:0
+[2026-03-27 08:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (3 个)
+  - FIX-TC-FLOW-001-043 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-044 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-045 (修复: analyze 失败) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 6020
+  ✅ success: 94
+  ❌ failed: 44
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:3 | 运行中:0 | 需人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 08:00:03] ========== 心跳完成 ==========
+[2026-03-27 08:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (2 个)
+  - FIX-TC-FLOW-001-045 (修复: analyze 失败) - new
+  - FIX-FIX-TC-FLOW-001-043-001 (修复: 执行错误: name 'wraps' is not defined) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 6538
+  ✅ success: 99
+  ❌ failed: 45
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:2 | 运行中:0 | 需人工:0
+[2026-03-27 08:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (2 个)
+  - FIX-TC-FLOW-001-045 (修复: analyze 失败) - new
+  - FIX-FIX-TC-FLOW-001-043-001 (修复: 执行错误: name 'wraps' is not defined) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 6538
+  ✅ success: 99
+  ❌ failed: 45
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:2 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 08:30:04] ========== 心跳完成 ==========
+[2026-03-27 09:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (11 个)
+  - FIX-TC-FLOW-001-046 (修复: 2026-03-27 08 失败) - new
+  - FIX-TC-FLOW-001-047 (修复: 2026-03-27 08 失败) - new
+  - FIX-TC-FLOW-001-048 (修复: 2026-03-27 08 失败) - new
+  - FIX-TC-FLOW-001-049 (修复: store 失败) - new
+  - FIX-TC-FLOW-001-050 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-051 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-052 (修复: analyze 失败) - new
+  - FIX-TC-FLOW-001-053 (修复: workflow_runner.py 模块导入失败: ListingOptimizer/Miaosh) - new
+  - FIX-TC-FLOW-001-054 (修复: workflow_runner.py 第35-40行 try/except 静默吞掉ImportEr) - new
+  - FIX-FIX-WORKFLOW-001-001 (修复: workflow_runner.py 模块导入失败) - new
+  - FIX-FIX-WORKFLOW-001-002 (修复: try/except 静默吞掉ImportError) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 6812
+  ✅ success: 103
+  ❌ failed: 46
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:11 | 运行中:0 | 需人工:0
+[2026-03-27 09:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (11 个)
+  - FIX-TC-FLOW-001-046 (修复: 2026-03-27 08 失败) - new
+  - FIX-TC-FLOW-001-047 (修复: 2026-03-27 08 失败) - new
+  - FIX-TC-FLOW-001-048 (修复: 2026-03-27 08 失败) - new
+  - FIX-TC-FLOW-001-049 (修复: store 失败) - new
+  - FIX-TC-FLOW-001-050 (修复: optimize 失败) - new
+  - FIX-TC-FLOW-001-051 (修复: update 失败) - new
+  - FIX-TC-FLOW-001-052 (修复: analyze 失败) - new
+  - FIX-TC-FLOW-001-053 (修复: workflow_runner.py 模块导入失败: ListingOptimizer/Miaosh) - new
+  - FIX-TC-FLOW-001-054 (修复: workflow_runner.py 第35-40行 try/except 静默吞掉ImportEr) - new
+  - FIX-FIX-WORKFLOW-001-001 (修复: workflow_runner.py 模块导入失败) - new
+  - FIX-FIX-WORKFLOW-001-002 (修复: try/except 静默吞掉ImportError) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 6812
+  ✅ success: 103
+  ❌ failed: 46
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:11 | 运行中:0 | 需人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 09:00:04] ========== 心跳完成 ==========
+[2026-03-27 09:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 7437
+  ✅ success: 117
+  ❌ failed: 50
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+[2026-03-27 09:30:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 7437
+  ✅ success: 117
+  ❌ failed: 50
+  👀 following: 6
+  ⏭️  skipped: 3
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 09:30:02] ========== 心跳完成 ==========
+[2026-03-27 10:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - FIX-FIX-TC-FLOW-001-002-001 (修复: 执行错误: name 'wraps' is not defined) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 8015
+  ✅ success: 122
+  ❌ failed: 53
+  👀 following: 6
+  ⏭️  skipped: 4
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+[2026-03-27 10:00:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - FIX-FIX-TC-FLOW-001-002-001 (修复: 执行错误: name 'wraps' is not defined) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 8015
+  ✅ success: 122
+  ❌ failed: 53
+  👀 following: 6
+  ⏭️  skipped: 4
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 10:00:03] ========== 心跳完成 ==========
+[2026-03-27 10:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 8262
+  ✅ success: 127
+  ❌ failed: 54
+  👀 following: 6
+  ⏭️  skipped: 4
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+[2026-03-27 10:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 8262
+  ✅ success: 127
+  ❌ failed: 54
+  👀 following: 6
+  ⏭️  skipped: 4
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 10:30:01] ========== 心跳完成 ==========
+[2026-03-27 11:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 8659
+  ✅ success: 131
+  ❌ failed: 57
+  👀 following: 6
+  ⏭️  skipped: 4
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+[2026-03-27 11:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 8659
+  ✅ success: 131
+  ❌ failed: 57
+  👀 following: 6
+  ⏭️  skipped: 4
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 11:00:05] ========== 心跳完成 ==========
+[2026-03-27 11:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 8898
+  ✅ success: 145
+  ❌ failed: 64
+  👀 following: 7
+  ⏭️  skipped: 4
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 11:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 8898
+  ✅ success: 145
+  ❌ failed: 64
+  👀 following: 7
+  ⏭️  skipped: 4
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 11:30:04] ========== 心跳完成 ==========
+[2026-03-27 12:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 9071
+  ✅ success: 159
+  ❌ failed: 70
+  👀 following: 7
+  ⏭️  skipped: 5
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 12:00:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 9071
+  ✅ success: 159
+  ❌ failed: 70
+  👀 following: 7
+  ⏭️  skipped: 5
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 12:00:04] ========== 心跳完成 ==========
+[2026-03-27 12:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 9307
+  ✅ success: 167
+  ❌ failed: 76
+  👀 following: 7
+  ⏭️  skipped: 6
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+[2026-03-27 12:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 9307
+  ✅ success: 167
+  ❌ failed: 76
+  👀 following: 7
+  ⏭️  skipped: 6
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 12:30:03] ========== 心跳完成 ==========
+[2026-03-27 13:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 9646
+  ✅ success: 175
+  ❌ failed: 81
+  👀 following: 9
+  ⏭️  skipped: 6
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 13:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 9646
+  ✅ success: 175
+  ❌ failed: 81
+  👀 following: 9
+  ⏭️  skipped: 6
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 13:00:02] ========== 心跳完成 ==========
+[2026-03-27 13:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 9979
+  ✅ success: 175
+  ❌ failed: 84
+  👀 following: 9
+  ⏭️  skipped: 6
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 13:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 9979
+  ✅ success: 175
+  ❌ failed: 84
+  👀 following: 9
+  ⏭️  skipped: 6
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 13:30:02] ========== 心跳完成 ==========
+[2026-03-27 14:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10310
+  ✅ success: 175
+  ❌ failed: 87
+  👀 following: 9
+  ⏭️  skipped: 6
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+[2026-03-27 14:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10310
+  ✅ success: 175
+  ❌ failed: 87
+  👀 following: 9
+  ⏭️  skipped: 6
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 14:00:03] ========== 心跳完成 ==========
+[2026-03-27 14:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10550
+  ✅ success: 191
+  ❌ failed: 93
+  👀 following: 9
+  ⏭️  skipped: 7
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+[2026-03-27 14:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10550
+  ✅ success: 191
+  ❌ failed: 93
+  👀 following: 9
+  ⏭️  skipped: 7
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 14:30:02] ========== 心跳完成 ==========
+[2026-03-27 15:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10792
+  ✅ success: 208
+  ❌ failed: 100
+  👀 following: 9
+  ⏭️  skipped: 8
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+[2026-03-27 15:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10792
+  ✅ success: 208
+  ❌ failed: 100
+  👀 following: 9
+  ⏭️  skipped: 8
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 15:00:04] ========== 心跳完成 ==========
+[2026-03-27 15:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11143
+  ✅ success: 224
+  ❌ failed: 107
+  👀 following: 9
+  ⏭️  skipped: 8
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+[2026-03-27 15:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11143
+  ✅ success: 224
+  ❌ failed: 107
+  👀 following: 9
+  ⏭️  skipped: 8
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 15:30:02] ========== 心跳完成 ==========
+[2026-03-27 16:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11147
+  ✅ success: 224
+  ❌ failed: 109
+  👀 following: 10
+  ⏭️  skipped: 8
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 16:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11147
+  ✅ success: 224
+  ❌ failed: 109
+  👀 following: 10
+  ⏭️  skipped: 8
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 16:00:03] ========== 心跳完成 ==========
+[2026-03-27 16:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11156
+  ✅ success: 233
+  ❌ failed: 110
+  👀 following: 10
+  ⏭️  skipped: 9
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 16:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11156
+  ✅ success: 233
+  ❌ failed: 110
+  👀 following: 10
+  ⏭️  skipped: 9
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 16:30:02] ========== 心跳完成 ==========
+[2026-03-27 17:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11157
+  ✅ success: 232
+  ❌ failed: 110
+  👀 following: 10
+  ⏭️  skipped: 13
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 17:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11157
+  ✅ success: 232
+  ❌ failed: 110
+  👀 following: 10
+  ⏭️  skipped: 13
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 17:00:04] ========== 心跳完成 ==========
+[2026-03-27 17:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11161
+  ✅ success: 231
+  ❌ failed: 112
+  👀 following: 12
+  ⏭️  skipped: 13
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 17:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11161
+  ✅ success: 231
+  ❌ failed: 112
+  👀 following: 12
+  ⏭️  skipped: 13
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 17:30:02] ========== 心跳完成 ==========
+[2026-03-27 18:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11163
+  ✅ success: 231
+  ❌ failed: 109
+  👀 following: 13
+  ⏭️  skipped: 13
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 18:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11163
+  ✅ success: 231
+  ❌ failed: 109
+  👀 following: 13
+  ⏭️  skipped: 13
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 18:00:03] ========== 心跳完成 ==========
+[2026-03-27 18:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11168
+  ✅ success: 227
+  ❌ failed: 99
+  👀 following: 15
+  ⏭️  skipped: 13
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+[2026-03-27 18:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11168
+  ✅ success: 227
+  ❌ failed: 99
+  👀 following: 15
+  ⏭️  skipped: 13
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 18:30:02] ========== 心跳完成 ==========
+[2026-03-27 19:00:02] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11172
+  ✅ success: 227
+  ❌ failed: 103
+  👀 following: 15
+  ⏭️  skipped: 13
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 19:00:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11172
+  ✅ success: 227
+  ❌ failed: 103
+  👀 following: 15
+  ⏭️  skipped: 13
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 19:00:04] ========== 心跳完成 ==========
+[2026-03-27 19:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11177
+  ✅ success: 227
+  ❌ failed: 107
+  👀 following: 16
+  ⏭️  skipped: 13
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 19:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11177
+  ✅ success: 227
+  ❌ failed: 107
+  👀 following: 16
+  ⏭️  skipped: 13
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 19:30:02] ========== 心跳完成 ==========
+[2026-03-27 20:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11180
+  ✅ success: 227
+  ❌ failed: 109
+  👀 following: 17
+  ⏭️  skipped: 12
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 20:00:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11180
+  ✅ success: 227
+  ❌ failed: 109
+  👀 following: 17
+  ⏭️  skipped: 12
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 20:00:04] ========== 心跳完成 ==========
+[2026-03-27 20:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11183
+  ✅ success: 227
+  ❌ failed: 112
+  👀 following: 17
+  ⏭️  skipped: 12
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+[2026-03-27 20:30:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TC-FLOW-001 (TC-FLOW-001端到端测试) - error_fix_pending
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11183
+  ✅ success: 227
+  ❌ failed: 112
+  👀 following: 17
+  ⏭️  skipped: 12
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 20:30:03] ========== 心跳完成 ==========
+[2026-03-27 21:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11210
+  ✅ success: 237
+  ❌ failed: 122
+  👀 following: 17
+  ⏭️  skipped: 12
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 21:00:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11210
+  ✅ success: 237
+  ❌ failed: 122
+  👀 following: 17
+  ⏭️  skipped: 12
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 21:00:03] ========== 心跳完成 ==========
+[2026-03-27 21:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11208
+  ✅ success: 237
+  ❌ failed: 119
+  👀 following: 16
+  ⏭️  skipped: 15
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 21:30:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11208
+  ✅ success: 237
+  ❌ failed: 119
+  👀 following: 16
+  ⏭️  skipped: 15
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-27 21:30:02] ========== 心跳完成 ==========
+[2026-03-27 22:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11162
+  ✅ success: 237
+  ❌ failed: 118
+  👀 following: 12
+  ⏭️  skipped: 17
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 22:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 11162
+  ✅ success: 237
+  ❌ failed: 118
+  👀 following: 12
+  ⏭️  skipped: 17
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 22:00:02] ========== 心跳完成 ==========
+[2026-03-27 22:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10991
+  ✅ success: 236
+  ❌ failed: 116
+  👀 following: 11
+  ⏭️  skipped: 19
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 22:30:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10991
+  ✅ success: 236
+  ❌ failed: 116
+  👀 following: 11
+  ⏭️  skipped: 19
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 22:30:05] ========== 心跳完成 ==========
+[2026-03-27 23:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10785
+  ✅ success: 234
+  ❌ failed: 114
+  👀 following: 11
+  ⏭️  skipped: 22
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 23:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10785
+  ✅ success: 234
+  ❌ failed: 114
+  👀 following: 11
+  ⏭️  skipped: 22
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 23:00:03] ========== 心跳完成 ==========
+[2026-03-27 23:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10733
+  ✅ success: 228
+  ❌ failed: 114
+  👀 following: 11
+  ⏭️  skipped: 25
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-27 23:30:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10733
+  ✅ success: 228
+  ❌ failed: 114
+  👀 following: 11
+  ⏭️  skipped: 25
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-27 23:30:03] ========== 心跳完成 ==========
+[2026-03-28 00:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10610
+  ✅ success: 224
+  ❌ failed: 113
+  👀 following: 11
+  ⏭️  skipped: 28
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 00:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10610
+  ✅ success: 224
+  ❌ failed: 113
+  👀 following: 11
+  ⏭️  skipped: 28
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-28 00:00:04] ========== 心跳完成 ==========
+[2026-03-28 00:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10457
+  ✅ success: 222
+  ❌ failed: 111
+  👀 following: 11
+  ⏭️  skipped: 31
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 00:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10457
+  ✅ success: 222
+  ❌ failed: 111
+  👀 following: 11
+  ⏭️  skipped: 31
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 00:30:04] ========== 心跳完成 ==========
+[2026-03-28 01:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10110
+  ✅ success: 216
+  ❌ failed: 111
+  👀 following: 11
+  ⏭️  skipped: 34
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 01:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 10110
+  ✅ success: 216
+  ❌ failed: 111
+  👀 following: 11
+  ⏭️  skipped: 34
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 01:00:04] ========== 心跳完成 ==========
+[2026-03-28 01:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 9642
+  ✅ success: 210
+  ❌ failed: 111
+  👀 following: 11
+  ⏭️  skipped: 37
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 01:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 9642
+  ✅ success: 210
+  ❌ failed: 111
+  👀 following: 11
+  ⏭️  skipped: 37
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 01:30:01] ========== 心跳完成 ==========
+[2026-03-28 02:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 9252
+  ✅ success: 206
+  ❌ failed: 110
+  👀 following: 11
+  ⏭️  skipped: 40
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 02:00:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 9252
+  ✅ success: 206
+  ❌ failed: 110
+  👀 following: 11
+  ⏭️  skipped: 40
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 02:00:02] ========== 心跳完成 ==========
+[2026-03-28 02:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 8889
+  ✅ success: 200
+  ❌ failed: 110
+  👀 following: 11
+  ⏭️  skipped: 43
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 02:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 8889
+  ✅ success: 200
+  ❌ failed: 110
+  👀 following: 11
+  ⏭️  skipped: 43
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 02:30:01] ========== 心跳完成 ==========
+[2026-03-28 03:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 8383
+  ✅ success: 195
+  ❌ failed: 109
+  👀 following: 11
+  ⏭️  skipped: 46
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 03:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 8383
+  ✅ success: 195
+  ❌ failed: 109
+  👀 following: 11
+  ⏭️  skipped: 46
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-28 03:00:03] ========== 心跳完成 ==========
+[2026-03-28 03:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 8186
+  ✅ success: 192
+  ❌ failed: 107
+  👀 following: 11
+  ⏭️  skipped: 49
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 03:30:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 8186
+  ✅ success: 192
+  ❌ failed: 107
+  👀 following: 11
+  ⏭️  skipped: 49
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 03:30:02] ========== 心跳完成 ==========
+[2026-03-28 04:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 7848
+  ✅ success: 186
+  ❌ failed: 107
+  👀 following: 11
+  ⏭️  skipped: 52
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 04:00:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 7848
+  ✅ success: 186
+  ❌ failed: 107
+  👀 following: 11
+  ⏭️  skipped: 52
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 04:00:02] ========== 心跳完成 ==========
+[2026-03-28 04:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 7296
+  ✅ success: 182
+  ❌ failed: 105
+  👀 following: 11
+  ⏭️  skipped: 55
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 04:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 7296
+  ✅ success: 182
+  ❌ failed: 105
+  👀 following: 11
+  ⏭️  skipped: 55
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 04:30:01] ========== 心跳完成 ==========
+[2026-03-28 05:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 7063
+  ✅ success: 178
+  ❌ failed: 103
+  👀 following: 11
+  ⏭️  skipped: 58
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 05:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 7063
+  ✅ success: 178
+  ❌ failed: 103
+  👀 following: 11
+  ⏭️  skipped: 58
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-28 05:00:03] ========== 心跳完成 ==========
+[2026-03-28 05:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 6911
+  ✅ success: 173
+  ❌ failed: 102
+  👀 following: 11
+  ⏭️  skipped: 61
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 05:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 6911
+  ✅ success: 173
+  ❌ failed: 102
+  👀 following: 11
+  ⏭️  skipped: 61
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 05:30:01] ========== 心跳完成 ==========
+[2026-03-28 06:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 6579
+  ✅ success: 169
+  ❌ failed: 101
+  👀 following: 11
+  ⏭️  skipped: 65
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 06:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 6579
+  ✅ success: 169
+  ❌ failed: 101
+  👀 following: 11
+  ⏭️  skipped: 65
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-28 06:00:02] ========== 心跳完成 ==========
+[2026-03-28 06:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 6092
+  ✅ success: 164
+  ❌ failed: 100
+  👀 following: 11
+  ⏭️  skipped: 67
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 06:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 6092
+  ✅ success: 164
+  ❌ failed: 100
+  👀 following: 11
+  ⏭️  skipped: 67
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-28 06:30:02] ========== 心跳完成 ==========
+[2026-03-28 07:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 5664
+  ✅ success: 159
+  ❌ failed: 99
+  👀 following: 11
+  ⏭️  skipped: 71
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 07:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 5664
+  ✅ success: 159
+  ❌ failed: 99
+  👀 following: 11
+  ⏭️  skipped: 71
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-28 07:00:04] ========== 心跳完成 ==========
+[2026-03-28 07:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 5463
+  ✅ success: 156
+  ❌ failed: 97
+  👀 following: 11
+  ⏭️  skipped: 73
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 07:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 5463
+  ✅ success: 156
+  ❌ failed: 97
+  👀 following: 11
+  ⏭️  skipped: 73
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 07:30:01] ========== 心跳完成 ==========
+[2026-03-28 08:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 5191
+  ✅ success: 150
+  ❌ failed: 97
+  👀 following: 11
+  ⏭️  skipped: 77
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 08:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 5191
+  ✅ success: 150
+  ❌ failed: 97
+  👀 following: 11
+  ⏭️  skipped: 77
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-28 08:00:04] ========== 心跳完成 ==========
+[2026-03-28 08:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 4671
+  ✅ success: 145
+  ❌ failed: 96
+  👀 following: 11
+  ⏭️  skipped: 79
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 08:30:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 4671
+  ✅ success: 145
+  ❌ failed: 96
+  👀 following: 11
+  ⏭️  skipped: 79
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 08:30:02] ========== 心跳完成 ==========
+[2026-03-28 09:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 4397
+  ✅ success: 141
+  ❌ failed: 95
+  👀 following: 11
+  ⏭️  skipped: 82
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 09:00:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 4397
+  ✅ success: 141
+  ❌ failed: 95
+  👀 following: 11
+  ⏭️  skipped: 82
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-28 09:00:03] ========== 心跳完成 ==========
+[2026-03-28 09:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 3774
+  ✅ success: 127
+  ❌ failed: 91
+  👀 following: 11
+  ⏭️  skipped: 85
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 09:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 3774
+  ✅ success: 127
+  ❌ failed: 91
+  👀 following: 11
+  ⏭️  skipped: 85
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 09:30:01] ========== 心跳完成 ==========
+[2026-03-28 10:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 3196
+  ✅ success: 122
+  ❌ failed: 88
+  👀 following: 11
+  ⏭️  skipped: 87
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 10:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 3196
+  ✅ success: 122
+  ❌ failed: 88
+  👀 following: 11
+  ⏭️  skipped: 87
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-28 10:00:04] ========== 心跳完成 ==========
+[2026-03-28 10:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 2948
+  ✅ success: 117
+  ❌ failed: 87
+  👀 following: 11
+  ⏭️  skipped: 91
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 10:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 2948
+  ✅ success: 117
+  ❌ failed: 87
+  👀 following: 11
+  ⏭️  skipped: 91
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 10:30:01] ========== 心跳完成 ==========
+[2026-03-28 11:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 2551
+  ✅ success: 113
+  ❌ failed: 84
+  👀 following: 10
+  ⏭️  skipped: 94
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 11:00:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 2551
+  ✅ success: 113
+  ❌ failed: 84
+  👀 following: 10
+  ⏭️  skipped: 94
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 11:00:02] ========== 心跳完成 ==========
+[2026-03-28 11:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 2313
+  ✅ success: 99
+  ❌ failed: 77
+  👀 following: 10
+  ⏭️  skipped: 96
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 11:30:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 2313
+  ✅ success: 99
+  ❌ failed: 77
+  👀 following: 10
+  ⏭️  skipped: 96
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 11:30:02] ========== 心跳完成 ==========
+[2026-03-28 12:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 2141
+  ✅ success: 85
+  ❌ failed: 71
+  👀 following: 10
+  ⏭️  skipped: 98
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 12:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 2141
+  ✅ success: 85
+  ❌ failed: 71
+  👀 following: 10
+  ⏭️  skipped: 98
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 12:00:02] ========== 心跳完成 ==========
+[2026-03-28 12:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 1902
+  ✅ success: 77
+  ❌ failed: 65
+  👀 following: 8
+  ⏭️  skipped: 100
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 12:30:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 1902
+  ✅ success: 77
+  ❌ failed: 65
+  👀 following: 8
+  ⏭️  skipped: 100
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 12:30:02] ========== 心跳完成 ==========
+[2026-03-28 13:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 1577
+  ✅ success: 81
+  ❌ failed: 60
+  👀 following: 8
+  ⏭️  skipped: 102
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 13:00:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 1577
+  ✅ success: 81
+  ❌ failed: 60
+  👀 following: 8
+  ⏭️  skipped: 102
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-28 13:00:04] ========== 心跳完成 ==========
+[2026-03-28 13:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - AUTO-LISTING-002-STEP2 (Step2: 采集箱数据提取) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 1252
+  ✅ success: 86
+  ❌ failed: 58
+  👀 following: 8
+  ⏭️  skipped: 103
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+[2026-03-28 13:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - AUTO-LISTING-002-STEP2 (Step2: 采集箱数据提取) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 1252
+  ✅ success: 86
+  ❌ failed: 58
+  👀 following: 8
+  ⏭️  skipped: 103
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 13:30:04] ========== 心跳完成 ==========
+[2026-03-28 14:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - AUTO-LISTING-002 (自动化上架测试v2-1031400982378) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 924
+  ✅ success: 90
+  ❌ failed: 56
+  👀 following: 8
+  ⏭️  skipped: 104
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+[2026-03-28 14:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - AUTO-LISTING-002 (自动化上架测试v2-1031400982378) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 924
+  ✅ success: 90
+  ❌ failed: 56
+  👀 following: 8
+  ⏭️  skipped: 104
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 14:00:02] ========== 心跳完成 ==========
+[2026-03-28 15:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 443
+  ✅ success: 58
+  ❌ failed: 43
+  👀 following: 8
+  ⏭️  skipped: 104
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 15:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 443
+  ✅ success: 58
+  ❌ failed: 43
+  👀 following: 8
+  ⏭️  skipped: 104
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-28 15:00:03] ========== 心跳完成 ==========
+[2026-03-28 15:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 91
+  ✅ success: 42
+  ❌ failed: 36
+  👀 following: 8
+  ⏭️  skipped: 107
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 15:30:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 91
+  ✅ success: 42
+  ❌ failed: 36
+  👀 following: 8
+  ⏭️  skipped: 107
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 15:30:02] ========== 心跳完成 ==========
+[2026-03-28 16:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (4 个)
+  - AUTO-LISTING-004-STEP3 (Step3: 获取1688重量) - new
+  - AUTO-LISTING-004-STEP4 (Step4: 数据落库) - new
+  - AUTO-LISTING-004-STEP5 (Step5: Listing优化) - new
+  - AUTO-LISTING-004-STEP6 (Step6: 回写妙手ERP) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 145
+  ✅ success: 71
+  ❌ failed: 53
+  👀 following: 13
+  ⏭️  skipped: 114
+
+----------
+
+📈 汇总：待处理:4 | 运行中:0 | 需人工:0
+[2026-03-28 16:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (4 个)
+  - AUTO-LISTING-004-STEP3 (Step3: 获取1688重量) - new
+  - AUTO-LISTING-004-STEP4 (Step4: 数据落库) - new
+  - AUTO-LISTING-004-STEP5 (Step5: Listing优化) - new
+  - AUTO-LISTING-004-STEP6 (Step6: 回写妙手ERP) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 145
+  ✅ success: 71
+  ❌ failed: 53
+  👀 following: 13
+  ⏭️  skipped: 114
+
+----------
+
+📈 汇总：待处理:4 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 16:00:02] ========== 心跳完成 ==========
+[2026-03-28 16:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (5 个)
+  - AUTO-LISTING-005-STEP2 (Step2: 采集箱数据提取) - new
+  - AUTO-LISTING-005-STEP3 (Step3: 获取1688重量) - new
+  - AUTO-LISTING-005-STEP4 (Step4: 数据落库) - new
+  - AUTO-LISTING-005-STEP5 (Step5: Listing优化) - new
+  - AUTO-LISTING-005-STEP6 (Step6: 回写妙手ERP) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 175
+  ✅ success: 83
+  ❌ failed: 66
+  👀 following: 21
+  ⏭️  skipped: 116
+
+----------
+
+📈 汇总：待处理:5 | 运行中:0 | 需人工:0
+[2026-03-28 16:30:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (5 个)
+  - AUTO-LISTING-005-STEP2 (Step2: 采集箱数据提取) - new
+  - AUTO-LISTING-005-STEP3 (Step3: 获取1688重量) - new
+  - AUTO-LISTING-005-STEP4 (Step4: 数据落库) - new
+  - AUTO-LISTING-005-STEP5 (Step5: Listing优化) - new
+  - AUTO-LISTING-005-STEP6 (Step6: 回写妙手ERP) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 175
+  ✅ success: 83
+  ❌ failed: 66
+  👀 following: 21
+  ⏭️  skipped: 116
+
+----------
+
+📈 汇总：待处理:5 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 16:30:02] ========== 心跳完成 ==========
+[2026-03-28 17:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - AUTO-LISTING-007-STEP6 (Step6: 回写妙手ERP) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 202
+  ✅ success: 100
+  ❌ failed: 71
+  👀 following: 21
+  ⏭️  skipped: 118
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+[2026-03-28 17:00:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - AUTO-LISTING-007-STEP6 (Step6: 回写妙手ERP) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 202
+  ✅ success: 100
+  ❌ failed: 71
+  👀 following: 21
+  ⏭️  skipped: 118
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 17:00:02] ========== 心跳完成 ==========
+[2026-03-28 17:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 236
+  ✅ success: 123
+  ❌ failed: 83
+  👀 following: 22
+  ⏭️  skipped: 120
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 17:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 236
+  ✅ success: 123
+  ❌ failed: 83
+  👀 following: 22
+  ⏭️  skipped: 120
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 17:30:02] ========== 心跳完成 ==========
+[2026-03-28 18:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - AUTO-LISTING-009-STEP6 (Step6: 回写妙手ERP) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 238
+  ✅ success: 126
+  ❌ failed: 82
+  👀 following: 21
+  ⏭️  skipped: 122
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+[2026-03-28 18:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - AUTO-LISTING-009-STEP6 (Step6: 回写妙手ERP) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 238
+  ✅ success: 126
+  ❌ failed: 82
+  👀 following: 21
+  ⏭️  skipped: 122
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-28 18:00:03] ========== 心跳完成 ==========
+[2026-03-28 18:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 235
+  ✅ success: 127
+  ❌ failed: 78
+  👀 following: 19
+  ⏭️  skipped: 125
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 18:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 235
+  ✅ success: 127
+  ❌ failed: 78
+  👀 following: 19
+  ⏭️  skipped: 125
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-28 18:30:02] ========== 心跳完成 ==========
+[2026-03-28 19:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 231
+  ✅ success: 127
+  ❌ failed: 74
+  👀 following: 19
+  ⏭️  skipped: 128
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 19:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 231
+  ✅ success: 127
+  ❌ failed: 74
+  👀 following: 19
+  ⏭️  skipped: 128
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 19:00:04] ========== 心跳完成 ==========
+[2026-03-28 19:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 226
+  ✅ success: 127
+  ❌ failed: 70
+  👀 following: 19
+  ⏭️  skipped: 131
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 19:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 226
+  ✅ success: 127
+  ❌ failed: 70
+  👀 following: 19
+  ⏭️  skipped: 131
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 19:30:01] ========== 心跳完成 ==========
+[2026-03-28 20:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 223
+  ✅ success: 127
+  ❌ failed: 68
+  👀 following: 17
+  ⏭️  skipped: 134
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 20:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 223
+  ✅ success: 127
+  ❌ failed: 68
+  👀 following: 17
+  ⏭️  skipped: 134
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-28 20:00:03] ========== 心跳完成 ==========
+[2026-03-28 20:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 220
+  ✅ success: 127
+  ❌ failed: 65
+  👀 following: 17
+  ⏭️  skipped: 137
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 20:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 220
+  ✅ success: 127
+  ❌ failed: 65
+  👀 following: 17
+  ⏭️  skipped: 137
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 20:30:01] ========== 心跳完成 ==========
+[2026-03-28 21:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 192
+  ✅ success: 117
+  ❌ failed: 55
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 21:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 192
+  ✅ success: 117
+  ❌ failed: 55
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-28 21:00:03] ========== 心跳完成 ==========
+[2026-03-28 21:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 192
+  ✅ success: 117
+  ❌ failed: 55
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 21:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 192
+  ✅ success: 117
+  ❌ failed: 55
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 21:30:02] ========== 心跳完成 ==========
+[2026-03-28 22:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 192
+  ✅ success: 117
+  ❌ failed: 55
+  👀 following: 17
+  ⏭️  skipped: 139
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 22:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 192
+  ✅ success: 117
+  ❌ failed: 55
+  👀 following: 17
+  ⏭️  skipped: 139
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 22:00:04] ========== 心跳完成 ==========
+[2026-03-28 22:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 192
+  ✅ success: 117
+  ❌ failed: 55
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 22:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 192
+  ✅ success: 117
+  ❌ failed: 55
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 22:30:01] ========== 心跳完成 ==========
+[2026-03-28 23:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 192
+  ✅ success: 117
+  ❌ failed: 55
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 23:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 192
+  ✅ success: 117
+  ❌ failed: 55
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-28 23:00:03] ========== 心跳完成 ==========
+[2026-03-28 23:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 194
+  ✅ success: 118
+  ❌ failed: 56
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-28 23:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 194
+  ✅ success: 118
+  ❌ failed: 56
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-28 23:30:02] ========== 心跳完成 ==========
+[2026-03-29 00:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 139
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 00:00:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 139
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-29 00:00:05] ========== 心跳完成 ==========
+[2026-03-29 00:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 139
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 00:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 139
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-29 00:30:04] ========== 心跳完成 ==========
+[2026-03-29 01:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 01:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-29 01:00:02] ========== 心跳完成 ==========
+[2026-03-29 01:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 139
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 01:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 139
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-29 01:30:01] ========== 心跳完成 ==========
+[2026-03-29 02:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 02:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-29 02:00:02] ========== 心跳完成 ==========
+[2026-03-29 02:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 141
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 02:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 141
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-29 02:30:01] ========== 心跳完成 ==========
+[2026-03-29 03:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 03:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-29 03:00:04] ========== 心跳完成 ==========
+[2026-03-29 03:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 03:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-29 03:30:02] ========== 心跳完成 ==========
+[2026-03-29 04:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 141
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 04:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 141
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-29 04:00:02] ========== 心跳完成 ==========
+[2026-03-29 04:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 04:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-29 04:30:01] ========== 心跳完成 ==========
+[2026-03-29 05:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 05:00:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-29 05:00:02] ========== 心跳完成 ==========
+[2026-03-29 05:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 05:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-29 05:30:02] ========== 心跳完成 ==========
+[2026-03-29 06:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 139
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 06:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 139
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-29 06:00:02] ========== 心跳完成 ==========
+[2026-03-29 06:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 06:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-29 06:30:02] ========== 心跳完成 ==========
+[2026-03-29 07:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 139
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 07:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 139
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-29 07:00:02] ========== 心跳完成 ==========
+[2026-03-29 07:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 139
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 07:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 139
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-29 07:30:02] ========== 心跳完成 ==========
+[2026-03-29 08:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 139
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 08:00:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 139
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-29 08:00:03] ========== 心跳完成 ==========
+[2026-03-29 08:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 08:30:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-29 08:30:03] ========== 心跳完成 ==========
+[2026-03-29 09:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 09:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-29 09:00:02] ========== 心跳完成 ==========
+[2026-03-29 09:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 09:30:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-29 09:30:02] ========== 心跳完成 ==========
+[2026-03-29 09:34:02] ========== 心跳开始 ==========
+[2026-03-29 09:34:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 196
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 140
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0 | 超时TEMP:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 09:34:02] ========== 心跳完成 ==========
+[2026-03-29 09:40:57] ========== 心跳开始 ==========
+[2026-03-29 09:40:57] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 197
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 139
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0 | 超时TEMP:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 09:40:57] ========== 心跳完成 ==========
+[2026-03-29 10:00:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 197
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 137
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0 | 超时TEMP:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+[2026-03-29 10:00:01] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 197
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 137
+
+----------
+
+📈 汇总：待处理:0 | 运行中:0 | 需人工:0 | 超时TEMP:0
+
+HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0
+{"code":11232,"data":{},"msg":"frequency limited psm[lark.oapi.app_platform_runtime]appID[1500]"}
+[2026-03-29 10:00:04] ========== 心跳完成 ==========
+[2026-03-29 10:30:01] ========== 心跳开始 ==========
+💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TEMP-UPDATER-20260329100035 (调试 miaoshou-updater) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 197
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 134
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0 | 超时TEMP:0
+[2026-03-29 10:30:02] 💓 CommerceFlow 心跳报告
+
+📋 第一问：有没有需要处理的任务？
+
+🔴 P0 立即处理 (1 个)
+  - TEMP-UPDATER-20260329100035 (调试 miaoshou-updater) - new
+
+----------
+
+📊 第二问：任务执行是否顺畅？
+
+执行统计（24小时）：
+  🔄 running: 197
+  ✅ success: 119
+  ❌ failed: 57
+  👀 following: 17
+  ⏭️  skipped: 134
+
+----------
+
+📈 汇总：待处理:1 | 运行中:0 | 需人工:0 | 超时TEMP:0
+{"StatusCode":0,"StatusMessage":"success","code":0,"data":{},"msg":"success"}
+[2026-03-29 10:30:02] ========== 心跳完成 ==========

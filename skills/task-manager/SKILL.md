@@ -18,6 +18,7 @@ triggers:
 - 批量子任务创建
 - AI自愈循环（subtask_executor）
 - 自动状态回写
+- **增强错误分析（tavily-search + agent-browser）**
 
 ## 数据库表
 
@@ -106,7 +107,7 @@ main_logs (
                                   │  └────┬────┘ └────┬────┘
                                   │       ▼           ▼
                                   │  ┌─────────┐ ┌─────────┐
-                                  │  │创建子任务│ │重试3次 │
+                                  │  │创建子任务│ │重试5次 │
                                   │  │继续执行  │ │→ SOL  │
                                   │  └─────────┘ └────┬────┘
                                   │                   ▼
@@ -118,9 +119,73 @@ main_logs (
 
 ## 优先级规则
 
-1. **先按优先级**：P0 > P1 > P2
-2. **同优先级**：子任务（level=2）优先于父任务（level=1）
-3. **每次最多处理**：1个任务
+1. **先按任务类型**：修复类 > 常规类 > 创造类
+2. **同类型按优先级**：P0 > P1 > P2
+3. **同优先级**：子任务（level=2）优先于父任务（level=1）
+4. **每次最多处理**：1个任务
+
+## 任务类型（task_type）
+
+### 类型定义
+
+| 类型 | task_type值 | 优先级 | 说明 |
+|------|------------|--------|------|
+| 【常规类】 | `常规` | 中 | 已实现功能的任务（如TC-FLOW-001端到端测试） |
+| 【修复类】 | `修复` | **最高** | 修复机制问题的任务（如FIX-xxx） |
+| 【创造类】 | `创造` | 最低 | 逻辑待定的新任务 |
+
+### 执行顺序
+
+```python
+# get_actionable_tasks() 的 ORDER BY 子句
+ORDER BY 
+    CASE task_type 
+        WHEN '修复' THEN 1 
+        WHEN '常规' THEN 2 
+        WHEN '创造' THEN 3 
+        ELSE 4
+    END,
+    CASE priority 
+        WHEN 'P0' THEN 1 
+        WHEN 'P1' THEN 2 
+        WHEN 'P2' THEN 3 
+    END,
+    task_level DESC,
+    created_at
+```
+
+### 与其他机制的关系
+
+- **task_monitor**：检测到critical/high错误时，创建 `FIX-xxx` 子任务，**task_type=修复**
+- **subtask_executor**：执行修复任务时，**task_type=修复**
+- **prod_task_cron**：调用 `get_actionable_tasks()` 时按task_type优先级排序
+
+### 代码示例
+
+```python
+# 创建常规任务
+tm.create_task(
+    task_name='TC-FLOW-001',
+    display_name='端到端测试',
+    task_type='常规',
+    priority='P1'
+)
+
+# 创建修复任务（由task_monitor自动创建）
+# create_fix_subtasks() 和 create_fix_subtask() 自动设置 task_type='修复'
+tm.create_fix_subtasks('TC-FLOW-001', [
+    {'error': 'exec环境缺少模块', 'fix': '预加载常用模块'}
+])
+
+# 查询任务类型分布
+cur.execute('SELECT task_type, COUNT(*) FROM tasks GROUP BY task_type')
+```
+
+### 数据库字段
+
+```sql
+ALTER TABLE tasks ADD COLUMN task_type VARCHAR(20) DEFAULT '常规';
+```
 
 ## 核心流程
 
@@ -142,18 +207,55 @@ def run():
 
 ### 2. 子任务自愈循环（subtask_executor）
 
-**代码持久化机制：**
+**代码持久化机制（改进版 v2）：**
+
 ```
-自愈生成的修复代码
+修复代码生成
     ↓
-写入 scripts/fixes/fix_{task_name}.py
-    ↓
-加载并执行
-    ↓
-确保下次重试时代码仍可用
+┌─────────────────────────────────────┐
+│  infer_target_module() 推断修复目标   │
+└─────────────────────────────────────┘
+    │
+    ├── framework 核心框架脚本
+    │   → 直接修改源文件（subtask_executor.py等）
+    │   → 追加修复记录到 SKILL.md
+    │   → 同时保留副本到 fixes/source_xxx.py（追溯用）
+    │
+    ├── skill Skills模块
+    │   → 直接修改对应脚本
+    │   → 追加修复记录到 SKILL.md
+    │
+    └── task 任务特定fix
+        → 写入 fixes/fix_xxx.py（旧机制）
 ```
 
-**持久化文件示例：**
+**目标推断规则：**
+
+| 任务名模式 | 目标类型 | 源文件 | SKILL.md |
+|-----------|---------|--------|----------|
+| `FIX-subtask_executor-*` | framework | subtask_executor.py | task-manager/SKILL.md |
+| `FIX-task_manager-*` | framework | task_manager.py | task-manager/SKILL.md |
+| `FIX-prod_task_cron-*` | framework | prod_task_cron.py | task-manager/SKILL.md |
+| `FIX-error_analyzer-*` | framework | error_analyzer.py | task-monitor/SKILL.md |
+| `FIX-TC-FLOW-*` | framework | workflow_runner.py | **workflow-runner/SKILL.md** ✅ 已修正 |
+| 其他 `FIX-xxx-*` | task | fixes/fix_xxx.py | - |
+
+**核心改进：**
+- **修复框架bug** → 直接改源文件，下次执行就是修复后的代码
+- **修复skill bug** → 直接改skill脚本 + 更新skill的SKILL.md
+- **修复workflow-runner问题** → **直接改 workflow_runner.py + 更新 workflow-runner/SKILL.md**
+- **修复任务特定问题** → 写到 fixes/ 目录（临时的）
+
+**skill模块修复路径映射：**
+
+| FIX任务 | 目标脚本 | SKILL.md |
+|---------|----------|----------|
+| `FIX-miaoshou_updater-*` | `/home/ubuntu/.openclaw/skills/miaoshou-updater/updater.py` | miaoshou-updater/SKILL.md |
+| `FIX-product_storer-*` | `/home/ubuntu/.openclaw/skills/product-storer/storer.py` | product-storer/SKILL.md |
+| `FIX-listing_optimizer-*` | `/home/ubuntu/.openclaw/skills/listing-optimizer/optimizer.py` | listing-optimizer/SKILL.md |
+| `FIX-collector_scraper-*` | `/home/ubuntu/.openclaw/skills/collector-scraper/scraper.py` | collector-scraper/SKILL.md |
+
+**旧持久化文件示例（仅用于追溯）：**
 ```python
 # scripts/fixes/fix_FIX_TC_FLOW_001_010.py
 def analyze(data):
@@ -163,6 +265,19 @@ def analyze(data):
 def apply_fix():
     pass
 ```
+
+**新增函数（subtask_executor.py）：**
+
+| 函数 | 功能 |
+|------|------|
+| `infer_target_module()` | 从任务名推断修复目标（framework/skill/task） |
+| `apply_fix_to_source()` | 直接修改源文件 |
+| `apply_partial_fix()` | 智能合并函数级修复（部分替换） |
+| `append_fix_to_skill()` | 追加修复记录到SKILL.md |
+| `persist_to_fixes_dir()` | 保留旧机制（用于追溯） |
+| `search_solution_with_tavily()` | 使用tavily-search搜索解决方案 |
+| `diagnose_with_agent_browser()` | 使用agent-browser诊断页面元素 |
+| `enhance_error_analysis()` | 整合增强分析，返回搜索结果摘要 |
 
 ### 2.1 状态管理规范
 
@@ -206,7 +321,7 @@ def apply_fix():
 
 **分析流程：**
 1. 获取任务最近50条日志
-2. 调用 qwen3.5-plus LLM 分析
+2. 调用 deepseek-chat LLM 分析
 3. 解析返回的根因和修复方案
 4. 生成详细分析报告
 
@@ -260,6 +375,133 @@ with open(fix_file, 'r') as f:
 
 ---
 
+### 修复5: 直接修复根因 vs FIX循环 (2026-03-27)
+
+**问题：** TC-FLOW-001 反复失败，FIX任务循环创建但问题依旧
+
+**根因分析：** task_monitor + 人工排查发现真正根因：
+1. `workflow_runner.py` 缺少 config 路径：`sys.path` 不包含 `/root/.openclaw/workspace-e-commerce/config`
+2. `llm_config.py` 缺少向后兼容导出：`LLM_API_KEY`, `LLM_BASE_URL` 等变量不存在
+
+**关键洞察：** 有些问题不适合用FIX子任务循环修复（如跨文件路径配置、模块导入结构问题），需要直接定位根因并修复。
+
+**修复方法：**
+```
+根因定位 → 直接修复源文件 → 标记相关FIX任务为end/void
+```
+
+**修复记录：**
+```python
+# 1. /root/.openclaw/workspace-e-commerce/config/llm_config.py
+# 新增向后兼容导出
+LLM_API_KEY = LLM_CONFIG['api_key']
+LLM_BASE_URL = LLM_CONFIG['base_url']
+DEFAULT_MODEL = LLM_CONFIG['model']
+MODELS = TASK_MODELS
+
+# 2. /root/.openclaw/workspace-e-commerce/skills/workflow-runner/scripts/workflow_runner.py
+# 新增路径
+sys.path.insert(0, '/root/.openclaw/workspace-e-commerce/config')
+sys.path.insert(0, '/root/.openclaw/workspace-e-commerce/scripts')
+```
+
+**经验教训：**
+- FIX循环适合修复"代码逻辑错误"
+- 配置问题/导入问题需要直接修复源文件
+- task_monitor检测到 `name 'XXX' is not defined` 时，可能需要人工介入定位真正的导入路径问题
+
+---
+
+### 修复8: skill模块的module_path映射错误 (2026-03-27)
+
+**问题：** `FIX-miaoshou_updater-*` 任务被识别为 `module_type='task'` 而非 `skill`，导致修复代码无法持久化到正确的脚本路径。
+
+**根因：**
+1. skill目录名使用连字符（如 `miaoshou-updater`），任务名使用下划线（如 `miaoshou_updater`）
+2. `module_path` 错误地指向 `scripts/miaoshou_updater.py` 而非 `/home/ubuntu/.openclaw/skills/miaoshou-updater/updater.py`
+
+**修复：** 修正 `infer_target_module()` 中 skill 类型的路径匹配逻辑：
+```python
+# 需要同时匹配带连字符和下划线的版本
+skill_normalized = skill_name.replace('-', '_').lower()
+if skill_normalized in task_clean.lower():
+    # 找到对应的脚本文件
+```
+
+**验证结果：**
+```
+FIX-miaoshou_updater-001
+  → skill: miaoshou-updater
+  → 源文件: /home/ubuntu/.openclaw/skills/miaoshou-updater/updater.py
+  → SKILL: .../miaoshou-updater/SKILL.md
+```
+
+---
+
+### 修复7: FIX-TC-FLOW 映射到 workflow-runner (2026-03-27)
+
+**问题：** `FIX-TC-FLOW-*` 任务被错误识别为 `task_type='task'`，修复代码被写到 `fixes/` 目录而非直接修改 `workflow_runner.py`。
+
+**根因：** `infer_target_module()` 函数缺少对 `FIX-TC-FLOW-*` 模式的特殊处理。
+
+**修复：** 在 `subtask_executor.py` 中添加特殊映射：
+```python
+# 特殊处理：FIX-TC-FLOW-* → workflow_runner.py (workflow-runner skill)
+if task_name.startswith('FIX-TC-FLOW-'):
+    return {
+        'module_type': 'framework',
+        'module_path': '.../workflow_runner.py',
+        'skill_path': '.../workflow-runner/SKILL.md',
+        'module_name': 'workflow_runner.py'
+    }
+```
+
+**效果：** 现在 `FIX-TC-FLOW-*` 任务的修复会：
+1. 直接修改 `workflow_runner.py` 源文件
+2. 追加修复记录到 `workflow-runner/SKILL.md`
+
+---
+
+### 修复6: 浏览器错误截图机制 (2026-03-27)
+
+**问题：** 浏览器自动化失败时，只有文字错误信息，无法看到页面实际状态，LLM难以精准定位问题。
+
+**改进方案：** 浏览器相关错误发生时，自动截图并上传COS，供LLM分析。
+
+**触发条件：** 只有错误匹配以下关键词才截图：
+- `selector`, `element`, `click`, `visible`, `timeout`
+- `page`, `browser`, `playwright`
+- `未找到`, `找不到`, `无法点击`, `不可见`
+- `no such element`, `element not found`
+
+**截图保存位置：**
+- 本地：`/root/.openclaw/workspace-e-commerce/logs/screenshots/`
+- COS：`workflow-screenshots/` (Bucket: tian-cloud-file-1309014213)
+
+**代码位置：** `workflow_runner.py`
+```python
+├── is_browser_error()           # 检测是否浏览器相关错误
+└── capture_error_screenshot()  # 截图+上传COS
+```
+
+**返回值：**
+```python
+{
+    'screenshot_path': '/root/.../error_step6_update_20260327.png',
+    'cos_url': 'https://tian-cloud.../workflow-screenshots/...',
+    'screenshot_captured': True,
+    'error_context': {
+        'step_name': 'step6_update',
+        'error': '...',
+        'page_url': '...'
+    }
+}
+```
+
+**已集成步骤：** step1_collect, step2_scrape, step6_update
+
+---
+
 ## P0优化建议（待处理）
 
 | 优先级 | 问题 | 建议 | 状态 |
@@ -276,12 +518,12 @@ A: 检查是否需要在主流程中加载持久化的修复代码
 ```
 子任务执行失败
     ↓
-retry_count < 3?
+retry_count < 5?
     ├─ Yes → mark_normal_crash() → 下次继续重试
     │
     └─ No (已达3次)
             ↓
-        调用 qwen-3.5-plus LLM 分析错误
+        调用 deepseek-chat LLM 分析错误
             ↓
         LLM 提出解决方案
             ↓
@@ -341,9 +583,9 @@ def get_actionable_tasks():
 ```python
 # config/llm_config.py
 LLM_CONFIG = {
-    'api_key': 'sk-914c1a9a5f054ab4939464389b5b791f',
-    'base_url': 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-    'model': 'qwen3.5-plus',
+    'api_key': 'sk-2f2c6f05d33741acb27453a828651323',
+    'base_url': 'https://api.deepseek.com',
+    'model': 'deepseek-chat',
     'max_tokens': 2000,
     'temperature': 0.3,
     'timeout': 120
@@ -685,7 +927,7 @@ print(result)
 ## 常见问题
 
 ### Q: 子任务失败后会自动重试吗？
-A: 会，重试3次后调用 LLM 分析。
+A: 会，重试5次后自动创建修复任务。
 
 ### Q: 父任务何时执行？
 A: 只有所有子任务都完成（end/void）后才能执行。
@@ -694,7 +936,7 @@ A: 只有所有子任务都完成（end/void）后才能执行。
 A: 需要人工介入处理后，手动标记子任务为 void，然后定时任务会自动重试父任务。
 
 ### Q: 如何创建SOL任务？
-A: 子任务重试3次失败后自动创建，或手动调用 `create_fix_subtasks`。
+A: 父任务重试5次失败后自动创建修复任务（FIX-xxx）。
 
 ## 经验记录
 
@@ -770,7 +1012,7 @@ A: 子任务重试3次失败后自动创建，或手动调用 `create_fix_subtas
 |------|-----|------|
 | 重试阈值 | 3次 | 超过此阈值触发LLM分析 |
 | 分析日志数 | 50条 | 从main_logs获取最近日志数 |
-| LLM模型 | qwen3.5-plus | 用于根因分析 |
+| LLM模型 | deepseek-chat | 用于根因分析 |
 | 子任务级别 | 2 | FIX子任务不允许再创建子任务 |
 
 ### 根因分析提示词
@@ -812,3 +1054,233 @@ NEW ──执行──► PROCESSING ──成功──► END
 2. **状态持久化**：修复代码必须写入文件，确保重启后可用
 3. **多问题并行**：多个独立问题可以同时修复
 4. **无限循环保护**：通过状态管理防止无限循环
+
+---
+
+## 独立修复任务执行器
+
+### 问题背景
+
+修复任务（FIX）和常规任务（TC-FLOW）混合执行导致优先级混乱。
+
+### 解决方案
+
+**新增 `fix_task_cron.py`：** 独立的修复任务执行器
+
+| 脚本 | 频率 | 处理任务 |
+|------|------|---------|
+| `fix_task_cron.py` | 每1分钟 | `task_type='修复'` |
+| `prod_task_cron.py` | 每10分钟 | `task_type='常规'`（排除修复类） |
+
+### Crontab配置
+
+```bash
+*/1 * * * *  cd /root/.openclaw/workspace-e-commerce && python3 scripts/fix_task_cron.py >> logs/fix_task.log 2>&1
+*/10 * * * * cd /root/.openclaw/workspace-e-commerce && python3 scripts/prod_task_cron.py >> logs/prod_task.log 2>&1
+```
+
+### 任务协调机制
+
+1. `fix_task_cron` 标记任务为 `processing`
+2. `prod_task_cron` 检测到 `processing` 任务
+3. 输出 "任务正常运行中，等待下一次检查"
+4. 不会抢执行修复任务
+
+### 父任务重试策略（优化版）
+
+**重试阈值：**
+| 重试次数 | 行为 |
+|---------|------|
+| 1-2次 | 解析错误步骤，创建子任务 |
+| 3-4次 | 调用根因分析器 + 解析错误步骤，创建子任务 |
+| **5次及以上** | **每次都创建新的FIX任务（编号递增）+ 双重子任务（根因+步骤）** |
+
+**流程：**
+```
+父任务失败
+    ↓
+retry_count >= 5?
+    ├─ Yes: 
+    │   1. 创建 FIX-taskname-NNN（递增编号）
+    │   2. 调用 task_monitor 获取根因分析
+    │   3. 创建双重子任务：根因修复 + 步骤修复
+    │   4. return（不继续执行）
+    │
+    └─ No:
+            ↓
+        retry_count >= 3?
+            ├─ Yes: 
+            │   1. 调用 root_cause_analyzer
+            │   2. 创建步骤修复子任务
+            │
+            └─ No (1-2次):
+                1. 只创建步骤修复子任务
+```
+
+**编号递增示例：**
+- FIX-TC-FLOW-001-001（第1次修复）
+- FIX-TC-FLOW-001-002（第2次修复）
+- FIX-TC-FLOW-001-003（第3次修复）
+
+**双重子任务结构：**
+```
+FIX-TC-FLOW-001-003
+  ├── 子任务1: 根因修复（分析失败日志）
+  ├── 子任务2: 步骤修复（update）
+  └── 子任务3: 步骤修复（analyze）
+```
+
+**关键优化：**
+- 第5次失败时自动调用 `task_monitor` 获取系统级根因分析
+- 创建 `FIX-{task_name}` 修复任务，由 `fix_task_cron` 优先处理
+- 修复任务完成后，原任务状态重置并重新执行
+
+### 关键经验教训
+
+1. **FIX循环适合代码逻辑错误，不适合配置/导入问题**
+2. **task_monitor检测到 `name 'X' is not defined` 时，需判断上下文**
+   - `subtask_executor`执行时 → `exec_globals`缺少模块
+   - `workflow_runner`运行时 → `sys.path`路径缺失
+3. **修复任务应直接改源文件+更新SKILL.md，而非打补丁到fixes目录**
+
+---
+
+## 修复记录增强 (2026-03-27)
+
+### 问题
+
+1. `main_logs.run_content` 日志不完整，任务失败时没有记录完整错误
+2. 创建子修复任务时，`last_error` 字段只记录简短摘要，不利于分析
+3. 修复任务执行后没有记录修复内容的详细信息
+
+### 修复
+
+#### 1. logger.py - log_line函数重构
+
+**问题：** 每行日志单独INSERT到main_logs，run_content为空
+
+**修复：**
+```python
+def log_line(self, line: str):
+    # 累积到self.run_content
+    self.run_content += line + "\n"
+    if len(self.run_content) > 100000:
+        self.run_content = self.run_content[-80000:]
+    print(line)  # 保持实时可见
+```
+
+#### 2. prod_task_cron.py - 完整错误信息记录
+
+**改进：**
+- 步骤失败：`步骤失败: {step}\n完整错误:\n{output[-2000:]}`
+- 根因分析：`根因问题: {prob}\n完整分析:\n{result.stdout[:2000]}`
+- last_error：`output[-3000:]`（保留更多错误信息）
+
+#### 3. subtask_executor.py - 修复任务详细日志
+
+**execute_fix_code 返回详细信息：**
+```python
+"框架修复: 完整替换源文件: xxx.py | 源文件修改: xxx; SKILL更新: xxx; 备份: fixes/xxx.py"
+"Skill修复: 完整替换源文件: xxx.py | 源文件修改: xxx; SKILL更新: xxx; 备份: fixes/xxx.py"
+```
+
+**main() 中记录完整修复内容：**
+```python
+fix_content = f"""=== 修复任务执行详情 ===
+任务: {task_name}
+分析: {parsed['analysis']}
+修复代码:
+{parsed['code_fix']}
+执行结果: {msg}
+"""
+log.set_message(f"修复成功").set_content(fix_content).finish("success")
+```
+
+### 效果
+
+| 改进项 | 改进前 | 改进后 |
+|--------|--------|--------|
+| main_logs.run_content | 空 | 累积完整执行日志 |
+| 子任务last_error | 简短摘要 | 完整错误详情(2000+字符) |
+| 修复任务run_content | 空 | 完整分析+代码+执行结果 |
+
+### 判断修复是否重复/无效的方法
+
+1. **查询最近N次修复任务的run_content：**
+```sql
+SELECT task_name, run_content, created_at
+FROM main_logs
+WHERE task_name LIKE 'FIX-%' AND run_status = 'success'
+ORDER BY created_at DESC
+LIMIT 10
+```
+
+2. **检查修复代码是否重复：**
+```python
+# 从run_content中提取修复代码
+import re
+code_match = re.search(r'修复代码:\n(.+?)\n执行结果', run_content, re.DOTALL)
+```
+
+3. **对比源文件修改时间：**
+```bash
+ls -la /home/ubuntu/.openclaw/skills/miaoshou-updater/updater.py
+```
+
+
+---
+
+## 修复5: 智能推断修复目标 (2026-03-27)
+
+### 问题
+
+FIX子任务只根据任务名推断修复目标，无法处理UI选择器等错误类型
+
+### 改进
+
+新增 `infer_target_from_error()` 函数，根据错误内容智能推断目标文件
+
+### 函数逻辑
+
+```python
+def infer_target_from_error(error_msg, analysis) -> dict:
+    """根据错误内容推断修复目标"""
+    
+    # UI/选择器错误 → miaoshou-updater
+    if any(kw in error for kw in ['未找到', '编辑按钮', 'button', 'selector']):
+        if 'update' in error:
+            return {'module_type': 'skill', 'module_path': '.../miaoshou_updater/updater.py'}
+        elif 'scrape' in error:
+            return {'module_type': 'skill', 'module_path': '.../collector_scraper/scraper.py'}
+    
+    # 代码执行错误 → subtask_executor
+    if any(kw in error for kw in ['write()', 'name.*not.*defined', 'functools']):
+        return {'module_type': 'framework', 'module_path': '.../subtask_executor.py'}
+    
+    # 日志错误 → logger
+    if 'log_line' in error or 'run_content' in error:
+        return {'module_type': 'framework', 'module_path': '.../logger.py'}
+    
+    # 工作流错误 → workflow_runner
+    if any(kw in error for kw in ['workflow', 'step']):
+        return {'module_type': 'framework', 'module_path': '.../workflow_runner.py'}
+    
+    return None
+```
+
+### 优先级
+
+1. **infer_target_from_error** ← 优先（根据错误内容）
+2. **infer_target_module** ← 备用（根据任务名）
+3. **fixes目录** ← 最后兜底
+
+### 效果
+
+现在FIX子任务能自动识别问题类型并修复正确的文件
+
+### 相关文件
+
+- scripts/subtask_executor.py
+  - infer_target_from_error()
+  - execute_fix_code()
+

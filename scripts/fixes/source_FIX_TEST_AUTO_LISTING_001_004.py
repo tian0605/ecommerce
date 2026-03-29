@@ -1,0 +1,55 @@
+import product_storer
+from typing import List, Dict
+
+
+def merge_and_store_listing_data(product_list: List[Dict], logistics_list: List[Dict]) -> bool:
+    """
+    合并商品数据与物流数据，调用product-storer技能落库到PostgreSQL
+    Args:
+        product_list: 商品数据列表，每个元素需包含product_id字段
+        logistics_list: 物流数据列表，每个元素需包含product_id字段
+    Returns:
+        落库成功返回True，失败返回False
+    """
+    try:
+        # 1. 将物流数据转为以product_id为key的字典，提升匹配效率
+        logistics_map = {
+            item["product_id"]: item
+            for item in logistics_list
+            if item.get("product_id") is not None
+        }
+
+        # 2. 合并商品和物流数据，无匹配物流信息时补默认值
+        merged_data = []
+        for product in product_list:
+            product_id = product.get("product_id")
+            if not product_id:
+                continue
+            # 匹配物流信息，无匹配时设置通用默认值
+            logistics_info = logistics_map.get(product_id, {
+                "shipping_fee": 0.0,
+                "delivery_days": 7,
+                "is_free_shipping": False,
+                "warehouse_code": "DEFAULT"
+            })
+            merged_item = {**product, **logistics_info}
+            merged_data.append(merged_item)
+
+        # 3. 调用product-storer技能落库到PostgreSQL
+        if merged_data:
+            save_resp = product_storer.save_to_postgresql(merged_data)
+            return save_resp and save_resp.get("code") == 0
+        return True
+    except Exception as e:
+        print(f"合并存储商品物流数据异常: {str(e)}")
+        return False
+
+
+# 测试验证逻辑
+def test_merge_and_store():
+    # 模拟测试数据
+    test_products = [
+        {"product_id": 1001, "name":
+# 执行入口：apply_fix()
+def apply_fix():
+    pass  # 入口函数

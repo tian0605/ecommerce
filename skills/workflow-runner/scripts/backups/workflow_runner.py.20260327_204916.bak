@@ -1,0 +1,101 @@
+import json
+from typing import Any, Dict, Optional
+
+def analyze(data: Any) -> Dict[str, Any]:
+    """
+    修复后的analyze函数，添加完整的异常处理和数据验证
+    """
+    result = {
+        'status': 'success',
+        'data': None,
+        'error': None
+    }
+    
+    try:
+        # 1. 空值检查
+        if data is None:
+            raise ValueError("输入数据不能为空")
+        
+        # 2. 字符串类型转换
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"JSON解析失败：{str(e)}")
+        
+        # 3. 字典类型验证
+        if not isinstance(data, dict):
+            raise TypeError(f"期望字典类型，实际得到：{type(data)}")
+        
+        # 4. 必要字段检查
+        required_fields = ['id', 'name']
+        for field in required_fields:
+            if field not in data:
+                raise KeyError(f"缺少必要字段：{field}")
+        
+        # 5. 执行分析逻辑
+        result['data'] = {
+            'id': data.get('id'),
+            'name': data.get('name'),
+            'analyzed': True,
+            'timestamp': __import__('datetime').datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        result['status'] = 'failed'
+        result['error'] = str(e)
+    
+    return result
+
+
+def analyze_safe(data: Any, default: Optional[Dict] = None) -> Dict[str, Any]:
+    """
+    安全版本的analyze函数，提供默认返回值
+    """
+    try:
+        return analyze(data)
+    except Exception as e:
+        return default or {
+            'status': 'failed',
+            'data': None,
+            'error': str(e)
+        }
+
+
+# 测试验证
+def test_fix():
+    """测试修复后的analyze函数"""
+    test_cases = [
+        # 正常情况
+        ({"id": 1, "name": "test"}, 'success'),
+        # 字符串输入
+        ('{"id": 2, "name": "test2"}', 'success'),
+        # 空值
+        (None, 'failed'),
+        # 缺少字段
+        ({"id": 3}, 'failed'),
+        # 错误类型
+        ([1, 2, 3], 'failed'),
+    ]
+    
+    all_passed = True
+    for data, expected_status in test_cases:
+        result = analyze(data)
+        if result['status'] != expected_status:
+            print(f"测试失败：输入={data}, 期望={expected_status}, 实际={result['status']}")
+            all_passed = False
+    
+    if all_passed:
+        print("所有测试通过！")
+    
+    return all_passed
+
+
+if __name__ == "__main__":
+    # 运行测试
+    test_fix()
+    
+    # 示例使用
+    sample_data = {"id": 1001, "name": "商品A", "price": 99.99}
+    result = analyze(sample_data)
+    print(f"\n分析结果：{json.dumps(result, ensure_ascii=False, indent=2)}")

@@ -1,0 +1,46 @@
+# 实际生产环境请替换为真实的collector-scraper技能导入
+# import collector_scraper
+
+# 以下为模拟collector-scraper技能实现，仅用于本地测试，生产环境可删除
+class MockCollectorScraper:
+    @staticmethod
+    def get_shopee_collection_box_data(task_id: str) -> dict:
+        """模拟返回Shopee采集箱原始数据"""
+        if task_id == "test_task_001":
+            return {
+                "code": 0,
+                "msg": "采集成功",
+                "data": {
+                    "goods_id": "SP2024052012345",
+                    "title": " 2024夏季新款宽松纯棉短袖T恤男女同款  ",
+                    "sku": [
+                        {"sku_id": "SKU001", "spec": "白色/M", "price": 39.9, "stock": 120},
+                        {"sku_id": "SKU002", "spec": "黑色/L", "price": 39.9, "stock": 98}
+                    ],
+                    "main_img_url": "https://down-tw.shopee.tw/file/3f6a7d98e7f6c5b4a3d2f1e0d9c8b7a"
+                }
+            }
+        return {"code": -1, "msg": "采集任务不存在"}
+
+collector_scraper = MockCollectorScraper()
+
+
+def extract_shopee_goods_info(collection_task_id: str) -> dict:
+    """
+    从Shopee采集箱提取商品核心字段
+    :param collection_task_id: Shopee采集任务ID
+    :return: 结构化提取结果，包含状态、提示信息和提取的字段数据
+    """
+    try:
+        # 调用collector-scraper技能获取采集箱原始数据
+        raw_response = collector_scraper.get_shopee_collection_box_data(collection_task_id)
+        
+        # 校验采集结果状态
+        if not raw_response or raw_response.get("code") != 0:
+            return {
+                "status": "failed",
+                "msg": raw_response.get("msg", "采集技能调用失败"),
+                "data": {}
+            }
+        
+        raw_goods_data = raw_response.get("data", {})

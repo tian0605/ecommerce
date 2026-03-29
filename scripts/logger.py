@@ -36,23 +36,24 @@ class Logger:
         print(f"[INFO] {msg}")
     
     def log_line(self, line: str):
-        """写入一行日志到main_logs（用于Popen实时回调）"""
+        """累积一行日志到run_content（用于Popen实时回调）
+        
+        改进：不再每次INSERT一行，而是累积到self.run_content
+        finish时统一写入main_logs.run_content
+        """
         if not line:
             return
         
-        # 写入main_logs（不等待finish）
-        try:
-            conn = psycopg2.connect(**self.DB_CONFIG)
-            cur = conn.cursor()
-            cur.execute("""
-                INSERT INTO main_logs (log_type, task_name, run_status, run_message, created_at)
-                VALUES (%s, %s, %s, %s, NOW())
-            """, (self.log_type, self.task_name, 'running', line[:500]))
-            conn.commit()
-            cur.close()
-            conn.close()
-        except Exception as e:
-            print(f"[WARN] log_line failed: {e}")
+        # 累积到self.run_content（限制总长度）
+        if self.run_content is None:
+            self.run_content = ""
+        self.run_content += line + "\n"
+        # 限制总长度10万字符
+        if len(self.run_content) > 100000:
+            self.run_content = self.run_content[-80000:]
+        
+        # 同时打印到stdout（保持实时可见）
+        print(line)
     
     def error(self, msg: str):
         print(f"[ERROR] {msg}")
@@ -61,6 +62,9 @@ class Logger:
     def warn(self, msg: str):
         print(f"[WARN] {msg}")
         self.log_level = "WARN"
+
+    # Python logging 兼容性别名
+    warning = warn
     
     def debug(self, msg: str):
         print(f"[DEBUG] {msg}")
@@ -123,6 +127,11 @@ class Logger:
 def get_logger(log_type: str = "general") -> Logger:
     """获取日志记录器"""
     return Logger(log_type)
+
+
+def setup_logger(name: str) -> Logger:
+    """兼容性别名 - 行为与 shared/logger.py 的 setup_logger 保持一致（返回 Logger 实例）"""
+    return Logger(log_type=name)
 
 
 if __name__ == '__main__':

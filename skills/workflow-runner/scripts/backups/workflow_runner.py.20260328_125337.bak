@@ -1,0 +1,55 @@
+import requests
+from typing import Optional, Dict
+
+def optimize_listing_to_traditional(title: str, description: str, api_key: Optional[str] = None) -> Dict:
+    """
+    调用listing-optimizer技能将商品标题、描述优化为繁体中文
+    :param title: 原始商品标题
+    :param description: 原始商品描述
+    :param api_key: 技能调用鉴权密钥，内部环境可根据要求省略
+    :return: 优化后的繁体标题、描述结果
+    """
+    # listing-optimizer技能调用地址，可根据实际部署环境替换
+    API_ENDPOINT = "https://api.skill-platform/listing-optimizer/v1/optimize"
+    
+    headers = {"Content-Type": "application/json"}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+    
+    payload = {
+        "title": title,
+        "description": description,
+        "target_language": "zh-Hant",  # 指定输出为繁体中文
+        "optimize_switch": True,
+        "avoid_platform_sensitive": True
+    }
+    
+    try:
+        response = requests.post(API_ENDPOINT, headers=headers, json=payload, timeout=30)
+        response.raise_for_status()
+        resp_data = response.json()
+        return {
+            "code": 0,
+            "msg": "优化成功",
+            "data": {
+                "traditional_title": resp_data.get("data", {}).get("optimized_title", title),
+                "traditional_description": resp_data.get("data", {}).get("optimized_description", description)
+            }
+        }
+    except Exception as e:
+        return {
+            "code": -1,
+            "msg": f"调用listing-optimizer技能失败: {str(e)}",
+            "data": None
+        }
+
+# 测试验证
+def test_optimize():
+    test_title = "夏季纯棉宽松男士短袖T恤 休闲百搭上衣"
+    test_desc = "采用100%新疆长绒棉，透气吸汗不闷热，多色可选，适合日常通勤、出行穿搭"
+    result = optimize_listing_to_traditional(test_title, test_desc)
+    print("测试结果：", result)
+    return True
+
+if __name__ == "__main__":
+    test_optimize()

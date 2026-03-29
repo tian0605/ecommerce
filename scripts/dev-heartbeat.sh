@@ -73,6 +73,13 @@ cur.execute("""
 """)
 manual_tasks = cur.fetchall()
 
+# ========== 临时任务（TEMP）超时检测 ==========
+overtime_temp = tm.get_overtime_temp_tasks(buffer_minutes=10)
+
+# 自动重置超时任务（让其可以被重新执行）
+for ot in overtime_temp:
+    tm.reactivate_temp_task(ot['task_name'])
+
 # ========== 第二问：任务执行是否顺畅？ ==========
 
 # 检查最近24小时日志统计
@@ -128,6 +135,21 @@ if manual_tasks:
     for t in manual_tasks[:3]:
         report.append(f"  - {t[0]}: {str(t[2])[:50] if t[2] else ''}")
 
+if overtime_temp:
+    report.append("")
+    report.append(f"⏰ 临时任务超时 ({len(overtime_temp)} 个)")
+    for t in overtime_temp[:5]:
+        cp = t.get('progress_checkpoint', {})
+        if isinstance(cp, str):
+            try:
+                import json
+                cp = json.loads(cp)
+            except:
+                cp = {}
+        current_step = cp.get('current_step', '未知') if cp else '未知'
+        report.append(f"  - {t['task_name']}: 超时{int(t.get('overtime_minutes', 0))}分钟 | 当前: {current_step}")
+        report.append(f"    断点: {json.dumps(cp) if cp else '无'}")
+
 report.append("")
 report.append("----------")
 report.append("")
@@ -152,10 +174,10 @@ report.append("")
 
 # 汇总
 total_tasks = len(p0_tasks) + len(p1_tasks) + len(p2_tasks)
-report.append(f"📈 汇总：待处理:{total_tasks} | 运行中:{len(processing)} | 需人工:{len(manual_tasks)}")
+report.append(f"📈 汇总：待处理:{total_tasks} | 运行中:{len(processing)} | 需人工:{len(manual_tasks)} | 超时TEMP:{len(overtime_temp)}")
 
 # 回复格式（符合HEARTBEAT.md规范）
-if total_tasks == 0 and len(processing) == 0 and len(manual_tasks) == 0:
+if total_tasks == 0 and len(processing) == 0 and len(manual_tasks) == 0 and len(overtime_temp) == 0:
     report.append("")
     report.append("HEARTBEAT_OK | 待处理:0 | 运行中:0 | 需要人工:0")
 

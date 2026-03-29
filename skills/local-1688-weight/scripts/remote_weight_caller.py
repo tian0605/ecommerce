@@ -47,26 +47,16 @@ def fetch_weight_from_local(product_id: str, timeout: int = 30) -> Optional[Dict
         data = response.json()
         
         if data.get('success'):
-            # 解析新的嵌套结构
-            weight_info = data.get('weight_info', {})
+            # 解析新的per-SKU结构
             spec_list = data.get('spec_list', [])
             
-            # 默认值
-            default_weight = weight_info.get('weight_g')
-            applies_to_all = weight_info.get('applies_to_all', True)
-            
-            # 构建SKU列表
+            # 构建SKU列表（每个spec有自己的重量）
             sku_list = []
             for spec in spec_list:
                 sku_name = spec.get('name', '')
                 
-                # 如果applies_to_all为true，所有SKU使用相同的重量
-                if applies_to_all and default_weight:
-                    weight_g = default_weight
-                else:
-                    weight_g = spec.get('weight_g') or default_weight
-                
-                # 优先使用spec中的尺寸，否则尝试从名称解析
+                # per-SKU的重量和尺寸
+                weight_g = spec.get('weight_g')
                 length_cm = spec.get('length_cm')
                 width_cm = spec.get('width_cm')
                 height_cm = spec.get('height_cm')
@@ -88,17 +78,23 @@ def fetch_weight_from_local(product_id: str, timeout: int = 30) -> Optional[Dict
                     'height_cm': height_cm
                 })
             
-            # 如果spec_list为空但有weight_info，创建默认SKU
-            if not sku_list and default_weight:
-                sku_list.append({
-                    'sku_name': '默认',
-                    'weight_g': default_weight,
-                    'length_cm': None,
-                    'width_cm': None,
-                    'height_cm': None
-                })
+            # 兼容旧结构：如果spec_list为空但有weight_info，创建默认SKU
+            weight_info = data.get('weight_info', {})
+            if not sku_list and weight_info:
+                default_weight = weight_info.get('weight_g')
+                applies_to_all = weight_info.get('applies_to_all', True)
+                if default_weight:
+                    sku_list.append({
+                        'sku_name': '默认',
+                        'weight_g': default_weight,
+                        'length_cm': None,
+                        'width_cm': None,
+                        'height_cm': None
+                    })
             
-            logger.info(f"成功获取重量: weight={default_weight}g, {len(sku_list)} 个SKU")
+            # 计算总重量用于日志
+            total_weight = sum(s.get('weight_g', 0) for s in sku_list) if sku_list else 0
+            logger.info(f"成功获取重量: {len(sku_list)} 个SKU, 总重约{total_weight}g")
             for sku in sku_list[:3]:  # 只打印前3个
                 logger.info(f"   - {sku.get('sku_name')}: {sku.get('weight_g')}g, "
                            f"{sku.get('length_cm') or 'N/A'}x{sku.get('width_cm') or 'N/A'}x{sku.get('height_cm') or 'N/A'}cm")

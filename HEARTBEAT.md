@@ -31,6 +31,179 @@
 - **Level 1**：父任务（主任务）
 - **Level 2**：子任务（分步骤或修复任务）
 
+### 任务类型（task_type）
+
+| 类型 | 说明 | 优先级 | 典型场景 |
+|------|------|--------|----------|
+| 【常规类】 | 已实现功能的任务 | 中 | TC-FLOW-001端到端测试 |
+| 【修复类】 | 修复机制问题的任务 | **最高** | task_monitor检测到的exec错误 |
+| 【创造类】 | 逻辑待定的任务 | 最低 | 新功能探索 |
+| 【临时任务】 | 开放式任务，agent自主决定执行方式 | 中 | 复杂/长时任务 |
+
+**执行顺序：修复类 > 临时任务 > 常规类 > 创造类**
+
+**代码持久化原则：** 修复类任务必须确保修复代码持久化到文件，而非仅内存生效。
+
+### 临时任务（TEMP）模式
+
+**设计目的：** 解决复杂/长时任务HTTP超时问题，支持断点续传和超时恢复。
+
+**核心特性：**
+1. **预设完成时间**：创建时指定 `expected_duration`（分钟）
+2. **断点续传**：执行过程定期保存 `progress_checkpoint`（JSON）
+3. **超时自动重置**：心跳检测到超时时，自动重置为 `new` 状态
+4. **完成后通知**：任务完成时主动推送飞书通知
+
+**数据库字段：**
+```sql
+ALTER TABLE tasks ADD COLUMN expected_duration INTEGER;
+ALTER TABLE tasks ADD COLUMN progress_checkpoint JSONB;
+```
+
+**Checkpoint数据结构：**
+```python
+{
+    'current_step': 'Step 2: 数据处理',
+    'completed_steps': ['初始化', 'Step 1: 数据采集'],
+    'output_data': {'采集数量': 100},
+    'next_action': '继续处理',
+    'notes': '内存不足，降低并发'
+}
+```
+
+**创建临时任务：**
+```python
+tm.create_temp_task(
+    task_name='TEMP-ANALYSIS-001',
+    display_name='竞品分析任务',
+    description='深度分析竞品价格、销量、策略',
+    expected_duration=120,  # 2小时
+    priority='P1',
+    success_criteria='输出完整竞品分析报告',
+    initial_checkpoint={'current_step': '初始化', 'completed_steps': [], 'next_action': '开始抓取'}
+)
+```
+
+**⚠️ 关键：创建时必须立即通知**
+```python
+# 创建TEMP任务后，立即发送飞书通知给用户
+send_feishu(f"""🔔 **临时任务已创建**
+
+任务ID: {task_name}
+描述: {description}
+预计完成: {expected_duration}分钟
+状态: 执行中
+
+完成后将通知你。""")
+```
+
+**Agent执行流程：**
+```
+1. 创建 TEMP 任务 → 立即发飞书通知用户
+2. 后台异步执行，定期更新 checkpoint
+3. 完成后发送飞书通知
+```
+   ├─ tm.mark_end(task_name, '任务完成')
+   └─ send_feishu('🎉 任务完成: ...')
+5. 如果HTTP超时：
+   ├─ 任务保持 processing 状态
+   └─ 心跳检测到超时 → 重置为 new → 下次被拾取时继续
+```
+
+**心跳自动处理：**
+```python
+# 检测超时的临时任务
+overtime_temp = tm.get_overtime_temp_tasks(buffer_minutes=10)
+
+# 自动重置，使其可被重新拾取
+for ot in overtime_temp:
+    tm.reactivate_temp_task(ot['task_name'])
+```
+
+**通知示例：**
+> 🎉 **临时任务完成**
+> 任务：TEMP-ANALYSIS-001
+> 描述：竞品分析任务
+> 耗时：45分钟
+> 状态：✅ 成功
+> 下一步：报告已生成，请查看
+
+---
+
+## 三、临时任务（TEMP）完整执行流程
+
+### 流程概览
+
+```
+[用户发送复杂任务]
+       ↓
+[主Agent响应]
+  1. 创建 TEMP 任务 → DB
+  2. 立即响应用户 → "任务已创建，TEMP-XXX"
+  3. Spawn子agent异步执行
+       ↓
+[子Agent执行]
+  1. 读取TEMP任务上下文
+  2. 执行任务，定期更新checkpoint
+  3. 完成后发送飞书通知
+       ↓
+[用户收到通知]
+  任务完成！
+```
+
+### Agent创建TEMP任务示例
+
+```python
+# 当用户发送复杂任务时
+task_name = f"TEMP-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+tm.create_temp_task(
+    task_name=task_name,
+    display_name='竞品分析',
+    description='深度分析竞品店铺X的数据',
+    expected_duration=120,  # 2小时
+    priority='P1',
+    success_criteria='输出完整竞品分析报告',
+    initial_checkpoint={'current_step': '初始化', 'completed_steps': [], 'next_action': '开始抓取'}
+)
+
+# 立即返回给用户
+respond(f"✅ 任务已创建: {task_name}\n预计完成时间: 2小时\n完成后我会通知你")
+
+# Spawn子agent异步执行
+sessions_spawn(
+    task=f"执行临时任务: {task_name}",
+    runtime="subagent",
+    mode="background"
+)
+```
+
+### 断点续传验证
+
+```python
+# 检查点数据结构
+checkpoint = {
+    'current_step': 'Step 3: 抓取评论数据',
+    'completed_steps': ['初始化', 'Step 1: 店铺信息', 'Step 2: 商品列表'],
+    'output_data': {
+        'products_crawled': 150,
+        'comments_crawled': 2300
+    },
+    'next_action': '继续抓取评论...',
+    'notes': '内存使用正常'
+}
+
+# 更新断点
+tm.update_checkpoint(task_name, checkpoint)
+```
+
+### 超时自动重置
+
+心跳检测到超时时：
+1. 读取任务的 progress_checkpoint
+2. 重置任务状态为 NEW（但保留checkpoint）
+3. 下次被拾取时，从checkpoint继续
+
 ---
 
 ## 二、三问决策机制（整合 task-manager 版本）
@@ -165,11 +338,60 @@ LIMIT 10;
 **优化行动：**
 - 同一任务失败超过3次 → 创建优化任务（P1）
 - 子任务经常失败 → 修改父任务逻辑（P1）
+
+---
+
+### 第三问：记忆功能使用情况如何？
+
+**检查方法：**
+```bash
+# 获取记忆统计
+python skills/mem0-memory/scripts/mem0_wrapper.py get_all e-commerce
+
+# 搜索相关记忆
+python skills/mem0-memory/scripts/mem0_wrapper.py search e-commerce "<关键词>"
+```
+
+**分析维度：**
+
+| 维度 | 检查内容 | 评估标准 |
+|------|---------|---------|
+| 记忆数量 | 总共存储了多少条记忆 | 持续增长=良好 |
+| 触发分布 | 各触发类型分布 | 重点类型有覆盖=良好 |
+| 检索质量 | 搜索结果相关性 | >80%相关=良好 |
+| 使用频率 | 被检索/使用的频率 | 定期使用=良好 |
+
+**检查触发分布：**
+```bash
+# 查看各优先级的记忆数量
+python -c "
+import sys
+sys.path.insert(0, 'skills/mem0-memory/scripts')
+from mem0_wrapper import get_all_memories
+
+results = get_all_memories('e-commerce')
+p0 = [r for r in results if r.get('metadata',{}).get('priority')=='P0']
+p1 = [r for r in results if r.get('metadata',{}).get('priority')=='P1']
+p2 = [r for r in results if r.get('metadata',{}).get('priority')=='P2']
+p3 = [r for r in results if r.get('metadata',{}).get('priority')=='P3']
+print(f'P0(目标/约束): {len(p0)}条')
+print(f'P1(偏好/反馈): {len(p1)}条')
+print(f'P2(习惯/价值观): {len(p2)}条')
+print(f'P3(创意/风险): {len(p3)}条')
+"
+```
+
+**回复格式：**
+```
+记忆情况：共{count}条 | P0:{p0} P1:{p1} P2:{p2} P3:{p3}
+检索质量：{quality}%
+使用建议：{suggestion}
+```
 - 执行时间过长 → 优化查询或算法（P2）
 
 ---
 
-### 第三问：上次执行的任务有哪些经验教训？
+### 第四问：上次执行的任务有哪些经验教训？
 
 #### 成功案例沉淀（END 状态任务）
 
@@ -350,7 +572,7 @@ ORDER BY retry_count DESC;
 **自愈策略：**
 - retry_count < 3：自动标记为 NORMAL_CRASH，下次重试
 - retry_count == 3：
-  - 调用 qwen-3.5-plus LLM 分析错误
+  - 调用 deepseek-chat LLM 分析错误
   - LLM 生成解决方案
   - 创建 SOL-xxx 解决方案子任务
   - 原任务标记为 VOID
@@ -406,7 +628,7 @@ retry_count < 3?
     │
     └─ No (已达3次)
             ↓
-        调用 qwen-3.5-plus LLM 分析错误
+        调用 deepseek-chat LLM 分析错误
             ↓
         LLM 生成解决方案
             ↓
@@ -475,7 +697,139 @@ tm.close()
 
 ---
 
-## 六、日志系统（main_logs 表）
+## 六、创建工作流任务（常规类）
+
+### 使用 create_workflow_task 创建自动化工作流
+
+**正确方式**：使用 `create_workflow_task` 创建工作流任务，父任务和子任务都是 `task_type='常规'`：
+
+```python
+from task_manager import TaskManager
+
+tm = TaskManager()
+
+# 定义工作流步骤
+steps = [
+    {
+        'step_name': 'AUTO-LISTING-001-STEP1',
+        'display_name': 'Step1: 妙手采集认领',
+        'description': '使用 miaoshou-collector 采集商品',
+        'fix': '调用 miaoshou-collector 技能',
+        'success_criteria': '商品进入Shopee采集箱'
+    },
+    {
+        'step_name': 'AUTO-LISTING-001-STEP2',
+        'display_name': 'Step2: 采集箱数据提取',
+        'description': '从Shopee采集箱提取数据',
+        'fix': '调用 collector-scraper 技能',
+        'success_criteria': '成功提取货源ID和SKU'
+    },
+    {
+        'step_name': 'AUTO-LISTING-001-STEP3',
+        'display_name': 'Step3: 获取1688重量',
+        'description': '获取商品重量尺寸',
+        'fix': '调用 local-1688-weight 技能',
+        'success_criteria': '返回 per-SKU 重量'
+    },
+    {
+        'step_name': 'AUTO-LISTING-001-STEP4',
+        'display_name': 'Step4: 数据落库',
+        'description': '合并数据落库',
+        'fix': '调用 product-storer 技能',
+        'success_criteria': '数据库有新记录'
+    },
+    {
+        'step_name': 'AUTO-LISTING-001-STEP5',
+        'display_name': 'Step5: Listing优化',
+        'description': 'LLM优化标题和描述',
+        'fix': '调用 listing-optimizer 技能',
+        'success_criteria': '生成优化后的内容'
+    },
+    {
+        'step_name': 'AUTO-LISTING-001-STEP6',
+        'display_name': 'Step6: 回写妙手ERP',
+        'description': '将优化内容回写到妙手',
+        'fix': '调用 miaoshou-updater 技能',
+        'success_criteria': '商品发布成功'
+    },
+]
+
+# 创建工作流任务
+tm.create_workflow_task(
+    task_name='AUTO-LISTING-001',
+    display_name='自动化上架测试',
+    description='从1688商品开始，完整执行采集→优化→发布流程',
+    priority='P0',
+    success_criteria='商品成功发布到Shopee',
+    steps=steps
+)
+
+tm.close()
+```
+
+### 任务执行优先级
+
+| task_type | 优先级 | 范围 | 适用场景 |
+|-----------|--------|------|----------|
+| **修复** | 最高 | AGENTS.md能力范围内 | 错误修复、问题解决 |
+| **常规** | 中等 | AGENTS.md能力范围内 | 工作流步骤、功能测试 |
+| **创造** | 最低 | **超出AGENTS.md范围** | 新功能探索、新平台接入、实验性工作 |
+
+**任务类型定义：**
+
+- **修复类**：现有能力范围内的错误修复，如修复某个技能bug、修复数据库问题
+- **常规类**：AGENTS.md 记录的标准工作流，如 AUTO-LISTING-001 采集→优化→发布流程
+- **创造类**：不在当前项目能力范围内的探索性工作，如：
+  - 探索接入 TikTok 平台
+  - 研究新的第三方API
+  - 尝试新的工具或技术
+
+**注意**：
+- `create_fix_subtasks` 创建的是 `task_type='修复'` 的子任务，用于错误修复
+- `create_workflow_task` 创建的是 `task_type='常规'` 的子任务，用于工作流步骤
+- `create_task(task_type='创造')` 用于创建探索性任务
+
+### 执行器分工
+
+| 执行器 | 处理 | 调用关系 |
+|--------|------|----------|
+| **prod_task_cron** | 常规任务（level=1父任务, level=2子任务） | level-2 → workflow_executor.py |
+| **fix_task_cron** | 修复任务（level=3 FIX子任务） | subtask_executor.py |
+
+### 工作流执行流程
+
+```
+1. prod_task_cron 触发（每10分钟）
+   │
+   ├── 父任务(level=1) → 创建子任务(level=2) → 标记父任务processing
+   │
+   └── 子任务(level=2) → 调用 workflow_executor.py
+          │
+          ├── ✅ 成功 → 标记end → 检查是否所有子任务完成
+          │                    └── 是 → 父任务标记完成
+          │
+          └── ❌ 失败 → 标记error_fix_pending
+                         │
+                         └── fix_task_cron（每1分钟）
+                                │
+                                ├── 创建FIX子任务(level=3)
+                                ├── subtask_executor.py 执行FIX
+                                │      ├── 分析根因
+                                │      ├── 生成修复方案
+                                │      └── 执行修复
+                                │
+                                └── FIX完成 → 重试level-2子任务
+```
+
+### 新增文件
+
+- **workflow_executor.py**：执行 level-2 常规子任务，调用对应技能模块
+- **validate_parent_completion()**：验证父任务所有子任务是否完成
+- **skip_task()**：标记任务跳过
+
+---
+
+## 七、日志系统（main_logs 表）
 
 ### 日志类型（log_type）
 

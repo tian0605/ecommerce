@@ -1,0 +1,64 @@
+import subprocess
+import json
+from typing import Dict, Optional
+
+def collect_and_claim_shopee(product_id: str) -> Dict:
+    """
+    调用miaoshou-collector采集指定商品并认领到Shopee采集箱
+    :param product_id: 待采集的商品ID
+    :return: 采集&认领结果，包含状态码、消息和返回数据
+    """
+    # 步骤1：调用miaoshou-collector采集目标商品
+    collect_cmd = [
+        "miaoshou-collector",
+        "collect",
+        "--product-id", product_id,
+        "--output", "json"
+    ]
+    try:
+        collect_resp = subprocess.run(
+            collect_cmd,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=60
+        )
+        product_info = json.loads(collect_resp.stdout)
+    except subprocess.CalledProcessError as e:
+        return {"code": -1, "msg": f"商品采集失败: {str(e.stderr)}", "data": None}
+    except json.JSONDecodeError as e:
+        return {"code": -2, "msg": f"采集结果解析失败: {str(e)}", "data": None}
+    except TimeoutError:
+        return {"code": -3, "msg": "商品采集超时", "data": None}
+
+    # 步骤2：将采集到的商品认领到Shopee采集箱
+    claim_cmd = [
+        "miaoshou-collector",
+        "claim",
+        "--platform", "shopee",
+        "--product-id", product_id,
+        "--product-data", json.dumps(product_info, ensure_ascii=False)
+    ]
+    try:
+        claim_resp = subprocess.run(
+            claim_cmd,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=30
+        )
+        claim_result = json.loads(claim_resp.stdout)
+        return {"code": 0, "msg": "商品采集并认领成功", "data": {"product_info": product_info, "claim_result": claim_result}}
+    except subprocess.CalledProcessError as e:
+        return {"code": -4, "msg": f"Shopee采集箱认领失败: {str(e.stderr)}", "data": {"product_info": product_info}}
+
+# 测试验证函数
+def test_auto_listing_step1():
+    target_product_id = "1031400982378"
+    result = collect_and_claim_shopee(target_product_id)
+    print(f"任务执行结果：{json.dumps(result, indent=2, ensure_ascii=False)}")
+    assert result["code"] == 0, f"任务执行失败：{result['msg']}"
+    return True
+
+if __name__ == "__main__":
+    test_auto_listing_step1()

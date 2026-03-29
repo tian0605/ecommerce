@@ -1,11 +1,11 @@
 ---
 name: listing-optimizer
-description: 商品Listing优化模块。使用LLM（通义千问）优化商品标题和描述，生成符合Shopee台湾市场的Listing。触发条件：(1)已落库商品需要优化 (2)执行TC-LO-001测试 (3)miaoshou-updater前需要优化内容
+description: 商品Listing优化模块。使用LLM（DeepSeek）优化商品标题和描述，生成符合Shopee台湾市场的Listing。触发条件：(1)已落库商品需要优化 (2)执行TC-LO-001测试 (3)miaoshou-updater前需要优化内容
 ---
 
 # listing-optimizer
 
-商品Listing优化模块。调用通义千问LLM，将商品标题和描述优化为符合Shopee台湾市场的Listing。
+商品Listing优化模块。调用DeepSeekLLM，将商品标题和描述优化为符合Shopee台湾市场的Listing。
 
 ## 核心文件
 
@@ -19,15 +19,14 @@ description: 商品Listing优化模块。使用LLM（通义千问）优化商品
 
 | 模型 | 成本 | 速度 | 用途 |
 |------|------|------|------|
-| **qwen3.5-plus**（默认） | ¥0.001/1K | 快速 | 主力推荐 |
-| qwen-plus | ¥0.004/1K | 中等 | 高质量需求 |
-| qwen3-plus | ¥0.001/1K | 最快 | 快速调试 |
+| **deepseek-chat**（默认） | ¥0.001/1K | 快速 | 主力推荐 |
+| deepseek-coder | ¥0.001/1K | 快速 | 代码生成 |
 
 ### 配置内容
 
 ```python
 from config.llm_config import DEFAULT_MODEL, MODELS
-# DEFAULT_MODEL = 'qwen3.5-plus'
+# DEFAULT_MODEL = 'deepseek-chat'
 ```
 
 **注意**: API Key和Base URL也配置在 `config/llm_config.py`
@@ -69,7 +68,7 @@ print(result['optimized_description'])
     'status': 'success',
     'optimized_title': '日式復古風竹編收納筐 大容量客廳書架整理箱...',
     'optimized_description': '✨ 商品特點\n1. 天然竹材...\n\n📐 規格尺寸\n...',
-    'model_used': 'qwen-plus'
+    'model_used': 'deepseek-chat'
 }
 ```
 
@@ -120,10 +119,12 @@ optimizer = ListingOptimizer()
 | LLM API超时 | 增加timeout参数或重试 |
 | 返回乱码 | 检查UTF-8编码 |
 | 优化效果差 | 调整提示词，降低temperature |
-| API余额不足 | 联系阿里云充值 |
+| API余额不足 | 联系DeepSeek API充值 |
 
 ## 费用参考
 
-- **qwen3.5-plus**: ~¥0.001/1K tokens（**推荐**，已设为默认）
-- qwen-plus: ~¥0.004/1K tokens
-- qwen3-plus: ~¥0.001/1K tokens
+- **deepseek-chat**: ~¥0.001/1K tokens（**推荐**，已设为默认）
+- deepseek-chat: ~¥0.004/1K tokens
+- deepseek-chat: ~¥0.001/1K tokens
+ tokens
+- deepseek-chat: ~¥0.001/1K tokens

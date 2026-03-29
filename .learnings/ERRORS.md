@@ -157,3 +157,103 @@ HEARTBEAT.md中的前置条件检查显示：
 <img class="el-image__inner" src="https://cbu01.alicdn.com/img/ibank/...">
 ```
 
+
+## 2026-03-28 workflow_executor 技能调用问题
+
+### 问题1: miaoshou-collector 方法名错误
+**问题**: `'MiaoshouCollector' object has no attribute 'collect_and_claim_shopee'`
+**根因**: workflow_executor 假设的函数名与实际不符
+- 错误假设: `collect_and_claim_shopee`
+- 正确方法: `collect(url_1688, wait=30)`
+**解决方案**: 
+1. 添加正确的方法映射
+2. 构建完整的1688 URL: `f"https://detail.1688.com/offer/{product_id}.html"`
+3. 同时支持从 `description` 字段提取技能名
+
+### 问题2: collector-scraper 类名错误
+**问题**: `ShopeeCollectorScraper` 类不存在
+**根因**: 类名与实际文件名不符
+- 错误假设: `ShopeeCollectorScraper`
+- 正确类名: `CollectorScraper`
+**解决方案**: 更新 SKILL_MODULES 映射表
+
+### 问题3: miaoshou-updater 方法名错误
+**问题**: `update_and_publish` 方法不存在
+**根因**: 方法名与实际不符
+- 错误假设: `update_and_publish`
+- 正确方法: `update_product(product: Dict)`
+**解决方案**: 更新为正确的类名和方法名
+
+### 经验教训
+1. **workflow_executor 调用技能前必须先检查实际的类名和方法签名**
+2. **不能假设方法名**，必须对照 SKILL.md 或源代码
+3. **技能信息可能在 description 字段**，fix_suggestion 可能为空
+4. **商品ID需要构建完整URL**才能传递给 collector
+
+### 预防措施
+以后添加新技能到 workflow_executor 时：
+1. 先 `import` 模块检查
+2. 用 `dir(class_instance)` 查看所有方法
+3. 用 `inspect.signature(func)` 查看方法签名
+
+### 问题4: miaoshou_updater/collector_scraper 需要先launch浏览器
+**问题**: `'NoneType' object has no attribute 'goto'`
+**根因**: 调用 scrape/update 方法前未初始化浏览器
+- CollectorScraper 和 MiaoshouUpdater 都有 `launch()` 方法
+- 必须在使用 `self.page` 前调用 `launch()`
+**解决方案**: 在 workflow_executor 中先调用 `launch()` 再调用业务方法
+```python
+scraper.launch()
+try:
+    data = scraper.scrape_product()
+finally:
+    scraper.close()
+```
+
+## 2026-03-28 原则：解决一类问题，不是一个问题
+
+### 问题分类
+
+| 问题类型 | 根因 | 系统性解决方案 |
+|---------|------|---------------|
+| 方法名错误 | 硬编码假设 | 每个skill暴露统一的 `run()` 方法 |
+| 类名错误 | 硬编码假设 | 统一接口，不需要知道具体类名 |
+| 初始化不同 | 各技能自己管理 | 初始化在skill内部完成 |
+| 导入路径不同 | skill分布在不同目录 | 统一路径管理 |
+
+### 系统性修复方案
+
+**为每个skill添加统一的入口点：**
+```python
+# 每个skill的 __init__.py 暴露统一的 run() 函数
+def run(product_id: str = None, **kwargs) -> dict:
+    '''
+    统一入口，自动处理初始化和清理
+    '''
+    collector = MiaoshouCollector()
+    collector.launch()
+    try:
+        result = collector.collect(url_1688)
+        return result
+    finally:
+        collector.close()
+```
+
+**这样workflow_executor只需要：**
+```python
+module = importlib.import_module(skill_module)
+result = module.run(product_id='xxx')
+```
+
+### 已有技能需要修改
+- miaoshou-collector: 添加 `run()` 函数
+- collector-scraper: 添加 `run()` 函数  
+- miaoshou-updater: 添加 `run()` 函数
+- local-1688-weight: 已是函数，可直接调用
+
+### 预防措施
+以后新建skill时：
+1. 在 `__init__.py` 中导出 `run()` 函数
+2. 统一初始化：launch() 在 run() 内部
+3. 统一清理：finally 中 close()
+4. 统一返回：`{'success': bool, 'message': str, 'data': dict}`

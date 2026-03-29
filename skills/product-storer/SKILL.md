@@ -119,3 +119,5 @@ print(result)
 | 数据库连接失败 | 检查VPN/SSH隧道，验证DB配置 |
 | 主货号重复 | 序号自增，理论上不会重复 |
 | 字段不匹配 | 检查 scaper_data 和 weight_data 结构 |
+| 商品已存在但SKU重量为0 | 已修复：商品已存在时仍会更新SKU重量数据 |
+| SKU重量未更新 | 检查 weight_data 是否正确传递，确认 remote_weight_caller 返回 per-SKU 权重 |

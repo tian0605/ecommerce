@@ -1,0 +1,57 @@
+import requests
+from typing import Dict, Optional
+
+# collector-scraper技能调用端点，可根据实际部署环境修改配置
+COLLECTOR_SCRAPER_ENDPOINT = "http://internal-collector-scraper/service/shopee/collection/extract"
+
+def extract_shopee_goods_info(collection_page_url: str) -> Optional[Dict]:
+    """
+    调用collector-scraper技能从Shopee采集箱提取目标字段
+    :param collection_page_url: Shopee采集箱对应商品的页面URL
+    :return: 包含货源ID、标题、SKU、主图的字典，提取失败返回None
+    """
+    try:
+        # 构造scraper技能请求参数
+        request_payload = {
+            "platform": "shopee",
+            "data_source": "collection_box",
+            "target_url": collection_page_url,
+            "extract_fields": ["source_goods_id", "title", "sku_list", "main_image_url"]
+        }
+
+        # 调用collector-scraper技能接口
+        resp = requests.post(
+            url=COLLECTOR_SCRAPER_ENDPOINT,
+            json=request_payload,
+            timeout=15
+        )
+        resp.raise_for_status()
+        scraper_result = resp.json()
+
+        # 校验返回字段完整性并格式化输出
+        required_keys = ["source_goods_id", "title", "sku_list", "main_image_url"]
+        if all(key in scraper_result for key in required_keys):
+            return {
+                "货源ID": scraper_result["source_goods_id"],
+                "标题": scraper_result["title"],
+                "SKU": scraper_result["sku_list"],
+                "主图": scraper_result["main_image_url"]
+            }
+        return None
+    except Exception as e:
+        print(f"Shopee采集箱字段提取失败：{str(e)}")
+        return None
+
+# 测试验证逻辑
+def test_extract_func():
+    # 测试用模拟地址，可替换为真实采集箱地址验证
+    test_url = "https://shopee.com.my/product/123456/789012"
+    # 本地测试可临时替换为mock接口地址验证逻辑正确性
+    global COLLECTOR_SCRAPER_ENDPOINT
+    original_endpoint = COLLECTOR_SCRAPER_ENDPOINT
+    COLLECTOR_SCRAPER_ENDPOINT = "https://run.mocky.io/v3/9d5f7c2a-1a3b-4c6d-8e9f-0a1b2c3d4e5f"
+    result = extract_shopee_goods_info(test_url)
+    COLLECTOR_SCRAPER_ENDPOINT = original_endpoint
+    
+    if result:
+        assert all(k in result for k in ["货源ID", "

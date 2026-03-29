@@ -10,6 +10,7 @@ from pathlib import Path
 # 从配置文件加载
 sys.path.insert(0, '/root/.openclaw/workspace-e-commerce/config')
 from llm_config import LLM_CONFIG
+from llm_caller import call_llm_with_fallback  # 使用带Fallback的LLM调用
 
 # 从配置文件加载提示词
 PROMPTS_DIR = '/root/.openclaw/workspace-e-commerce/config/prompts'
@@ -43,30 +44,20 @@ def analyze_error(task_info: dict, error: str) -> dict:
     )
     
     try:
-        response = requests.post(
-            f"{LLM_CONFIG['base_url']}/chat/completions",
-            headers={
-                "Authorization": f"Bearer {LLM_CONFIG['api_key']}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": LLM_CONFIG['model'],
-                "messages": [
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": user_prompt}
-                ],
-                "max_tokens": LLM_CONFIG.get('max_tokens', 1500),
-                "temperature": LLM_CONFIG.get('temperature', 0.3)
-            },
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_prompt}
+        ]
+        
+        content = call_llm_with_fallback(
+            messages, 
+            max_tokens=LLM_CONFIG.get('max_tokens', 1500),
             timeout=LLM_CONFIG.get('timeout', 60)
         )
         
-        if response.status_code != 200:
-            print(f"LLM API error: {response.status_code} - {response.text}")
+        if not content:
+            print("LLM 调用失败")
             return None
-        
-        result = response.json()
-        content = result['choices'][0]['message']['content']
         
         # 解析LLM返回的内容
         return parse_llm_response(content)
