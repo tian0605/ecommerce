@@ -18,6 +18,9 @@ import psycopg2
 from datetime import datetime
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from load_env import get_db_config
+
 # 飞书 Bitable 配置
 FEISHU_APP_TOKEN = "Xc4pbqRqsaozGwssDpAcd8qGn5b"
 FEISHU_TABLE_ID = "tblr24mcoxAoGeOb"
@@ -27,12 +30,7 @@ FEISHU_APP_ID = os.environ.get('FEISHU_APP_ID', 'cli_a933f5b61d39dcb5')
 FEISHU_APP_SECRET = os.environ.get('FEISHU_APP_SECRET', 'CFuYjJZtEOFVfIhXINopPe4haJUul0cY')
 
 # 数据库配置
-DB_CONFIG = {
-    'host': 'localhost',
-    'database': 'ecommerce_data',
-    'user': 'superuser',
-    'password': 'Admin123!'
-}
+DB_CONFIG = get_db_config()
 
 
 def get_feishu_token():

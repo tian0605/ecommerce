@@ -22,6 +22,8 @@ from pathlib import Path
 WORKSPACE = Path('/root/.openclaw/workspace-e-commerce')
 sys.path.insert(0, str(WORKSPACE / 'scripts'))
 
+from load_env import get_db_config
+
 # 飞书表格配置
 FEISHU_APP_TOKEN = "CcahbCiYLaaFlgsMzs5cmbc6nId"
 FEISHU_TABLE_ID = "tblZGXbXvQ8Qr0vS"
@@ -60,12 +62,7 @@ def save_last_sync_time(sync_time):
 
 def get_new_logs(since_time):
     """获取指定时间后的新日志"""
-    conn = psycopg2.connect(
-        host='localhost',
-        database='ecommerce_data',
-        user='superuser',
-        password='Admin123!'
-    )
+    conn = psycopg2.connect(**get_db_config())
     cur = conn.cursor()
     
     if since_time:

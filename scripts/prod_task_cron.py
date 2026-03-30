@@ -35,7 +35,8 @@ STUCK_TIMEOUT_MINUTES = 10  # 10分钟无日志判定为卡死
 def get_task_last_log_time(task_name: str) -> datetime:
     """获取任务最后一次真正的工作日志时间（排除following状态）"""
     import psycopg2
-    conn = psycopg2.connect(host='localhost', database='ecommerce_data', user='superuser', password='Admin123!')
+    from load_env import get_db_config
+    conn = psycopg2.connect(**get_db_config())
     cur = conn.cursor()
     sql = "SELECT MAX(created_at) FROM main_logs WHERE task_name = %s AND run_status = 'running' AND run_message NOT LIKE '%%等待下一次检查%%'"
     cur.execute(sql, (task_name,))

@@ -6,14 +6,14 @@
 
 import psycopg2
 import json
+import sys
+from pathlib import Path
 from datetime import datetime
 
-DB_CONFIG = {
-    'host': 'localhost',
-    'database': 'ecommerce_data',
-    'user': 'superuser',
-    'password': 'Admin123!'
-}
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from load_env import get_db_config
+
+DB_CONFIG = get_db_config()
 
 def analyze_products():
     """分析商品数据"""

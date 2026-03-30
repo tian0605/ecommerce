@@ -15,6 +15,7 @@ WORKSPACE = Path('/root/.openclaw/workspace-e-commerce')
 sys.path.insert(0, str(WORKSPACE / 'scripts'))
 
 import psycopg2
+from load_env import get_db_config
 
 # 从配置加载
 sys.path.insert(0, str(WORKSPACE / 'config'))
@@ -53,7 +54,7 @@ P0/P1/P2
 
 def get_recent_logs(task_name: str, limit: int = 50) -> str:
     """获取最近日志"""
-    conn = psycopg2.connect(host='localhost', database='ecommerce_data', user='superuser', password='Admin123!')
+    conn = psycopg2.connect(**get_db_config())
     cur = conn.cursor()
     
     cur.execute("""
@@ -76,7 +77,7 @@ def get_recent_logs(task_name: str, limit: int = 50) -> str:
 
 def get_task_info(task_name: str) -> dict:
     """获取任务信息"""
-    conn = psycopg2.connect(host='localhost', database='ecommerce_data', user='superuser', password='Admin123!')
+    conn = psycopg2.connect(**get_db_config())
     cur = conn.cursor()
     
     cur.execute("""
