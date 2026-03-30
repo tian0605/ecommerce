@@ -33,7 +33,30 @@ python updater.py --list --limit 20
 
 # 发布指定货源ID
 python updater.py --product-id 1031400982378
+
+# 离线调试（不连接数据库，使用本地 JSON 样例）
+python updater.py --product-id 1031400982378 --fixture /path/to/sample-product.json
 ```
+
+## 环境变量配置
+
+数据库连接优先从环境变量读取，若未设置则从 `config/config.env` 加载：
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `DB_HOST` | `localhost` | 数据库主机 |
+| `DB_NAME` | `ecommerce_data` | 数据库名 |
+| `DB_USER` | `superuser` | 数据库用户 |
+| `DB_PASSWORD` | *(空)* | 数据库密码 |
+| `MIAOSHOU_COOKIES_FILE` | *(自动检测)* | Cookie文件路径 |
+
+## 离线调试模式
+
+当数据库不可用时，模块会自动回退到样例商品数据（fixture）：
+
+1. **`--fixture FILE`**: 指定样例 JSON 文件（优先级最高）
+2. **自动检测**: 在 `skills/miaoshou-api-publisher/sample-debug-product.json` 中查找
+3. **错误提示**: 若样例也不存在，抛出明确错误信息
 
 ## 回写流程
 
@@ -71,3 +94,4 @@ python updater.py --product-id 1031400982378
 | 保存失败 | 检查重量、尺寸和类目属性必填项是否已填充 |
 | Cookie过期 | 重新登录妙手ERP |
 | 商品不在采集箱 | 检查miaoshou-collector是否成功 |
+| 数据库连接失败 | 检查 DB_HOST/DB_USER/DB_PASSWORD 环境变量或 config/config.env |
