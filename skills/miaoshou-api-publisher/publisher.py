@@ -10,17 +10,22 @@ miaoshou-api-publisher - 妙手ERP API发布器
     python3 publisher.py --product-id 1031400982378
 """
 import sys
+import argparse
 import json
 import urllib.request
 import urllib.parse
 from pathlib import Path
 from datetime import datetime
+from typing import Any, Dict, List, Tuple
 
 WORKSPACE = Path('/root/.openclaw/workspace-e-commerce')
 sys.path.insert(0, str(WORKSPACE / 'scripts'))
 sys.path.insert(0, '/home/ubuntu/.openclaw/skills/shared')
 
-import db
+try:
+    import db
+except ImportError:
+    db = None
 
 # 妙手API配置
 MIAOSHOU_BASE_URL = 'https://erp.91miaoshou.com'
@@ -38,9 +43,24 @@ API_ENDPOINTS = {
 class MiaoshouAPIPublisher:
     """妙手API发布器"""
     
-    def __init__(self):
-        self.cookies = self._load_cookies()
-        self.cookie_str = self._build_cookie_str()
+    def __init__(self, require_cookies=True):
+        self.require_cookies = require_cookies
+        self.cookies = []
+        self.cookie_str = ''
+        if require_cookies:
+            self.cookies = self._load_cookies()
+            self.cookie_str = self._build_cookie_str()
+
+    def _ensure_db(self):
+        """确保数据库模块可用"""
+        if db is None:
+            raise RuntimeError('db 模块不可用，当前环境不能执行数据库相关操作')
+
+    def _ensure_cookies(self):
+        """确保Cookies已加载"""
+        if not self.cookie_str:
+            self.cookies = self._load_cookies()
+            self.cookie_str = self._build_cookie_str()
     
     def _load_cookies(self):
         """加载Cookies"""
@@ -58,9 +78,164 @@ class MiaoshouAPIPublisher:
     def _build_cookie_str(self):
         """构建Cookie字符串"""
         return '; '.join([f"{c['name']}={c['value']}" for c in self.cookies])
+
+    @staticmethod
+    def _safe_float(value, default=0.0):
+        """安全转换浮点数"""
+        if value in (None, ''):
+            return default
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return default
+
+    @staticmethod
+    def _safe_int(value, default=0):
+        """安全转换整数"""
+        if value in (None, ''):
+            return default
+        try:
+            return int(float(value))
+        except (TypeError, ValueError):
+            return default
+
+    @staticmethod
+    def _normalize_list(value):
+        """将值标准化为列表"""
+        if value is None:
+            return []
+        if isinstance(value, list):
+            return value
+        if isinstance(value, str):
+            value = value.strip()
+            if not value:
+                return []
+            try:
+                parsed = json.loads(value)
+                if isinstance(parsed, list):
+                    return parsed
+            except Exception:
+                return [value]
+        return []
+
+    def normalize_debug_input(self, raw_product: Dict[str, Any]) -> Tuple[Dict[str, Any], List[Dict[str, Any]], List[str]]:
+        """将调试样例标准化为内部product/skus结构"""
+        product = {
+            'id': raw_product.get('id'),
+            'product_id': raw_product.get('product_id') or raw_product.get('货源ID') or raw_product.get('sourceItemId'),
+            'alibaba_product_id': raw_product.get('alibaba_product_id') or raw_product.get('货源ID') or raw_product.get('sourceItemId'),
+            'title': raw_product.get('title') or raw_product.get('产品标题') or '',
+            'description': raw_product.get('description') or raw_product.get('简易描述') or '',
+            'optimized_title': raw_product.get('optimized_title') or raw_product.get('产品标题') or raw_product.get('title') or '',
+            'optimized_description': raw_product.get('optimized_description') or raw_product.get('简易描述') or raw_product.get('description') or '',
+            'product_id_new': raw_product.get('product_id_new') or raw_product.get('主货号') or raw_product.get('itemNum') or '',
+            'category_cid': raw_product.get('category_cid') or raw_product.get('类目') or raw_product.get('cid') or '101174',
+            'main_images': self._normalize_list(
+                raw_product.get('main_images')
+                or raw_product.get('主图')
+                or raw_product.get('主图URL列表')
+                or raw_product.get('imgUrls')
+            ),
+        }
+
+        raw_skus = (
+            raw_product.get('skus')
+            or raw_product.get('SKUs')
+            or raw_product.get('sku_list')
+            or raw_product.get('SKU列表')
+            or []
+        )
+        package_size = raw_product.get('包裹尺寸') or {}
+        default_weight_kg = self._safe_float(
+            raw_product.get('包装重量(kg)')
+            or raw_product.get('包装重量')
+            or raw_product.get('weight'),
+            0.0,
+        )
+        skus = []
+        for index, sku in enumerate(raw_skus, start=1):
+            sku_name = (
+                sku.get('sku_name')
+                or sku.get('SKU名称')
+                or sku.get('名称')
+                or sku.get('name')
+                or f'SKU{index}'
+            )
+            weight_kg = self._safe_float(
+                sku.get('package_weight_kg')
+                or sku.get('包装重量(kg)')
+                or sku.get('weight_kg'),
+                None,
+            )
+            if weight_kg is None:
+                weight_g = sku.get('package_weight') or sku.get('包装重量(g)') or sku.get('weight_g')
+                if weight_g not in (None, ''):
+                    weight_kg = self._safe_float(weight_g, 0.0) / 1000
+                else:
+                    weight_kg = default_weight_kg
+
+            skus.append({
+                'sku_name': sku_name,
+                'price': self._safe_float(sku.get('price') or sku.get('售价') or sku.get('价格'), 0),
+                'stock': self._safe_int(sku.get('stock') or sku.get('库存'), 99999),
+                'package_weight': weight_kg * 1000 if weight_kg else 0,
+                'package_length': sku.get('package_length') or sku.get('长度(cm)') or package_size.get('长度(cm)'),
+                'package_width': sku.get('package_width') or sku.get('宽度(cm)') or package_size.get('宽度(cm)'),
+                'package_height': sku.get('package_height') or sku.get('高度(cm)') or package_size.get('高度(cm)'),
+            })
+
+        validation_notes = []
+        declared_sku_count = raw_product.get('SKU数量')
+        if declared_sku_count and len(skus) != self._safe_int(declared_sku_count, len(skus)):
+            validation_notes.append(
+                f"样例声明SKU数量={declared_sku_count}，但提供的SKU明细={len(skus)}"
+            )
+        if not skus:
+            validation_notes.append('样例缺少 SKU 明细，当前只能做 payload 调试，不能可靠发布到妙手 API')
+        if not product['main_images']:
+            validation_notes.append('样例缺少主图 URL 列表，API 实际发布时通常需要 imgUrls')
+
+        return product, skus, validation_notes
+
+    def validate_product_data(self, product_data: Dict[str, Any], strict=False) -> List[str]:
+        """校验发布请求数据"""
+        errors = []
+        required_fields = {
+            'cid': '类目ID',
+            'title': '产品标题',
+            'itemNum': '主货号',
+        }
+        for field, label in required_fields.items():
+            if not product_data.get(field):
+                errors.append(f'缺少{label}({field})')
+
+        source_item_id = product_data.get('sourceItemMetaInfo', {}).get('sourceItemId')
+        if not source_item_id:
+            errors.append('缺少货源ID(sourceItemMetaInfo.sourceItemId)')
+
+        if not product_data.get('skuMap'):
+            errors.append('缺少 SKU 明细(skuMap)')
+        if strict and not product_data.get('imgUrls'):
+            errors.append('缺少主图 URL 列表(imgUrls)')
+
+        return errors
+
+    def debug_product_payload(self, raw_product: Dict[str, Any]) -> Dict[str, Any]:
+        """构建调试用的发布 payload"""
+        product, skus, notes = self.normalize_debug_input(raw_product)
+        product_data = self.build_product_data(product, skus)
+        validation_errors = self.validate_product_data(product_data, strict=False)
+        return {
+            'product': product,
+            'skus': skus,
+            'product_data': product_data,
+            'notes': notes,
+            'validation_errors': validation_errors,
+        }
     
     def _make_request(self, endpoint, data=None, method='GET'):
         """发送API请求"""
+        self._ensure_cookies()
         url = f"{MIAOSHOU_BASE_URL}{endpoint}"
         
         if data:
@@ -103,7 +278,16 @@ class MiaoshouAPIPublisher:
         )
         
         if result.get('result') == 'success':
-            return result.get('detailList', [])
+            details = result.get('detailList', [])
+            if source_item_id is None:
+                return details
+
+            matched = []
+            for detail in details:
+                source_info = detail.get('sourceItemMetaInfo', {})
+                if str(source_info.get('sourceItemId')) == str(source_item_id):
+                    matched.append(detail)
+            return matched
         return []
     
     def check_product_exists(self, source_item_id):
@@ -215,6 +399,7 @@ class MiaoshouAPIPublisher:
     
     def get_optimized_products(self, limit=10):
         """获取待发布的商品（已优化但未发布，且有关联SKU）"""
+        self._ensure_db()
         products = []
         
         with db.get_cursor() as cur:
@@ -254,6 +439,7 @@ class MiaoshouAPIPublisher:
     
     def get_skus(self, product_db_id):
         """获取商品SKU数据"""
+        self._ensure_db()
         skus = []
         
         with db.get_cursor() as cur:
@@ -279,6 +465,7 @@ class MiaoshouAPIPublisher:
     
     def update_product_status(self, product_id, status):
         """更新商品状态"""
+        self._ensure_db()
         with db.get_cursor() as cur:
             cur.execute("""
                 UPDATE products 
@@ -337,6 +524,43 @@ class MiaoshouAPIPublisher:
                 return True, '商品已在采集箱（数据冲突，已同步状态）'
             
             return False, reason
+
+    def publish_product_by_id(self, product_id):
+        """发布指定商品ID或货源ID"""
+        self._ensure_db()
+        with db.get_cursor() as cur:
+            cur.execute("""
+                SELECT 
+                    p.id, p.product_id, p.alibaba_product_id, p.title,
+                    p.description, p.category, p.main_images,
+                    p.optimized_title, p.optimized_description,
+                    p.status, p.product_id_new
+                FROM products p
+                WHERE p.id::text = %s
+                   OR p.product_id::text = %s
+                   OR p.alibaba_product_id::text = %s
+                   OR p.product_id_new = %s
+                LIMIT 1
+            """, (str(product_id), str(product_id), str(product_id), str(product_id)))
+            row = cur.fetchone()
+
+        if not row:
+            return False, f'未找到商品: {product_id}'
+
+        product = {
+            'id': row[0],
+            'product_id': row[1],
+            'alibaba_product_id': row[2],
+            'title': row[3],
+            'description': row[4],
+            'category': row[5],
+            'main_images': json.loads(row[6]) if isinstance(row[6], str) else (row[6] or []),
+            'optimized_title': row[7],
+            'optimized_description': row[8],
+            'status': row[9],
+            'product_id_new': row[10]
+        }
+        return self.publish_product(product)
     
     def run(self, limit=5):
         """运行发布流程"""
@@ -375,13 +599,18 @@ class MiaoshouAPIPublisher:
 
 
 def main():
-    import argparse
     parser = argparse.ArgumentParser(description='妙手API发布器')
     parser.add_argument('--limit', type=int, default=5, help='最多发布商品数')
     parser.add_argument('--list', action='store_true', help='列出待发布商品')
+    parser.add_argument('--product-id', help='发布指定商品ID/货源ID/主货号')
+    parser.add_argument('--product-data', help='直接传入JSON样例调试发布payload')
+    parser.add_argument('--product-data-file', help='从JSON文件读取调试样例')
+    parser.add_argument('--dry-run', action='store_true', help='仅构建并输出payload，不调用妙手API')
+    parser.add_argument('--dump-json', action='store_true', help='打印调试生成的payload JSON')
     args = parser.parse_args()
     
-    publisher = MiaoshouAPIPublisher()
+    require_cookies = not (args.list or args.dry_run)
+    publisher = MiaoshouAPIPublisher(require_cookies=require_cookies)
     
     if args.list:
         products = publisher.get_optimized_products(20)
@@ -391,6 +620,52 @@ def main():
             title = (p.get('optimized_title') or p.get('title') or 'N/A')[:40]
             print(f"  [{p['id']}] {p['product_id_new']} | {title}...")
         print("-" * 60)
+    elif args.product_data or args.product_data_file:
+        raw_json = args.product_data
+        if args.product_data_file:
+            raw_json = Path(args.product_data_file).read_text(encoding='utf-8')
+
+        raw_product = json.loads(raw_json)
+        debug_result = publisher.debug_product_payload(raw_product)
+        product_data = debug_result['product_data']
+
+        print(f"\n调试商品: {product_data.get('sourceItemMetaInfo', {}).get('sourceItemId')}")
+        print(f"标题: {product_data.get('title')}")
+        print(f"主货号: {product_data.get('itemNum')}")
+        print(f"SKU数: {len(debug_result['skus'])}")
+
+        if debug_result['notes']:
+            print("\n调试备注:")
+            for note in debug_result['notes']:
+                print(f"  - {note}")
+
+        if debug_result['validation_errors']:
+            print("\n校验结果:")
+            for error in debug_result['validation_errors']:
+                print(f"  - {error}")
+
+        if args.dump_json:
+            print("\n生成的 siteDetailSimpleData:")
+            print(json.dumps(product_data, indent=2, ensure_ascii=False))
+
+        if args.dry_run:
+            print("\nDry-run 完成，未调用妙手API")
+            return
+
+        strict_errors = publisher.validate_product_data(product_data, strict=True)
+        if strict_errors:
+            print("\n无法调用妙手API，缺少关键字段:")
+            for error in strict_errors:
+                print(f"  - {error}")
+            sys.exit(1)
+
+        result = publisher.save_site_detail(product_data)
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+    elif args.product_id:
+        success, message = publisher.publish_product_by_id(args.product_id)
+        print(message)
+        if not success:
+            sys.exit(1)
     else:
         publisher.run(limit=args.limit)
 
