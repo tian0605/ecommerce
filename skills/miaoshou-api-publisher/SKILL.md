@@ -49,12 +49,28 @@ python3 publisher.py --limit 1
 # 发布指定商品
 python3 publisher.py --product-id 1031400982378
 
+# 用JSON样例调试payload，不实际发到妙手API
+python3 publisher.py --product-data-file ./sample-debug-product.json --dry-run --dump-json
+
 # 列出待发布商品（不执行发布）
 python3 publisher.py --list
-
-# 静默模式
-python3 publisher.py --limit 5 --quiet
 ```
+
+### 用样例调试
+
+`publisher.py` 现在支持直接读取 JSON 样例并转换为 `saveSiteDetailData` 需要的 `siteDetailSimpleData`。
+
+- `--product-data`：直接传 JSON 字符串
+- `--product-data-file`：从 JSON 文件读取
+- `--dry-run`：只构建 payload，不调用 API
+- `--dump-json`：打印转换后的完整 payload
+
+注意：如果样例只有 `SKU数量`，但没有 `SKU列表/SKUs/skus` 明细，脚本会提示只能做 payload 调试，不能可靠发布。
+
+最少还应补充：
+
+- SKU 名称、价格、库存、重量/尺寸
+- 主图 URL 列表（`主图URL列表` / `imgUrls`）
 
 ### Python 模块调用
 
@@ -163,6 +179,45 @@ WHERE product_id = ?
    - 或通过浏览器手动完成编辑
 
 ## 调试
+
+### 用业务样例做 dry-run
+
+```json
+{
+  "产品标题": "收納盒 折疊 束口 髒衣服收納袋 搬家整理箱 宿舍床底收納籃 多色可選",
+  "简易描述": "...",
+  "类目": "101174",
+  "主货号": "AL0001001260000001",
+  "包装重量(kg)": 0.268,
+  "包裹尺寸": {
+    "长度(cm)": "50",
+    "宽度(cm)": "40",
+    "高度(cm)": "50"
+  },
+  "SKU数量": 8,
+  "货源ID": "1026137274944",
+  "SKUs": [
+    {
+      "SKU名称": "米白-100L",
+      "价格": 299,
+      "库存": 99999,
+      "包装重量(kg)": 0.268,
+      "长度(cm)": "50",
+      "宽度(cm)": "40",
+      "高度(cm)": "50"
+    }
+  ],
+  "主图URL列表": [
+    "https://example.com/main-1.jpg"
+  ]
+}
+```
+
+```bash
+python3 publisher.py --product-data-file ./sample-debug-product.json --dry-run --dump-json
+```
+
+仓库内已附带样例文件：`skills/miaoshou-api-publisher/sample-debug-product.json`
 
 ### 查看完整请求数据
 
