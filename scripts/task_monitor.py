@@ -14,9 +14,9 @@ WORKSPACE = Path('/root/.openclaw/workspace-e-commerce')
 sys.path.insert(0, str(WORKSPACE / 'scripts'))
 
 import psycopg2
+from load_env import get_db_config
 
 FEISHU_WEBHOOK = "https://open.feishu.cn/open-apis/bot/v2/hook/6af7d281-ca31-42c6-ab88-5ba434404fb9"
-
 
 # ==================== 根因检测规则 ====================
 ERROR_ROOT_CAUSE_RULES = [
@@ -398,12 +398,7 @@ def send_feishu(message):
 def main():
     print(f"[{datetime.now()}] task_monitor 启动")
     
-    conn = psycopg2.connect(
-        host='localhost',
-        database='ecommerce_data',
-        user='superuser',
-        password='Admin123!'
-    )
+    conn = psycopg2.connect(**get_db_config())
     
     state_stats, log_stats, failed_tasks, stuck_count = get_task_stats(conn)
     

@@ -19,6 +19,12 @@ if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
 try:
+    from load_env import get_db_config as _get_db_config
+    _DB_CONFIG_FROM_ENV = _get_db_config()
+except ImportError:
+    _DB_CONFIG_FROM_ENV = None
+
+try:
     import db
 except ImportError:
     db = None
@@ -70,7 +76,7 @@ PRODUCT_FIXTURE_CANDIDATES = [
 ]
 
 DEFAULT_CATEGORY_PATH = ['家居生活', '居家收纳', '收纳盒']
-DB_CONFIG = {
+DB_CONFIG = _DB_CONFIG_FROM_ENV or {
     'host': 'localhost',
     'database': 'ecommerce_data',
     'user': 'superuser',

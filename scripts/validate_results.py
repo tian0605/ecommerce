@@ -36,12 +36,8 @@ def validate_listing_optimizer(data, db_id):
     if db_id:
         try:
             import psycopg2
-            conn = psycopg2.connect(
-                host='localhost',
-                database='ecommerce_data',
-                user='superuser',
-                password='Admin123!'
-            )
+            from load_env import get_db_config
+            conn = psycopg2.connect(**get_db_config())
             cur = conn.cursor()
             cur.execute("SELECT optimized_title, optimized_description FROM products WHERE id = %s", (db_id,))
             row = cur.fetchone()
@@ -127,12 +123,8 @@ def validate_miaoshou_updater(data):
     if db_id:
         try:
             import psycopg2
-            conn = psycopg2.connect(
-                host='localhost',
-                database='ecommerce_data',
-                user='superuser',
-                password='Admin123!'
-            )
+            from load_env import get_db_config
+            conn = psycopg2.connect(**get_db_config())
             cur = conn.cursor()
             cur.execute("SELECT optimized_title, optimized_description FROM products WHERE id = %s", (db_id,))
             row = cur.fetchone()

@@ -41,7 +41,8 @@ def analyze_screenshot(img_path, label="分析"):
 def check_product_status():
     """检查商品状态"""
     import psycopg2
-    conn = psycopg2.connect(host='localhost', database='ecommerce_data', user='superuser', password='Admin123!')
+    from load_env import get_db_config
+    conn = psycopg2.connect(**get_db_config())
     cur = conn.cursor()
     cur.execute("SELECT status FROM products WHERE alibaba_product_id='1031400982378'")
     status = cur.fetchone()[0]
@@ -51,7 +52,8 @@ def check_product_status():
 def reset_product():
     """重置商品状态"""
     import psycopg2
-    conn = psycopg2.connect(host='localhost', database='ecommerce_data', user='superuser', password='Admin123!')
+    from load_env import get_db_config
+    conn = psycopg2.connect(**get_db_config())
     cur = conn.cursor()
     cur.execute("UPDATE products SET status='collected' WHERE alibaba_product_id='1031400982378'")
     conn.commit()

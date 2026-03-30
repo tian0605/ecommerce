@@ -297,8 +297,9 @@ def execute_skill(skill_name: str, action: str = None, params: dict = None) -> d
                 if not product_id:
                     # 从数据库获取最新商品
                     import psycopg2
+                    from load_env import get_db_config
                     try:
-                        conn = psycopg2.connect(host='localhost', database='ecommerce_data', user='superuser', password='Admin123!')
+                        conn = psycopg2.connect(**get_db_config())
                         cur = conn.cursor()
                         cur.execute("SELECT product_id_new FROM products ORDER BY id DESC LIMIT 1")
                         row = cur.fetchone()

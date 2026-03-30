@@ -5,15 +5,19 @@ from psycopg2 import sql
 from datetime import datetime
 from typing import List, Dict, Optional
 import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
+try:
+    from load_env import get_db_config
+except ImportError:
+    def get_db_config():
+        return {'host': 'localhost', 'database': 'ecommerce_data', 'user': 'superuser', 'password': 'Admin123!'}
 
 class TaskManager:
     def __init__(self):
-        self.DB_CONFIG = {
-            'host': 'localhost',
-            'database': 'ecommerce_data',
-            'user': 'superuser',
-            'password': 'Admin123!'
-        }
+        self.DB_CONFIG = get_db_config()
         self.conn = psycopg2.connect(**self.DB_CONFIG)
     
     def close(self):
