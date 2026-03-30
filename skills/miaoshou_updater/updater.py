@@ -7,6 +7,7 @@ Playwright-based updater for Miaoshou ERP Shopee collect-box items.
 import argparse
 from contextlib import contextmanager
 import json
+import os
 import sys
 import time
 from datetime import datetime
@@ -50,6 +51,25 @@ except ImportError:
         return _FallbackLogger()
 
 
+def _load_config_env() -> None:
+    """Load variables from config/config.env into os.environ if not already set."""
+    config_env_path = WORKSPACE / 'config' / 'config.env'
+    if not config_env_path.exists():
+        return
+    with open(config_env_path, 'r', encoding='utf-8') as fh:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith('#') or '=' not in line:
+                continue
+            key, _, value = line.partition('=')
+            key = key.strip()
+            value = value.strip()
+            if key and key not in os.environ:
+                os.environ[key] = value
+
+
+_load_config_env()
+
 logger = setup_logger('miaoshou-updater')
 
 MIAOSHOU_BASE_URL = 'https://erp.91miaoshou.com'
@@ -65,21 +85,49 @@ COOKIE_CANDIDATES = [
     Path('/home/ubuntu/.openclaw/skills/miaoshou-collector/miaoshou_cookies.json'),
 ]
 
-PRODUCT_FIXTURE_CANDIDATES = [
+_DEFAULT_PRODUCT_FIXTURE_CANDIDATES = [
     WORKSPACE / 'skills' / 'miaoshou-api-publisher' / 'sample-debug-product.json',
 ]
 
 DEFAULT_CATEGORY_PATH = ['家居生活', '居家收纳', '收纳盒']
 DB_CONFIG = {
-    'host': 'localhost',
-    'database': 'ecommerce_data',
-    'user': 'superuser',
-    'password': 'Admin123!',
+    'host': os.environ.get('DB_HOST', 'localhost'),
+    'database': os.environ.get('DB_NAME', 'ecommerce_data'),
+    'user': os.environ.get('DB_USER', 'superuser'),
+    'password': os.environ.get('DB_PASSWORD', ''),
 }
 
 
+def _build_cookie_candidates(extra: Optional[Path] = None) -> List[Path]:
+    """Return a prioritized list of cookie file candidates.
+
+    If *extra* is given (e.g. from ``MIAOSHOU_COOKIES_FILE`` env var or a
+    constructor argument) it is prepended so it takes highest priority.
+    """
+    candidates: List[Path] = list(COOKIE_CANDIDATES)
+    _env_val = os.environ.get('MIAOSHOU_COOKIES_FILE', '').strip()
+    if _env_val:
+        env_path = Path(_env_val)
+        if env_path not in candidates:
+            candidates.insert(0, env_path)
+    if extra and extra not in candidates:
+        candidates.insert(0, extra)
+    return candidates
+
+
 class MiaoshouUpdater:
-    def __init__(self, cookies_file: Optional[Path] = None, headless: bool = True):
+    def __init__(
+        self,
+        cookies_file: Optional[Path] = None,
+        headless: bool = True,
+        fixture_file: Optional[Path] = None,
+    ):
+        self._fixture_candidates: List[Path] = list(_DEFAULT_PRODUCT_FIXTURE_CANDIDATES)
+        if fixture_file:
+            extra = Path(fixture_file)
+            if extra not in self._fixture_candidates:
+                self._fixture_candidates.insert(0, extra)
+        self._cookie_candidates: List[Path] = _build_cookie_candidates()
         self.cookies_file = Path(cookies_file) if cookies_file else self._detect_cookies_file()
         self.headless = headless
         self.playwright = None
@@ -89,7 +137,7 @@ class MiaoshouUpdater:
         self.cookies = self._load_cookies() if self.cookies_file else []
 
     def _detect_cookies_file(self) -> Optional[Path]:
-        for candidate in COOKIE_CANDIDATES:
+        for candidate in self._cookie_candidates:
             if candidate.exists():
                 return candidate
         return None
@@ -103,7 +151,7 @@ class MiaoshouUpdater:
 
     def _load_product_fixture(self, identifier: Any) -> Optional[Dict[str, Any]]:
         identifier = str(identifier)
-        for candidate in PRODUCT_FIXTURE_CANDIDATES:
+        for candidate in self._fixture_candidates:
             if not candidate.exists():
                 continue
             try:
@@ -127,32 +175,56 @@ class MiaoshouUpdater:
                 }
                 if identifier not in aliases:
                     continue
-
-                package_size = raw.get('包裹尺寸') or {}
-                weight_kg = self._safe_float(
-                    raw.get('包装重量(kg)') or raw.get('package_weight_kg') or raw.get('weight_kg'),
-                    0.0,
-                )
-                return {
-                    'id': None,
-                    'product_id': raw.get('product_id') or raw.get('货源ID') or raw.get('sourceItemId'),
-                    'alibaba_product_id': raw.get('alibaba_product_id') or raw.get('货源ID') or raw.get('sourceItemId'),
-                    'title': raw.get('title') or raw.get('产品标题') or '',
-                    'description': raw.get('description') or raw.get('简易描述') or '',
-                    'category': raw.get('category') or raw.get('类目') or '',
-                    'main_images': raw.get('main_images') or raw.get('主图URL列表') or [],
-                    'optimized_title': raw.get('optimized_title') or raw.get('产品标题') or raw.get('title') or '',
-                    'optimized_description': raw.get('optimized_description') or raw.get('简易描述') or raw.get('description') or '',
-                    'status': raw.get('status') or 'fixture',
-                    'product_id_new': raw.get('product_id_new') or raw.get('主货号') or '',
-                    'package_weight': weight_kg * 1000 if weight_kg else 0,
-                    'package_weight_kg': weight_kg,
-                    'package_length': raw.get('package_length') or package_size.get('长度(cm)') or package_size.get('length') or 0,
-                    'package_width': raw.get('package_width') or package_size.get('宽度(cm)') or package_size.get('width') or 0,
-                    'package_height': raw.get('package_height') or package_size.get('高度(cm)') or package_size.get('height') or 0,
-                    'fixture_source': str(candidate),
-                }
+                return self._normalize_fixture_row(raw, str(candidate))
         return None
+
+    def _normalize_fixture_row(self, raw: Dict[str, Any], source: str) -> Dict[str, Any]:
+        """Normalize a raw fixture dict into the standard product dict shape."""
+        package_size = raw.get('包裹尺寸') or {}
+        weight_kg = self._safe_float(
+            raw.get('包装重量(kg)') or raw.get('package_weight_kg') or raw.get('weight_kg'),
+            0.0,
+        )
+        return {
+            'id': None,
+            'product_id': raw.get('product_id') or raw.get('货源ID') or raw.get('sourceItemId'),
+            'alibaba_product_id': raw.get('alibaba_product_id') or raw.get('货源ID') or raw.get('sourceItemId'),
+            'title': raw.get('title') or raw.get('产品标题') or '',
+            'description': raw.get('description') or raw.get('简易描述') or '',
+            'category': raw.get('category') or raw.get('类目') or '',
+            'main_images': raw.get('main_images') or raw.get('主图URL列表') or [],
+            'optimized_title': raw.get('optimized_title') or raw.get('产品标题') or raw.get('title') or '',
+            'optimized_description': raw.get('optimized_description') or raw.get('简易描述') or raw.get('description') or '',
+            'status': raw.get('status') or 'fixture',
+            'product_id_new': raw.get('product_id_new') or raw.get('主货号') or '',
+            'package_weight': weight_kg * 1000 if weight_kg else 0,
+            'package_weight_kg': weight_kg,
+            'package_length': raw.get('package_length') or package_size.get('长度(cm)') or package_size.get('length') or 0,
+            'package_width': raw.get('package_width') or package_size.get('宽度(cm)') or package_size.get('width') or 0,
+            'package_height': raw.get('package_height') or package_size.get('高度(cm)') or package_size.get('height') or 0,
+            'fixture_source': source,
+        }
+
+    def _load_all_fixtures(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """Load up to *limit* products from all fixture candidates."""
+        results: List[Dict[str, Any]] = []
+        for candidate in self._fixture_candidates:
+            if not candidate.exists():
+                continue
+            try:
+                with open(candidate, 'r', encoding='utf-8') as handle:
+                    payload = json.load(handle)
+            except Exception as exc:
+                logger.warning(f'读取商品样例失败: {candidate} | {exc}')
+                continue
+            items = payload if isinstance(payload, list) else [payload]
+            for raw in items:
+                if not isinstance(raw, dict):
+                    continue
+                results.append(self._normalize_fixture_row(raw, str(candidate)))
+                if len(results) >= limit:
+                    return results
+        return results
 
     def _build_cookies(self) -> List[Dict[str, Any]]:
         result = []
@@ -255,42 +327,49 @@ class MiaoshouUpdater:
         return file_path
 
     def get_optimized_products(self, limit: int = 10) -> List[Dict[str, Any]]:
-        products: List[Dict[str, Any]] = []
-        with self._get_cursor() as cur:
-            cur.execute(
-                """
-                SELECT
-                    p.id, p.product_id, p.alibaba_product_id, p.title,
-                    p.description, p.category, p.main_images,
-                    p.optimized_title, p.optimized_description,
-                    p.status, p.product_id_new
-                FROM products p
-                INNER JOIN product_skus ps ON p.id = ps.product_id
-                WHERE p.status IN ('optimized', 'collected')
-                  AND p.optimized_title IS NOT NULL
-                  AND p.optimized_title != ''
-                  AND p.alibaba_product_id IS NOT NULL
-                GROUP BY p.id
-                ORDER BY p.updated_at DESC
-                LIMIT %s
-                """,
-                (limit,),
-            )
-            for row in cur.fetchall():
-                products.append({
-                    'id': row[0],
-                    'product_id': row[1],
-                    'alibaba_product_id': row[2],
-                    'title': row[3],
-                    'description': row[4],
-                    'category': row[5],
-                    'main_images': json.loads(row[6]) if isinstance(row[6], str) else (row[6] or []),
-                    'optimized_title': row[7],
-                    'optimized_description': row[8],
-                    'status': row[9],
-                    'product_id_new': row[10],
-                })
-        return products
+        try:
+            products: List[Dict[str, Any]] = []
+            with self._get_cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT
+                        p.id, p.product_id, p.alibaba_product_id, p.title,
+                        p.description, p.category, p.main_images,
+                        p.optimized_title, p.optimized_description,
+                        p.status, p.product_id_new
+                    FROM products p
+                    INNER JOIN product_skus ps ON p.id = ps.product_id
+                    WHERE p.status IN ('optimized', 'collected')
+                      AND p.optimized_title IS NOT NULL
+                      AND p.optimized_title != ''
+                      AND p.alibaba_product_id IS NOT NULL
+                    GROUP BY p.id
+                    ORDER BY p.updated_at DESC
+                    LIMIT %s
+                    """,
+                    (limit,),
+                )
+                for row in cur.fetchall():
+                    products.append({
+                        'id': row[0],
+                        'product_id': row[1],
+                        'alibaba_product_id': row[2],
+                        'title': row[3],
+                        'description': row[4],
+                        'category': row[5],
+                        'main_images': json.loads(row[6]) if isinstance(row[6], str) else (row[6] or []),
+                        'optimized_title': row[7],
+                        'optimized_description': row[8],
+                        'status': row[9],
+                        'product_id_new': row[10],
+                    })
+            return products
+        except Exception as exc:
+            fixture_products = self._load_all_fixtures(limit)
+            if fixture_products:
+                logger.warning(f'数据库不可用，改用样例商品数据（共{len(fixture_products)}条）: {exc}')
+                return fixture_products
+            raise RuntimeError(f'数据库连接失败，且未找到可用样例数据: {exc}') from exc
 
     def get_skus(self, product_db_id: int) -> List[Dict[str, Any]]:
         skus: List[Dict[str, Any]] = []
@@ -1104,9 +1183,17 @@ def main():
     parser.add_argument('--product-id', help='指定商品 id / 货源ID / 主货号')
     parser.add_argument('--list', action='store_true', help='仅列出待处理商品')
     parser.add_argument('--headed', action='store_true', help='使用有头浏览器')
+    parser.add_argument(
+        '--fixture',
+        metavar='FILE',
+        help='指定商品样例 JSON 文件路径，用于离线调试（数据库不可用时）',
+    )
     args = parser.parse_args()
 
-    updater = MiaoshouUpdater(headless=not args.headed)
+    updater = MiaoshouUpdater(
+        headless=not args.headed,
+        fixture_file=Path(args.fixture) if args.fixture else None,
+    )
     if args.list:
         for product in updater.get_optimized_products(limit=max(args.limit, 20)):
             title = (product.get('optimized_title') or product.get('title') or '')[:40]
