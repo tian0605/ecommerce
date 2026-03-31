@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 # 本地服务地址（通过隧道映射）
 # 注意：8080端口是用户调整后的隧道端口
 LOCAL_SERVICE_URL = "http://127.0.0.1:8080"
+DEFAULT_PROBE_PRODUCT_ID = "1031400982378"
 
 def fetch_weight_from_local(product_id: str, timeout: int = 30) -> Optional[Dict[str, Any]]:
     """
@@ -131,8 +132,33 @@ def check_local_service_health() -> bool:
         if response.status_code == 200:
             logger.info("本地服务健康检查通过")
             return True
+
+        logger.warning(
+            "本地服务 /health 返回非200，继续验证 /fetch-weight 是否可用: HTTP %s",
+            response.status_code,
+        )
     except Exception as e:
-        logger.warning(f"本地服务不可用: {e}")
+        logger.warning(f"本地服务 /health 不可用，继续验证业务接口: {e}")
+
+    try:
+        response = requests.post(
+            f"{LOCAL_SERVICE_URL}/fetch-weight",
+            json={'product_id': DEFAULT_PROBE_PRODUCT_ID},
+            timeout=30
+        )
+        if response.status_code != 200:
+            logger.warning(f"本地服务 /fetch-weight 不可用: HTTP {response.status_code}")
+            return False
+
+        data = response.json()
+        if isinstance(data, dict) and 'success' in data:
+            logger.info("本地服务业务接口检查通过")
+            return True
+
+        logger.warning(f"本地服务 /fetch-weight 返回格式异常: {data}")
+    except Exception as e:
+        logger.warning(f"本地服务业务接口检查失败: {e}")
+
     return False
 
 if __name__ == "__main__":

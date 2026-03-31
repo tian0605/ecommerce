@@ -97,15 +97,390 @@ class CollectorScraper:
         """关闭所有弹窗"""
         for _ in range(5):
             try:
-                for txt in ['我知道了', '关闭', '确定']:
+                for keyword in ['新手指南', '授权店铺', '店铺授权', '查看来源信息']:
+                    dialog = self.page.locator('.el-dialog__wrapper, .el-dialog, [role="dialog"]', has_text=keyword).first
+                    if dialog.count() > 0:
+                        try:
+                            close_btn = dialog.locator('.el-dialog__headerbtn, .el-dialog__close, .el-icon-close, [aria-label="关闭此对话框"]').first
+                            if close_btn.count() > 0:
+                                close_btn.click(force=True, timeout=1000)
+                        except Exception:
+                            pass
+
+                for txt in ['我知道了', '关闭', '确定', '取消']:
                     btn = self.page.query_selector(f'button:has-text("{txt}")')
                     if btn and btn.is_visible():
                         btn.click(force=True, timeout=2000)
                         time.sleep(0.3)
+                self.page.evaluate(
+                    """() => {
+                        const visible = (el) => !!el && el.offsetParent !== null;
+                        const onboardingKeywords = ['新手指南', '授权店铺', '店铺授权', '查看来源信息'];
+                        for (const wrapper of document.querySelectorAll('.el-dialog__wrapper, .el-overlay, .el-overlay-dialog, [role="dialog"]')) {
+                            const text = (wrapper.innerText || '').trim();
+                            const title = (wrapper.querySelector('.el-dialog__title, [class*="title"]')?.innerText || '').trim();
+                            if (!onboardingKeywords.some((keyword) => text.includes(keyword) || title.includes(keyword))) continue;
+
+                            const closeNodes = wrapper.querySelectorAll('.el-dialog__headerbtn, .el-dialog__close, .el-icon-close, [aria-label="关闭此对话框"]');
+                            for (const node of closeNodes) {
+                                if (node instanceof HTMLElement) node.click();
+                            }
+
+                            if (wrapper instanceof HTMLElement) {
+                                wrapper.style.display = 'none';
+                                wrapper.remove();
+                            }
+                        }
+
+                        for (const dialog of document.querySelectorAll('.el-dialog')) {
+                            if (!visible(dialog)) continue;
+                            const text = (dialog.innerText || '').trim();
+                            const title = (dialog.querySelector('.el-dialog__title')?.innerText || '').trim();
+                            if (!onboardingKeywords.some((keyword) => text.includes(keyword) || title.includes(keyword))) continue;
+                            const closeBtn = dialog.querySelector('.el-dialog__headerbtn, .el-dialog__close, .el-icon-close');
+                            if (closeBtn) {
+                                closeBtn.click();
+                            }
+                            if (dialog instanceof HTMLElement) {
+                                dialog.style.display = 'none';
+                                dialog.remove();
+                            }
+                        }
+
+                        for (const overlay of document.querySelectorAll('.v-modal, .el-overlay, .el-overlay-dialog')) {
+                            if (overlay instanceof HTMLElement) {
+                                overlay.style.display = 'none';
+                                overlay.remove();
+                            }
+                        }
+                    }"""
+                )
                 self.page.keyboard.press('Escape')
                 time.sleep(0.3)
-            except: pass
+            except:
+                pass
         return True
+
+    def _ensure_status_tab(self, tab_label: str, timeout: float = 5.0) -> bool:
+        deadline = time.time() + timeout
+        last_clicked = False
+
+        while time.time() < deadline:
+            try:
+                state = self.page.evaluate(
+                    r'''(label) => {
+                        const visible = (el) => !!el && el.offsetParent !== null;
+                        const normalize = (text) => (text || '').replace(/\s+/g, '').trim();
+                        const STATUS_LABELS = ['全部', '未发布', '定时发布', '已发布'];
+                        const exactStatusPattern = (expected) => new RegExp(`^${normalize(expected)}(?:\\(\\d+\\))?$`);
+
+                        const isActive = (node) => {
+                            if (!node) return false;
+                            let current = node;
+                            for (let depth = 0; current && depth < 3; depth += 1, current = current.parentElement) {
+                                const cls = String(current.className || '');
+                                if (/(^|\s)(active|is-active|current|selected)(\s|$)/i.test(cls)) return true;
+                                if (current.getAttribute('aria-selected') === 'true') return true;
+                            }
+
+                            const style = window.getComputedStyle(node);
+                            const bg = style.backgroundColor || '';
+                            const color = style.color || '';
+                            if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent' && bg !== 'rgb(255, 255, 255)') {
+                                return true;
+                            }
+                            if (color === 'rgb(255, 255, 255)') {
+                                return true;
+                            }
+                            return false;
+                        };
+
+                        const matchesLabel = (node, expected) => {
+                            const text = normalize(node.innerText || '');
+                            return exactStatusPattern(expected).test(text);
+                        };
+
+                        const candidates = Array.from(document.querySelectorAll('a, button, div, span, li')).filter((node) => {
+                            if (!visible(node)) return false;
+                            const text = normalize(node.innerText || '');
+                            return STATUS_LABELS.some((status) => exactStatusPattern(status).test(text));
+                        });
+
+                        const scoreNode = (node) => {
+                            let score = 0;
+                            let current = node.parentElement;
+                            for (let depth = 0; current && depth < 4; depth += 1, current = current.parentElement) {
+                                const family = normalize(current.innerText || '');
+                                const familyHits = STATUS_LABELS.filter((status) => family.includes(normalize(status))).length;
+                                score = Math.max(score, familyHits);
+                            }
+                            return score;
+                        };
+
+                        const target = candidates
+                            .filter((node) => matchesLabel(node, label))
+                            .sort((left, right) => scoreNode(right) - scoreNode(left))[0];
+
+                        if (!target) {
+                            return { found: false, active: false, clicked: false };
+                        }
+
+                        const active = isActive(target);
+                        if (!active) {
+                            target.click();
+                        }
+
+                        return { found: true, active, clicked: !active };
+                    }''',
+                    tab_label,
+                )
+            except Exception:
+                state = None
+
+            if not state:
+                time.sleep(0.3)
+                continue
+
+            if state.get('active'):
+                return True
+
+            if state.get('clicked'):
+                last_clicked = True
+                time.sleep(0.8)
+                continue
+
+            if state.get('found'):
+                time.sleep(0.3)
+                continue
+
+            time.sleep(0.3)
+
+        return last_clicked
+
+    def _search_source_item(self, source_item_id: str, timeout: float = 20.0, tab_label: Optional[str] = None) -> bool:
+        self._close_popups()
+
+        selected = None
+        if tab_label:
+            selected = self._ensure_status_tab(tab_label, timeout=4.0)
+
+        input_selector = self.page.evaluate(
+            r'''() => {
+                const visible = (el) => !!el && el.offsetParent !== null;
+                const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
+                const wrappers = Array.from(document.querySelectorAll('.el-form-item, .el-input, .search-item, .filter-item'));
+                const marker = 'data-copilot-source-search-input';
+
+                for (const existing of document.querySelectorAll(`[${marker}]`)) {
+                    existing.removeAttribute(marker);
+                }
+
+                const findInput = () => {
+                    for (const wrapper of wrappers) {
+                        if (!visible(wrapper)) continue;
+                        const text = normalize(wrapper.innerText || '');
+                        if (!text.includes('货源ID')) continue;
+                        const input = wrapper.querySelector('input');
+                        if (input && visible(input)) return input;
+                    }
+
+                    const inputs = Array.from(document.querySelectorAll('input')).filter((node) => visible(node));
+                    for (const input of inputs) {
+                        const placeholder = normalize(input.getAttribute('placeholder') || '');
+                        const parentText = normalize(input.parentElement?.parentElement?.innerText || input.parentElement?.innerText || '');
+                        if (placeholder.includes('多个用逗号分隔') && parentText.includes('货源ID')) {
+                            return input;
+                        }
+                    }
+                    return null;
+                };
+
+                const input = findInput();
+                if (!input) return null;
+                input.setAttribute(marker, '1');
+                return `input[${marker}="1"]`;
+            }'''
+        )
+
+        filled = False
+        if input_selector:
+            try:
+                input = self.page.locator(input_selector).first
+                input.click(timeout=2000)
+                input.fill('')
+                input.type(str(source_item_id), delay=50)
+                input.press('Tab')
+                time.sleep(0.5)
+                current_value = input.input_value(timeout=2000).strip()
+                filled = current_value == str(source_item_id)
+                if not filled:
+                    logger.warning(f'货源ID输入框回填校验失败: expected={source_item_id}, actual={current_value}, tab={tab_label}')
+            except Exception as exc:
+                logger.warning(f'货源ID输入框填充失败: source_item_id={source_item_id}, tab={tab_label}, error={exc}')
+                filled = False
+
+        if not filled:
+            logger.warning(f'货源ID搜索框未命中: source_item_id={source_item_id}, tab={tab_label}')
+            self.screenshot('source_search_input_not_found')
+            return False
+
+        logger.info(f'采集箱搜索已提交: tab={tab_label}, tab_selected={selected}, source_item_id={source_item_id}')
+
+        search_selector = self.page.evaluate(
+            r'''() => {
+                const visible = (el) => !!el && el.offsetParent !== null;
+                const normalize = (text) => (text || '').replace(/\s+/g, '').trim();
+                const marker = 'data-copilot-source-search-button';
+
+                for (const existing of document.querySelectorAll(`[${marker}]`)) {
+                    existing.removeAttribute(marker);
+                }
+
+                const input = document.querySelector('input[data-copilot-source-search-input="1"]');
+                if (!input) return null;
+                const inputRect = input.getBoundingClientRect();
+
+                const buttons = Array.from(document.querySelectorAll('button, .el-button, a, span, div')).filter((node) => {
+                    if (!visible(node)) return false;
+                    return normalize(node.innerText || '') === '搜索';
+                });
+                if (!buttons.length) return null;
+
+                buttons.sort((left, right) => {
+                    const leftRect = left.getBoundingClientRect();
+                    const rightRect = right.getBoundingClientRect();
+                    const leftScore = Math.abs(leftRect.top - inputRect.top) + Math.abs(leftRect.left - inputRect.right);
+                    const rightScore = Math.abs(rightRect.top - inputRect.top) + Math.abs(rightRect.left - inputRect.right);
+                    return leftScore - rightScore;
+                });
+
+                const target = buttons[0];
+                target.setAttribute(marker, '1');
+                return `[${marker}="1"]`;
+            }'''
+        )
+
+        clicked = False
+        if search_selector:
+            try:
+                self.page.locator(search_selector).first.click(timeout=3000, force=True)
+                clicked = True
+            except Exception as exc:
+                logger.warning(f'搜索按钮点击失败: source_item_id={source_item_id}, tab={tab_label}, error={exc}')
+                clicked = False
+
+        if not clicked:
+            try:
+                self.page.locator(input_selector).first.press('Enter')
+                clicked = True
+            except Exception:
+                return False
+
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            try:
+                body_text = self.page.inner_text('body')
+            except Exception:
+                body_text = ''
+
+            row_hit = False
+            try:
+                row_hit = bool(self.page.evaluate(
+                    r'''(sourceId) => {
+                        const visible = (el) => !!el && el.offsetParent !== null;
+                        const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
+                        const rowMarkers = ['货源:', '主货号:', '编辑', '发布', '删除', '1688'];
+                        const hasRowContext = (text) => rowMarkers.some((marker) => text.includes(marker));
+
+                        const nodes = Array.from(document.querySelectorAll('*')).filter((node) => {
+                            const text = normalize(node.innerText || '');
+                            return visible(node) && (text.includes(`(${String(sourceId)})`) || text.includes(String(sourceId)));
+                        });
+
+                        for (const node of nodes) {
+                            let current = node;
+                            for (let depth = 0; current && depth < 10; depth += 1, current = current.parentElement) {
+                                const text = normalize(current.innerText || '');
+                                if (hasRowContext(text) && text.includes(String(sourceId))) {
+                                    return true;
+                                }
+                                if (depth >= 2 && text.includes(String(sourceId)) && text.length <= 1200) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    }''',
+                    str(source_item_id),
+                ))
+            except Exception:
+                row_hit = False
+
+            if str(source_item_id) in body_text and row_hit:
+                logger.info(f'采集箱搜索命中结果行: tab={tab_label}, source_item_id={source_item_id}')
+                return True
+            if '暂无数据' in body_text or '共0条' in body_text:
+                break
+
+            time.sleep(0.5)
+
+        logger.warning(f'采集箱搜索未命中: tab={tab_label}, source_item_id={source_item_id}')
+        self.screenshot('source_search_no_result')
+        return False
+
+    def _click_edit_for_source_id(self, source_item_id: str, tab_label: Optional[str] = None) -> bool:
+        logger.info(f"尝试按货源ID定位商品并打开编辑框: source_item_id={source_item_id}, tab={tab_label}")
+        try:
+            if not self._search_source_item(source_item_id, tab_label=tab_label):
+                return False
+            clicked = self.page.evaluate(
+                r"""(sourceId) => {
+                    const visible = (el) => !!el && el.offsetParent !== null;
+                    const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
+                    const dispatchClick = (node) => {
+                        node.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+                        node.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                        node.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+                        node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                        if (node instanceof HTMLElement) node.click();
+                    };
+
+                    const rows = Array.from(document.querySelectorAll('tr, .el-table__row, .el-table__body tr, li, .item, .item-row, [class*="row"]'));
+                    for (const row of rows) {
+                        if (!visible(row)) continue;
+                        const rowText = normalize(row.innerText || '');
+                        if (!rowText.includes(sourceId) || !rowText.includes('编辑')) continue;
+
+                        const candidates = Array.from(row.querySelectorAll('button, a, span, div'));
+                        for (const candidate of candidates) {
+                            if (!visible(candidate)) continue;
+                            if (normalize(candidate.innerText) !== '编辑') continue;
+                            dispatchClick(candidate);
+                            return true;
+                        }
+                    }
+
+                    const buttons = Array.from(document.querySelectorAll('button, a, span, div'));
+                    for (const button of buttons) {
+                        if (!visible(button)) continue;
+                        if (normalize(button.innerText) !== '编辑') continue;
+
+                        let container = button.parentElement;
+                        for (let depth = 0; container && depth < 10; depth++, container = container.parentElement) {
+                            const text = normalize(container.innerText || '');
+                            if (text.includes(sourceId)) {
+                                dispatchClick(button);
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }""",
+                str(source_item_id),
+            )
+            return bool(clicked)
+        except Exception:
+            return False
 
     def _wait_for_edit_dialog(self, timeout=10):
         """等待编辑对话框出现"""
@@ -132,108 +507,91 @@ class CollectorScraper:
             'detail_images': []
         }
 
+        tab_targets = {
+            '商品图片': 'main_images',
+            '产品图片': 'main_images',
+            '规格图片': 'sku_images',
+            '详情图片': 'detail_images',
+            '详情描述': 'detail_images',
+        }
+
+        def is_product_image_url(url: str) -> bool:
+            if not url or url.startswith('data:'):
+                return False
+            if not re.match(r'^https?://', url):
+                return False
+            if 'static_common/image/shop/' in url:
+                return False
+            return True
+
+        def is_sidebar_thumbnail(url: str) -> bool:
+            if '/0/cibi/' in url or 'thumb' in url.lower():
+                return True
+            return False
+
+        def collect_visible_images() -> List[str]:
+            urls: List[str] = []
+            for img in dialog.query_selector_all('img'):
+                try:
+                    box = img.bounding_box()
+                    if not box or box.get('width', 0) < 40 or box.get('height', 0) < 40:
+                        continue
+
+                    src = img.get_attribute('src') or img.get_attribute('data-src') or ''
+                    if not is_product_image_url(src):
+                        continue
+                    if is_sidebar_thumbnail(src) or src in urls:
+                        continue
+                    urls.append(src)
+                except Exception:
+                    pass
+            return urls
+
         try:
-            # 使用JavaScript查找Tab
-            tab_info = self.page.evaluate('''
-                () => {
-                    // 查找包含"商品图片"、"详情图片"、"规格图片"的元素
-                    const allElements = document.querySelectorAll('*');
-                    const tabs = {};
+            tab_map = {}
+            selectors = '.el-tabs__item, [role="tab"], .tab-item, .jx-tabs__item, span, div, button, li'
+            for element in dialog.query_selector_all(selectors):
+                try:
+                    text = re.sub(r'\s+', '', element.inner_text() or '')
+                    if text not in tab_targets:
+                        continue
+                    box = element.bounding_box()
+                    if not box or box.get('width', 0) <= 0 or box.get('height', 0) <= 0:
+                        continue
+                    if text not in tab_map:
+                        tab_map[text] = element
+                except Exception:
+                    pass
 
-                    for (let el of allElements) {
-                        const text = el.innerText?.trim() || '';
-                        if (text === '商品图片' && el.offsetParent !== null) {
-                            tabs['商品图片'] = el;
-                        } else if (text === '详情图片' && el.offsetParent !== null) {
-                            tabs['详情图片'] = el;
-                        } else if (text === '规格图片' && el.offsetParent !== null) {
-                            tabs['规格图片'] = el;
-                        }
-                    }
+            logger.info(f"图片Tab候选: {list(tab_map.keys())}")
 
-                    return {
-                        found: Object.keys(tabs),
-                        tabs: tabs
-                    };
-                }
-            ''')
-
-            logger.info(f"JS查找图片Tab: {tab_info.get('found', [])}")
-
-            # 如果没找到，返回空
-            if not tab_info.get('found'):
+            if not tab_map:
                 return result
 
-            # 遍历每个Tab
-            tab_map = tab_info.get('tabs', {})
-
-            for tab_name in ['商品图片', '详情图片', '规格图片']:
+            for tab_name in ['产品图片', '商品图片', '规格图片', '详情图片', '详情描述']:
                 if tab_name not in tab_map:
                     continue
 
                 try:
-                    # 获取Tab元素
                     tab_selector = tab_map[tab_name]
+                    self.page.evaluate("(el) => el.click()", tab_selector)
+                    time.sleep(1)
+                    imgs_info = collect_visible_images()
 
-                    # 点击Tab
-                    self.page.evaluate('''
-                        (el) => el.click()
-                    ''', tab_selector)
-
-                    time.sleep(1)  # 等待切换
-
-                    # 提取当前Tab可见的图片
-                    # 使用截图中看到的结构：.tab-images 或类似的容器
-                    imgs_info = self.page.evaluate('''
-                        () => {
-                            // 查找图片容器
-                            let imgContainer = document.querySelector('.tab-images');
-                            if (!imgContainer) {
-                                // 尝试其他选择器
-                                const containers = document.querySelectorAll('[class*="image"], [class*="img"]');
-                                for (let c of containers) {
-                                    if (c.offsetParent !== null && c.querySelector('img')) {
-                                        imgContainer = c;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if (!imgContainer) return [];
-
-                            const imgs = imgContainer.querySelectorAll('img');
-                            const urls = [];
-                            for (let img of imgs) {
-                                let src = img.src || img.getAttribute('data-src') || '';
-                                if (src && !src.startsWith('data:') && (src.includes('alicdn') || src.includes('aliimg'))) {
-                                    urls.push(src);
-                                }
-                            }
-                            return urls;
-                        }
-                    ''')
-
-                    # 根据Tab类型存储
-                    if tab_name == '商品图片':
-                        result['main_images'] = imgs_info
-                    elif tab_name == '规格图片':
-                        result['sku_images'] = imgs_info
-                    elif tab_name == '详情图片':
-                        result['detail_images'] = imgs_info
+                    target_field = tab_targets[tab_name]
+                    result[target_field] = imgs_info
 
                     logger.info(f"  {tab_name}: {len(imgs_info)} 张图片")
 
                 except Exception as e:
                     logger.warning(f"提取{tab_name}图片失败: {e}")
 
-            # 切回商品图片Tab
-            if '商品图片' in tab_map:
+            reset_tab = '产品图片' if '产品图片' in tab_map else '商品图片'
+            if reset_tab in tab_map:
                 try:
-                    self.page.evaluate('''
-                        (el) => el.click()
-                    ''', tab_map['商品图片'])
+                    self.page.evaluate("(el) => el.click()", tab_map[reset_tab])
                     time.sleep(0.5)
-                except:
+                except Exception:
                     pass
 
         except Exception as e:
@@ -294,12 +652,13 @@ class CollectorScraper:
         logger.info(f"找到 {len(products)} 个商品")
         return products
 
-    def scrape_product(self, product_index=0) -> Optional[Dict[str, Any]]:
+    def scrape_product(self, product_index=0, source_item_id: Optional[str] = None, allow_index_fallback: bool = True) -> Optional[Dict[str, Any]]:
         """
         爬取指定索引商品的完整数据
 
         Args:
             product_index: 商品在列表中的索引（从0开始）
+            source_item_id: 指定货源ID，优先按该商品定位
 
         Returns:
             商品数据字典，包含：
@@ -314,7 +673,7 @@ class CollectorScraper:
             - logistics: 物流信息
             - raw_data: 原始数据
         """
-        logger.info(f"爬取商品 (index={product_index})...")
+        logger.info(f"爬取商品 (index={product_index}, source_item_id={source_item_id})...")
 
         # 访问采集箱
         self.page.goto(SHOPEE_COLLECT_URL, wait_until='domcontentloaded')
@@ -322,32 +681,54 @@ class CollectorScraper:
         self._close_popups()
         self.screenshot('list_before_edit')
 
-        # 点击编辑按钮
-        edit_btns = self.page.query_selector_all('button:has-text("编辑")')
-        if not edit_btns or product_index >= len(edit_btns):
-            logger.error(f"没有找到索引为 {product_index} 的商品")
-            return None
+        clicked = False
+        dialog = None
+        if source_item_id:
+            for tab_label in ['已发布', '全部']:
+                self._close_popups()
+                clicked = self._click_edit_for_source_id(str(source_item_id), tab_label=tab_label)
+                if not clicked:
+                    time.sleep(1.5)
+                    continue
 
-        logger.info(f"点击第 {product_index + 1} 个商品的编辑按钮")
-        # 使用JavaScript点击（Vue需要JS触发）
-        self.page.evaluate(f'''
-            () => {{
-                var btns = document.querySelectorAll("button");
-                var count = 0;
-                for (var b of btns) {{
-                    if (b.innerText.trim() === "编辑") {{
-                        if (count === {product_index}) {{
-                            b.click();
-                            return;
+                dialog = self._wait_for_edit_dialog(timeout=6)
+                if dialog:
+                    logger.info(f"在“{tab_label}”列表中命中商品 {source_item_id}")
+                    break
+                logger.warning(f"在“{tab_label}”列表中点击了编辑，但未等到采集箱编辑弹窗: {source_item_id}")
+                time.sleep(1.5)
+            if not clicked:
+                if not allow_index_fallback:
+                    logger.error(f"未按货源ID找到商品 {source_item_id}，严格模式下停止，不回退到索引模式")
+                    return None
+                logger.warning(f"未按货源ID找到商品 {source_item_id}，回退到索引模式")
+
+        if not clicked:
+            edit_btns = self.page.query_selector_all('button:has-text("编辑")')
+            if not edit_btns or product_index >= len(edit_btns):
+                logger.error(f"没有找到索引为 {product_index} 的商品")
+                return None
+
+            logger.info(f"点击第 {product_index + 1} 个商品的编辑按钮")
+            self.page.evaluate(f"""
+                () => {{
+                    var btns = document.querySelectorAll("button");
+                    var count = 0;
+                    for (var b of btns) {{
+                        if (b.innerText.trim() === "编辑") {{
+                            if (count === {product_index}) {{
+                                b.click();
+                                return;
+                            }}
+                            count++;
                         }}
-                        count++;
                     }}
                 }}
-            }}
-        ''')
+            """)
 
         # 等待编辑对话框
-        dialog = self._wait_for_edit_dialog(timeout=10)
+        if not dialog:
+            dialog = self._wait_for_edit_dialog(timeout=10)
         if not dialog:
             logger.error("编辑对话框未出现")
             self.screenshot('error_no_dialog')
@@ -447,6 +828,20 @@ class CollectorScraper:
                             break
                     except: pass
 
+            def is_product_image_url(url: str) -> bool:
+                if not url or url.startswith('data:'):
+                    return False
+                if not re.match(r'^https?://', url):
+                    return False
+                if 'static_common/image/shop/' in url:
+                    return False
+                return True
+
+            def is_sidebar_thumbnail(url: str) -> bool:
+                if '/0/cibi/' in url or 'thumb' in url.lower():
+                    return True
+                return False
+
             # 3. 提取图片（分类）
             # 首先尝试从Tab页提取图片
             tab_images = self._extract_images_from_tabs(dialog)
@@ -475,23 +870,12 @@ class CollectorScraper:
             # 例如：_!!2214317167796-0-cib 这种是侧边栏的缩略图
             # 而正常的商品图片URL模式不同
 
-            def is_sidebar_thumbnail(url):
-                """判断是否为侧边栏缩略图"""
-                # 侧边栏缩略图URL特征：包含 -0-cib 且前面是数字ID
-                # 例如: _!!2214317167796-0-cib.jpg_.webp
-                if '-0-cib' in url:
-                    return True
-                # 其他可能的侧边栏特征
-                if '/0/cibi/' in url or 'thumb' in url.lower():
-                    return True
-                return False
-
             # 如果有图片，继续分类
             if all_imgs:
                 for img in all_imgs:
                     try:
                         src = img.get_attribute('src') or ''
-                        if 'data:image' not in src and 'alicdn.com' not in src:
+                        if not is_product_image_url(src):
                             continue
 
                         # 跳过侧边栏缩略图
@@ -530,7 +914,7 @@ class CollectorScraper:
                     for img in all_imgs:
                         try:
                             src = img.get_attribute('src') or ''
-                            if 'data:image' not in src and 'alicdn.com' in src:
+                            if is_product_image_url(src):
                                 # 跳过侧边栏缩略图
                                 if is_sidebar_thumbnail(src):
                                     continue
@@ -951,10 +1335,12 @@ class CollectorScraper:
                         
                         for idx, combo in enumerate(all_combinations):
                             # 组合SKU名称：例如 "奶黄色-100L"
-                            size_spec = combo.get('规格', '')
+                            non_color_spec_names = [name for name in spec_names if name != '颜色']
+                            primary_spec_name = non_color_spec_names[0] if non_color_spec_names else ''
+                            size_spec = combo.get(primary_spec_name, '') if primary_spec_name else ''
                             if size_spec:
                                 # 规格格式："100L：50*40*50cm" -> 提取 "100L"
-                                size_name = size_spec.split('：')[0].strip()
+                                size_name = re.split(r'[：:]', size_spec, maxsplit=1)[0].strip()
                             else:
                                 size_name = ''
                             
@@ -987,13 +1373,13 @@ class CollectorScraper:
                             })
 
             except Exception as e:
-                logger.warning(f"提取SKU失败: {{e}}")
+                logger.warning(f"提取SKU失败: {e}")
                 import traceback
                 traceback.print_exc()
 
-            logger.info(f"提取到 {{len(skus)}} 个SKU")
+            logger.info(f"提取到 {len(skus)} 个SKU")
             for sku in skus:
-                logger.info(f"  SKU: {{sku}}")
+                logger.info(f"  SKU: {sku}")
 
             return skus
 
@@ -1237,6 +1623,24 @@ def main():
             for i, p in enumerate(products):
                 print(f"  [{i}] {p['alibaba_product_id']} - {p.get('title', 'N/A') or 'N/A'[:30]}")
             print("="*60)
+
+        elif args.alibaba_id:
+            data = scraper.scrape_product(args.scrape, source_item_id=args.alibaba_id, allow_index_fallback=False)
+            if data:
+                print("\n" + "="*60)
+                print("商品数据:")
+                print(f"  货源ID: {data['alibaba_product_id']}")
+                print(f"  标题: {data.get('title', 'N/A')}")
+                print(f"  类目: {data.get('category', 'N/A')}")
+                print(f"  品牌: {data.get('brand', 'N/A')}")
+                print(f"  主图数量: {len(data.get('main_images', []))}")
+                print(f"  SKU数量: {len(data.get('skus', []))}")
+                print(f"  描述长度: {len(data.get('description', ''))}")
+                print(f"  物流: {data.get('logistics', {})}")
+                print("="*60)
+            else:
+                print("爬取失败")
+                sys.exit(1)
 
         elif args.scrape is not None:
             data = scraper.scrape_product(args.scrape)

@@ -2,9 +2,12 @@
 """任务状态管理器 - 支持多级任务结构"""
 import psycopg2
 from psycopg2 import sql
+from psycopg2.extras import Json
 from datetime import datetime
 from typing import List, Dict, Optional
+import hashlib
 import json
+import re
 
 class TaskManager:
     def __init__(self):
@@ -15,6 +18,125 @@ class TaskManager:
             'password': 'Admin123!'
         }
         self.conn = psycopg2.connect(**self.DB_CONFIG)
+        self._ensure_schema()
+
+    def _ensure_schema(self):
+        """确保 tasks 表包含调度和反馈审计所需字段。"""
+        cur = self.conn.cursor()
+        statements = [
+            "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS notification_status TEXT DEFAULT 'pending'",
+            "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS notification_attempts INTEGER DEFAULT 0",
+            "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS notification_success_count INTEGER DEFAULT 0",
+            "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS notification_failure_count INTEGER DEFAULT 0",
+            "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS notification_last_event TEXT",
+            "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS notification_last_message TEXT",
+            "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS notification_last_error TEXT",
+            "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS notification_last_attempt_at TIMESTAMP",
+            "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS notification_last_sent_at TIMESTAMP",
+            "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS notification_audit JSONB DEFAULT '[]'::jsonb",
+            "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS feedback_doc_url TEXT",
+            "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS feedback_markdown_file TEXT",
+            "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS error_signature TEXT",
+        ]
+        for statement in statements:
+            cur.execute(statement)
+        self.conn.commit()
+        cur.close()
+
+    def _normalize_error_signature(self, error: str, fix: str = "") -> str:
+        text = f"{error}\n{fix}".strip().lower()
+        text = re.sub(r"\s+", " ", text)
+        return hashlib.sha1(text.encode('utf-8')).hexdigest()
+
+    def _next_fix_subtask_name(self, parent_task_name: str) -> str:
+        existing = self.get_sub_tasks(parent_task_name)
+        max_suffix = 0
+        pattern = re.compile(rf"^FIX-{re.escape(parent_task_name)}-(\d+)$")
+        for task in existing:
+            match = pattern.match(task.get('task_name', ''))
+            if match:
+                max_suffix = max(max_suffix, int(match.group(1)))
+        return f"FIX-{parent_task_name}-{max_suffix + 1:03d}"
+
+    def _find_open_fix_subtask(self, parent_task_name: str, error_signature: str) -> Optional[Dict]:
+        cur = self.conn.cursor()
+        cur.execute(
+            """
+            SELECT * FROM tasks
+            WHERE parent_task_id = %s
+              AND task_type = '修复'
+              AND error_signature = %s
+              AND exec_state NOT IN ('end', 'void')
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            (parent_task_name, error_signature),
+        )
+        row = cur.fetchone()
+        if not row:
+            cur.close()
+            return None
+
+        cols = [desc[0] for desc in cur.description]
+        task = dict(zip(cols, row))
+        cur.close()
+        return task
+
+    def record_notification(self, task_name: str, event: str, message: str,
+                            success: bool, error: str = None,
+                            metadata: dict = None) -> bool:
+        """记录任务通知审计信息，便于统计与追责。"""
+        task = self.get_task(task_name)
+        if not task:
+            return False
+
+        now = datetime.now()
+        audit = task.get('notification_audit') or []
+        if isinstance(audit, str):
+            try:
+                audit = json.loads(audit)
+            except Exception:
+                audit = []
+
+        entry = {
+            'event': event,
+            'success': success,
+            'message': message,
+            'error': error,
+            'timestamp': now.isoformat(),
+            'metadata': metadata or {},
+        }
+        audit.append(entry)
+        audit = audit[-50:]
+
+        self.update_task(
+            task_name,
+            notification_status='success' if success else 'failed',
+            notification_attempts=(task.get('notification_attempts') or 0) + 1,
+            notification_success_count=(task.get('notification_success_count') or 0) + (1 if success else 0),
+            notification_failure_count=(task.get('notification_failure_count') or 0) + (0 if success else 1),
+            notification_last_event=event,
+            notification_last_message=message,
+            notification_last_error=error,
+            notification_last_attempt_at=now,
+            notification_last_sent_at=now if success else task.get('notification_last_sent_at'),
+            notification_audit=Json(audit),
+        )
+        return True
+
+    def record_feedback_artifacts(self, task_name: str, doc_url: str = None,
+                                  markdown_file: str = None) -> bool:
+        if not self.get_task(task_name):
+            return False
+        payload = {}
+        if doc_url:
+            payload['feedback_doc_url'] = doc_url
+        if markdown_file:
+            payload['feedback_markdown_file'] = markdown_file
+        if not payload:
+            return False
+        self.update_task(task_name, **payload)
+        return True
     
     def close(self):
         self.conn.close()
@@ -321,11 +443,10 @@ class TaskManager:
             return
         
         # 获取现有子任务
-        existing_subs = self.get_sub_tasks(task_name)
-        existing_names = {sub['display_name'].replace('修复: ', '').strip() for sub in existing_subs}
+        seen_signatures = set()
         
-        sub_count = len(existing_subs)
-        
+        created_count = 0
+
         for error_info in errors:
             if isinstance(error_info, dict):
                 error_msg = error_info.get('error', str(error_info))
@@ -339,13 +460,23 @@ class TaskManager:
                 success_criteria = f"修复{error_msg[:30]}成功"
                 analysis = ''
                 plan = ''
-            
-            # 检查是否已存在对应的子任务
+
+            error_signature = self._normalize_error_signature(error_msg, fix_suggestion)
+            if error_signature in seen_signatures:
+                continue
+            seen_signatures.add(error_signature)
+
+            existing = self._find_open_fix_subtask(task_name, error_signature)
+            if existing:
+                self.update_task(
+                    existing['task_name'],
+                    last_error=error_msg,
+                    fix_suggestion=fix_suggestion or existing.get('fix_suggestion'),
+                )
+                continue
+
             short_error = error_msg[:50]
-            
-            # 生成新的子任务名（避免与现有冲突）
-            sub_count += 1
-            sub_task_name = f"FIX-{task_name}-{sub_count:03d}"
+            sub_task_name = self._next_fix_subtask_name(task_name)
             display_name = f"修复: {short_error}"
             
             # 创建子任务（task_type=修复）
@@ -356,25 +487,26 @@ class TaskManager:
                     priority, status, exec_state, fix_suggestion,
                     parent_task_id, task_level, root_task_id,
                     execution_count, task_type,
-                    success_criteria, analysis, plan
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0, '修复', %s, %s, %s)
+                    success_criteria, analysis, plan, error_signature
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0, '修复', %s, %s, %s, %s)
                 ON CONFLICT (task_name) DO NOTHING
             """, (
                 sub_task_name, display_name, f"错误: {error_msg}",
                 'P0', 'pending', 'new', fix_suggestion,
                 task_name, 2, parent.get('root_task_id') or task_name,
-                success_criteria, analysis, plan
+                success_criteria, analysis, plan, error_signature
             ))
             self.conn.commit()
             cur.close()
+            created_count += 1
         
         # 更新父任务状态
-        error_summary = f"共{len(errors)}个问题"
+        error_summary = f"共{len(errors)}个问题，新增{created_count}个修复子任务"
         self.update_task(task_name,
             status='failed',
             exec_state='error_fix_pending',
             last_error=error_summary,
-            fix_suggestion=f"已创建{len(errors)}个子任务"
+            fix_suggestion=f"已创建{created_count}个子任务（重复错误已去重）"
         )
     
     def mark_void(self, task_name: str, reason: str = ""):
@@ -391,8 +523,18 @@ class TaskManager:
         parent = self.get_task(task_name)
         if not parent:
             return False
-        
-        sub_task_name = f"FIX-{task_name}-001"
+
+        error_signature = self._normalize_error_signature(error, fix)
+        existing = self._find_open_fix_subtask(task_name, error_signature)
+        if existing:
+            self.update_task(
+                existing['task_name'],
+                last_error=error,
+                fix_suggestion=fix or existing.get('fix_suggestion'),
+            )
+            return True
+
+        sub_task_name = self._next_fix_subtask_name(task_name)
         display_name = f"修复: {error[:50]}"
         
         # 修复子任务直接设置 task_type='修复'
@@ -402,13 +544,13 @@ class TaskManager:
                 task_name, display_name, description, 
                 priority, status, exec_state, fix_suggestion,
                 parent_task_id, task_level, root_task_id,
-                execution_count, task_type
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0, '修复')
+                execution_count, task_type, error_signature
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0, '修复', %s)
             ON CONFLICT (task_name) DO NOTHING
         """, (
             sub_task_name, display_name, f"错误: {error}",
             'P0', 'pending', 'new', fix,
-            task_name, 2, parent.get('root_task_id') or task_name
+            task_name, 2, parent.get('root_task_id') or task_name, error_signature
         ))
         self.conn.commit()
         cur.close()
@@ -521,10 +663,7 @@ class TaskManager:
         Returns:
             bool: 是否创建成功
         """
-        from datetime import datetime, timedelta
-        
-        # 计算预计结束时间
-        estimated_end_time = datetime.now() + timedelta(minutes=expected_duration)
+        from datetime import datetime
         
         cur = self.conn.cursor()
         cur.execute("""
@@ -540,7 +679,7 @@ class TaskManager:
             task_name, display_name, description,
             priority, 'pending', 'new',
             1, '临时任务', success_criteria,
-            expected_duration, datetime.now(),
+            expected_duration, None,
             json.dumps(initial_checkpoint) if initial_checkpoint else None
         ))
         self.conn.commit()
@@ -608,7 +747,8 @@ class TaskManager:
         cur.execute("""
             SELECT * FROM tasks 
             WHERE task_type = '临时任务'
-            AND exec_state IN ('new', 'processing')
+            AND exec_state = 'processing'
+            AND last_executed_at IS NOT NULL
             AND last_executed_at < %s
             AND expected_duration IS NOT NULL
             ORDER BY last_executed_at ASC
@@ -618,12 +758,14 @@ class TaskManager:
         tasks = [dict(zip(cols, row)) for row in cur.fetchall()]
         cur.close()
         
-        # 进一步过滤：只返回真正超时的（last_executed_at + expected_duration < now）
+        # 进一步过滤：只返回真正超时的（last_executed_at + expected_duration + buffer < now）
         now = datetime.now()
         overtime_tasks = []
         for task in tasks:
             if task['last_executed_at'] and task['expected_duration']:
-                expected_end = task['last_executed_at'] + timedelta(minutes=task['expected_duration'])
+                expected_end = task['last_executed_at'] + timedelta(
+                    minutes=task['expected_duration'] + buffer_minutes
+                )
                 if expected_end < now:
                     task['overtime_minutes'] = (now - expected_end).total_seconds() / 60
                     overtime_tasks.append(task)
@@ -686,7 +828,7 @@ class TaskManager:
         Returns:
             dict: {'task_name': str, 'notification_sent': bool}
         """
-        import subprocess
+        from notification_service import send_feishu_text
         
         # 1. 创建任务
         self.create_temp_task(
@@ -701,32 +843,29 @@ class TaskManager:
         
         # 2. 发送飞书通知
         notification_sent = False
+        notification_error = None
         try:
-            import urllib.request
-            import json
-            
-            webhook = "https://open.feishu.cn/open-apis/bot/v2/hook/6af7d281-ca31-42c6-ab88-5ba434404fb9"
             message = f"""🔔 **临时任务已创建**
 
 任务ID: {task_name}
 描述: {description}
 预计完成: {expected_duration}分钟
-状态: 执行中
+状态: 已创建，等待调度执行
 
 完成后将通知你。"""
-            
-            payload = {'msg_type': 'text', 'content': {'text': message}}
-            req = urllib.request.Request(
-                webhook, 
-                data=json.dumps(payload).encode(), 
-                headers={'Content-Type': 'application/json'}
-            )
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                result = resp.read().decode()
-                notification_sent = '"StatusCode":0' in result or '"code":0' in result
-                print(f"飞书通知发送结果: {result}")
+            notification_sent = send_feishu_text(message)
         except Exception as e:
             print(f"飞书通知发送失败: {e}")
+            notification_error = str(e)
+
+        self.record_notification(
+            task_name=task_name,
+            event='temp_task_created',
+            message=message,
+            success=notification_sent,
+            error=notification_error if not notification_sent else None,
+            metadata={'expected_duration': expected_duration},
+        )
         
         return {
             'task_name': task_name,
@@ -956,11 +1095,31 @@ class TaskManager:
         import json
         cur = self.conn.cursor()
         cur.execute("""
-            SELECT DISTINCT ON (step_name) step_name, data_key, data_value
-            FROM workflow_data
-            WHERE workflow_id = %s
-            ORDER BY step_name, created_at DESC
-        """, (workflow_id,))
+            WITH ranked_data AS (
+                SELECT
+                    step_name,
+                    data_key,
+                    data_value,
+                    created_at,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY step_name, data_key
+                        ORDER BY created_at DESC
+                    ) AS rn,
+                    MAX(created_at) OVER (PARTITION BY step_name) AS step_updated_at
+                FROM workflow_data
+                WHERE workflow_id = %s
+            ), latest_steps AS (
+                SELECT DISTINCT step_name, step_updated_at
+                FROM ranked_data
+                ORDER BY step_updated_at DESC, step_name DESC
+                LIMIT %s
+            )
+            SELECT rd.step_name, rd.data_key, rd.data_value
+            FROM ranked_data rd
+            JOIN latest_steps ls ON rd.step_name = ls.step_name
+            WHERE rd.rn = 1
+            ORDER BY ls.step_updated_at ASC, rd.step_name ASC, rd.data_key ASC
+        """, (workflow_id, max_steps))
 
         result = {}
         for step_name, data_key, data_value in cur.fetchall():

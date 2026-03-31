@@ -7,6 +7,7 @@ Playwright-based updater for Miaoshou ERP Shopee collect-box items.
 import argparse
 from contextlib import contextmanager
 import json
+import os
 import sys
 import time
 from datetime import datetime
@@ -69,6 +70,10 @@ PRODUCT_FIXTURE_CANDIDATES = [
     WORKSPACE / 'skills' / 'miaoshou-api-publisher' / 'sample-debug-product.json',
 ]
 
+STORAGE_STATE_CANDIDATES = [
+    WORKSPACE / 'config' / 'miaoshou_storage_state.json',
+]
+
 DEFAULT_CATEGORY_PATH = ['家居生活', '居家收纳', '收纳盒']
 DB_CONFIG = {
     'host': 'localhost',
@@ -79,17 +84,32 @@ DB_CONFIG = {
 
 
 class MiaoshouUpdater:
-    def __init__(self, cookies_file: Optional[Path] = None, headless: bool = True):
+    def __init__(self, cookies_file: Optional[Path] = None, headless: bool = True, cdp_url: Optional[str] = None, storage_state_file: Optional[Path] = None):
         self.cookies_file = Path(cookies_file) if cookies_file else self._detect_cookies_file()
         self.headless = headless
+        self.cdp_url = cdp_url or os.environ.get('MIAOSHOU_CDP_URL')
+        self.storage_state_file = Path(storage_state_file) if storage_state_file else self._detect_storage_state_file()
         self.playwright = None
         self.browser = None
         self.context = None
         self.page = None
+        self._owns_browser = True
         self.cookies = self._load_cookies() if self.cookies_file else []
+        self.storage_state = self._load_storage_state() if self.storage_state_file else None
 
     def _detect_cookies_file(self) -> Optional[Path]:
         for candidate in COOKIE_CANDIDATES:
+            if candidate.exists():
+                return candidate
+        return None
+
+    def _detect_storage_state_file(self) -> Optional[Path]:
+        env_path = os.environ.get('MIAOSHOU_STORAGE_STATE_FILE')
+        if env_path:
+            candidate = Path(env_path)
+            if candidate.exists():
+                return candidate
+        for candidate in STORAGE_STATE_CANDIDATES:
             if candidate.exists():
                 return candidate
         return None
@@ -100,6 +120,47 @@ class MiaoshouUpdater:
         with open(self.cookies_file, 'r', encoding='utf-8') as handle:
             payload = json.load(handle)
         return payload if isinstance(payload, list) else payload.get('cookies', [])
+
+    def _load_storage_state(self) -> Optional[Dict[str, Any]]:
+        if not self.storage_state_file:
+            return None
+        with open(self.storage_state_file, 'r', encoding='utf-8') as handle:
+            payload = json.load(handle)
+        if not isinstance(payload, dict):
+            return None
+        return payload
+
+    def _install_storage_init_script(self):
+        if not self.context or not self.storage_state:
+            return
+
+        payload = json.dumps(self.storage_state, ensure_ascii=False)
+        script = """
+                (() => {
+                const payload = __PAYLOAD__;
+                const targetOrigin = 'https://erp.91miaoshou.com';
+                const currentOrigin = window.location.origin;
+                if (currentOrigin !== targetOrigin) {
+                    return;
+                }
+
+                const applyStorage = (storage, values) => {
+                    if (!storage || !values) return;
+                    for (const [key, value] of Object.entries(values)) {
+                        try {
+                            storage.setItem(key, value == null ? '' : String(value));
+                        } catch (e) {
+                        }
+                    }
+                };
+
+                applyStorage(window.localStorage, payload.localStorage || {});
+                applyStorage(window.sessionStorage, payload.sessionStorage || {});
+                })();
+            """.replace('__PAYLOAD__', payload)
+        self.context.add_init_script(
+            script=script,
+        )
 
     def _load_product_fixture(self, identifier: Any) -> Optional[Dict[str, Any]]:
         identifier = str(identifier)
@@ -215,15 +276,43 @@ class MiaoshouUpdater:
         except (TypeError, ValueError):
             return default
 
+    def _resolve_cdp_context_page(self):
+        if not self.browser:
+            raise RuntimeError('CDP 浏览器连接未建立')
+
+        contexts = self.browser.contexts
+        if contexts:
+            self.context = contexts[0]
+        else:
+            self.context = self.browser.new_context(viewport={'width': 1920, 'height': 1080})
+
+        pages = self.context.pages
+        if pages:
+            self.page = pages[0]
+        else:
+            self.page = self.context.new_page()
+
+        self.page.set_default_timeout(30000)
+
     def launch(self):
         from playwright.sync_api import sync_playwright
 
         self.playwright = sync_playwright().start()
+        if self.cdp_url:
+            self.browser = self.playwright.chromium.connect_over_cdp(self.cdp_url)
+            self._owns_browser = False
+            self._resolve_cdp_context_page()
+            self._install_storage_init_script()
+            logger.info(f'已连接到现有 Chrome 会话: {self.cdp_url}')
+            return True
+
         self.browser = self.playwright.chromium.launch(
             headless=self.headless,
             args=['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
         )
+        self._owns_browser = True
         self.context = self.browser.new_context(viewport={'width': 1920, 'height': 1080})
+        self._install_storage_init_script()
         if self.cookies:
             self.context.add_cookies(self._build_cookies())
         self.page = self.context.new_page()
@@ -232,11 +321,11 @@ class MiaoshouUpdater:
         return True
 
     def close(self):
-        if self.page:
+        if self.page and self._owns_browser:
             self.page.close()
-        if self.context:
+        if self.context and self._owns_browser:
             self.context.close()
-        if self.browser:
+        if self.browser and self._owns_browser:
             self.browser.close()
         if self.playwright:
             self.playwright.stop()
@@ -244,6 +333,7 @@ class MiaoshouUpdater:
         self.context = None
         self.browser = None
         self.playwright = None
+        self._owns_browser = True
         logger.info('浏览器已关闭')
 
     def screenshot(self, name: str) -> Optional[Path]:
@@ -443,7 +533,7 @@ class MiaoshouUpdater:
             pass
 
         filled = bool(self.page.evaluate(
-            """(sourceId) => {
+            r"""(sourceId) => {
                 const visible = (el) => !!el && el.offsetParent !== null;
                 const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
                 const wrappers = Array.from(document.querySelectorAll('.el-form-item, .el-input, .search-item, .filter-item'));
@@ -547,7 +637,7 @@ class MiaoshouUpdater:
         for _ in range(4):
             self._close_popups()
             clicked = self.page.evaluate(
-                """(sourceId) => {
+                    r"""(sourceId) => {
                     const visible = (el) => !!el && el.offsetParent !== null;
                     const textOf = (el) => (el?.innerText || '').replace(/\s+/g, ' ').trim();
                     const clickNode = (node) => {
@@ -661,7 +751,11 @@ class MiaoshouUpdater:
     def _dispatch_input_value(self, dialog, item_index: int, value: Any, input_index: int = 0):
         dialog.evaluate(
             """({ itemIndex, value, inputIndex }) => {
-                const items = document.querySelectorAll('.el-dialog__body .el-form-item');
+                const root = document;
+                let items = root.querySelectorAll('.el-dialog__body .el-form-item');
+                if (!items.length) {
+                    items = root.querySelectorAll('.el-form-item');
+                }
                 const item = items[itemIndex];
                 if (!item) return false;
                 const inputs = item.querySelectorAll('input, textarea');
@@ -676,10 +770,148 @@ class MiaoshouUpdater:
             {'itemIndex': item_index, 'value': value, 'inputIndex': input_index},
         )
 
+    def _dispatch_input_value_by_label(self, dialog, label_keywords: Sequence[str], value: Any, input_index: int = 0) -> bool:
+        try:
+            return bool(dialog.evaluate(
+                r"""(root, { labels, value, inputIndex }) => {
+                    const visible = (el) => !!el && el.offsetParent !== null;
+                    const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
+                    let items = Array.from(root.querySelectorAll('.el-dialog__body .el-form-item'));
+                    if (!items.length) {
+                        items = Array.from(root.querySelectorAll('.el-form-item'));
+                    }
+                    const target = items.find((item) => {
+                        if (!visible(item)) return false;
+                        const text = normalize(item.innerText || '');
+                        return labels.every((label) => text.includes(label));
+                    });
+                    if (!target) return false;
+                    const inputs = Array.from(target.querySelectorAll('input, textarea')).filter((node) => visible(node));
+                    const input = inputs[inputIndex];
+                    if (!input) return false;
+                    input.focus();
+                    input.value = value == null ? '' : String(value);
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                    input.dispatchEvent(new Event('blur', { bubbles: true }));
+                    return true;
+                }""",
+                {'labels': list(label_keywords), 'value': value, 'inputIndex': input_index},
+            ))
+        except Exception:
+            return False
+
+    def _read_input_values_by_label(self, dialog, label_keywords: Sequence[str]) -> List[str]:
+        try:
+            values = dialog.evaluate(
+                r"""(root, { labels }) => {
+                    const visible = (el) => !!el && el.offsetParent !== null;
+                    const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
+                    let items = Array.from(root.querySelectorAll('.el-dialog__body .el-form-item'));
+                    if (!items.length) {
+                        items = Array.from(root.querySelectorAll('.el-form-item'));
+                    }
+                    const target = items.find((item) => {
+                        if (!visible(item)) return false;
+                        const text = normalize(item.innerText || '');
+                        return labels.every((label) => text.includes(label));
+                    });
+                    if (!target) return [];
+                    return Array.from(target.querySelectorAll('input, textarea'))
+                        .filter((node) => visible(node))
+                        .map((node) => (node.value || '').trim());
+                }""",
+                {'labels': list(label_keywords)},
+            )
+            return values or []
+        except Exception:
+            return []
+
+    def _get_logistics_pane(self, dialog):
+        try:
+            pane = dialog.locator('.scroll-menu-pane').filter(has_text='物流信息').last
+            if pane.count() > 0 and pane.is_visible():
+                return pane
+        except Exception:
+            pass
+        return dialog
+
+    def _set_input_locator_value(self, input_locator, value: Any) -> bool:
+        try:
+            if input_locator.count() == 0 or not input_locator.first.is_visible():
+                return False
+            target = input_locator.first
+            string_value = '' if value is None else str(value)
+            target.scroll_into_view_if_needed()
+            target.click(force=True)
+            target.fill('')
+            target.evaluate(
+                """(node, nextValue) => {
+                    const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+                    descriptor?.set?.call(node, nextValue);
+                    node.dispatchEvent(new Event('input', { bubbles: true }));
+                    node.dispatchEvent(new Event('change', { bubbles: true }));
+                    node.dispatchEvent(new Event('blur', { bubbles: true }));
+                }""",
+                string_value,
+            )
+            return True
+        except Exception:
+            return False
+
+    @staticmethod
+    def _format_decimal_text(value: Any) -> str:
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            return str(value)
+        return f'{number:.2f}'
+
+    @staticmethod
+    def _numeric_texts_match(expected: Sequence[str], actual: Sequence[str]) -> bool:
+        if len(actual) < len(expected):
+            return False
+        try:
+            for expected_value, actual_value in zip(expected, actual):
+                expected_number = float(expected_value)
+                actual_number = float(actual_value)
+                if abs(expected_number - actual_number) <= 0.011:
+                    continue
+                if int(expected_number) == int(actual_number):
+                    continue
+                return False
+            return True
+        except (TypeError, ValueError):
+            return list(expected) == list(actual)
+
+    def _open_tab(self, dialog, tab_label: str) -> bool:
+        try:
+            return bool(dialog.evaluate(
+                r"""(label) => {
+                    const visible = (el) => !!el && el.offsetParent !== null;
+                    const normalize = (text) => (text || '').replace(/\s+/g, '').trim();
+                    const targets = Array.from(document.querySelectorAll('.el-tabs__item, [role="tab"], .tab-item, .tabs-item'));
+                    const target = targets.find((node) => visible(node) && normalize(node.innerText || '').includes(normalize(label)));
+                    if (!target) return false;
+                    target.click();
+                    return true;
+                }""",
+                tab_label,
+            ))
+        except Exception:
+            return False
+
     def _fill_item_num(self, dialog, product: Dict[str, Any]):
         item_num = product.get('product_id_new') or ''
         if item_num:
-            self._dispatch_input_value(dialog, 3, item_num)
+            filled = self._dispatch_input_value_by_label(dialog, ['主货号'], item_num)
+            if not filled:
+                self._dispatch_input_value(dialog, 3, item_num)
+
+            values = self._read_input_values_by_label(dialog, ['主货号'])
+            if item_num not in values:
+                logger.warning(f'主货号写入后未回读到目标值: expected={item_num}, actual={values}')
+                self.screenshot('item_num_not_written')
 
     def _fill_weight_dimensions(self, dialog, product: Dict[str, Any]):
         weight_g = self._safe_float(product.get('package_weight'), 0.0)
@@ -687,12 +919,59 @@ class MiaoshouUpdater:
         length = product.get('package_length') or 30
         width = product.get('package_width') or 20
         height = product.get('package_height') or 10
+        expected = [self._format_decimal_text(length), self._format_decimal_text(width), self._format_decimal_text(height)]
+
+        switched = self._open_tab(dialog, '物流信息')
+        if switched:
+            time.sleep(0.8)
+
+        logistics_pane = self._get_logistics_pane(dialog)
 
         if weight_kg:
-            self._dispatch_input_value(dialog, 12, weight_kg)
-        self._dispatch_input_value(dialog, 13, length, 0)
-        self._dispatch_input_value(dialog, 13, width, 1)
-        self._dispatch_input_value(dialog, 13, height, 2)
+            filled_weight = self._set_input_locator_value(
+                logistics_pane.locator('.package-weight-input input, input[placeholder=""]').first,
+                weight_kg,
+            )
+            if not filled_weight:
+                filled_weight = self._dispatch_input_value_by_label(dialog, ['包裹重量'], weight_kg)
+            if not filled_weight:
+                self._dispatch_input_value(dialog, 12, weight_kg)
+
+        wrote_dimensions = True
+        dimension_locators = [
+            logistics_pane.locator('input[placeholder="长"]'),
+            logistics_pane.locator('input[placeholder="宽"]'),
+            logistics_pane.locator('input[placeholder="高"]'),
+        ]
+        for locator, value in zip(dimension_locators, expected):
+            wrote_dimensions = self._set_input_locator_value(locator, value) and wrote_dimensions
+
+        if not wrote_dimensions:
+            wrote_dimensions = self._dispatch_input_value_by_label(dialog, ['包裹尺寸'], expected[0], 0) and wrote_dimensions
+            wrote_dimensions = self._dispatch_input_value_by_label(dialog, ['包裹尺寸'], expected[1], 1) and wrote_dimensions
+            wrote_dimensions = self._dispatch_input_value_by_label(dialog, ['包裹尺寸'], expected[2], 2) and wrote_dimensions
+        if not wrote_dimensions:
+            self._dispatch_input_value(dialog, 13, length, 0)
+            self._dispatch_input_value(dialog, 13, width, 1)
+            self._dispatch_input_value(dialog, 13, height, 2)
+
+        values = []
+        try:
+            values = [
+                (dimension_locators[0].first.input_value() or '').strip(),
+                (dimension_locators[1].first.input_value() or '').strip(),
+                (dimension_locators[2].first.input_value() or '').strip(),
+            ]
+        except Exception:
+            values = self._read_input_values_by_label(dialog, ['包裹尺寸'])
+
+        if not self._numeric_texts_match(expected, values[:3]):
+            logger.warning(f'包裹尺寸写入后未回读到目标值: expected={expected}, actual={values}')
+            self.screenshot('package_dimensions_not_written')
+
+        if switched:
+            self._open_tab(dialog, '基本信息')
+            time.sleep(0.5)
 
     def _fill_category(self, dialog, product: Dict[str, Any]):
         category_path = list(self._resolve_category_path(product.get('category')))
@@ -713,7 +992,7 @@ class MiaoshouUpdater:
             clicked = False
             for _ in range(3):
                 clicked = self.page.evaluate(
-                    """(label) => {
+                    r"""(label) => {
                         const visible = (el) => !!el && el.offsetParent !== null;
                         const normalize = (text) => (text || '').replace(/\\n/g, '').replace(/\s+/g, ' ').trim();
                         const selectors = [
@@ -764,7 +1043,7 @@ class MiaoshouUpdater:
         height = product.get('package_height') or 10
         dimension_text = f'{length}x{width}x{height}'
         dialog.evaluate(
-            """(dimensionText) => {
+            r"""(dimensionText) => {
                 const visible = (el) => !!el && el.offsetParent !== null;
                 const items = Array.from(document.querySelectorAll('.el-dialog__body .el-form-item'));
                 for (const item of items) {
@@ -798,7 +1077,7 @@ class MiaoshouUpdater:
                 except Exception:
                     pass
         clicked = target.evaluate(
-            """(labels) => {
+            r"""(labels) => {
                 const visible = (el) => !!el && el.offsetParent !== null;
                 const buttons = Array.from(document.querySelectorAll('button, span, div'));
                 for (const label of labels) {
@@ -814,9 +1093,11 @@ class MiaoshouUpdater:
         )
         return bool(clicked)
 
-    def _click_save_and_publish(self, dialog) -> bool:
+    def _click_save_action(self, dialog, publish: bool = True) -> bool:
         self._close_popups()
-        return self._click_visible_button(['保存并发布', '保存修改'], container=dialog)
+        if publish:
+            return self._click_visible_button(['保存并发布'], container=dialog)
+        return self._click_visible_button(['保存修改跨境全球', '保存修改'], container=dialog)
 
     def _wait_for_publish_dialog(self, timeout: float = 10.0):
         deadline = time.time() + timeout
@@ -836,7 +1117,126 @@ class MiaoshouUpdater:
             time.sleep(0.3)
         return None
 
+    def _wait_for_save_only_completion(self, timeout: float = 15.0) -> bool:
+        deadline = time.time() + timeout
+        seen_stable_without_publish = False
+        while time.time() < deadline:
+            dialog = self._wait_for_edit_dialog(timeout=0.3)
+            if dialog is None:
+                return True
+
+            try:
+                body_text = self.page.locator('body').inner_text(timeout=1000)
+            except Exception:
+                body_text = ''
+
+            if '保存成功' in body_text or '修改成功' in body_text or '操作成功' in body_text:
+                return True
+
+            publish_dialog = self._wait_for_publish_dialog(timeout=0.3)
+            if publish_dialog is not None:
+                return False
+
+            if seen_stable_without_publish:
+                return True
+            seen_stable_without_publish = True
+
+            time.sleep(0.5)
+        return False
+
+    def _detect_publish_blocker(self) -> Optional[str]:
+        titles = self._get_visible_dialog_titles()
+        title_text = ' | '.join(titles)
+
+        try:
+            body_text = self.page.locator('body').inner_text()
+        except Exception:
+            body_text = ''
+
+        combined = f'{title_text}\n{body_text}'
+        if '新手指南' in combined and '店铺授权' in combined:
+            return '发布被阻断：当前弹出“新手指南/店铺授权”窗口，需先在本地妙手ERP完成 Shopee 店铺授权后再发布'
+        if '请选择一个平台进行店铺授权' in combined:
+            return '发布被阻断：妙手ERP要求先完成店铺授权，当前账号尚未就绪'
+        return None
+
+    def _dismiss_blocking_dialogs(self) -> bool:
+        dismissed = False
+        try:
+            dismissed = bool(self.page.evaluate(
+                """() => {
+                    const visible = (el) => !!el && el.offsetParent !== null;
+                    let changed = false;
+                    for (const dialog of document.querySelectorAll('.el-dialog')) {
+                        if (!visible(dialog)) continue;
+                        const text = (dialog.innerText || '').trim();
+                        if (!text.includes('新手指南') && !text.includes('店铺授权')) continue;
+                        const closeBtn = dialog.querySelector('.el-dialog__headerbtn, .el-dialog__close');
+                        if (closeBtn) {
+                            closeBtn.click();
+                            changed = true;
+                        }
+                    }
+                    return changed;
+                }"""
+            ))
+        except Exception:
+            return False
+
+        if dismissed:
+            time.sleep(0.8)
+        return dismissed
+
+    def _has_selected_publish_store(self, dialog) -> bool:
+        try:
+            return bool(dialog.evaluate(
+                r"""(root) => {
+                    const visible = (el) => !!el && el.offsetParent !== null;
+                    const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
+                    const isChecked = (node) => {
+                        if (!node) return false;
+                        const className = (node.className || '').toString();
+                        if (className.includes('is-checked')) return true;
+                        const input = node.querySelector?.('input[type="checkbox"]');
+                        return !!input && input.checked;
+                    };
+
+                    const excludedTexts = [
+                        '全选',
+                        '自动发布到店铺',
+                        '引用妙手全球产品发布设置',
+                        '过滤店铺已发布的产品',
+                        '产品价格幅度',
+                        '标题随机打乱',
+                        '在',
+                        '自动添加店铺名水印',
+                        '主图随机排序',
+                        '违禁词检测',
+                        '用SKU重量发布',
+                    ];
+
+                    const wrappers = Array.from(root.querySelectorAll('label, .el-checkbox'))
+                        .filter((node) => visible(node));
+
+                    const storeWrappers = wrappers.filter((node) => {
+                        const text = normalize(node.innerText || node.parentElement?.innerText || '');
+                        if (!text) return false;
+                        return !excludedTexts.some((item) => text.includes(item));
+                    });
+
+                    return storeWrappers.some((node) => {
+                        const wrapper = node.closest?.('.el-checkbox') || node;
+                        return isChecked(wrapper);
+                    });
+                }"""
+            ))
+        except Exception:
+            return False
+
     def _select_publish_targets(self, dialog):
+        if self._has_selected_publish_store(dialog):
+            return True
+
         selected = False
 
         try:
@@ -848,6 +1248,8 @@ class MiaoshouUpdater:
                         continue
                     text = (label.inner_text() or '').strip()
                     if not text or '全选' in text:
+                        continue
+                    if any(keyword in text for keyword in ['自动发布到店铺', '过滤店铺已发布的产品', '产品价格幅度', '标题随机打乱', '自动添加店铺名水印', '主图随机排序', '违禁词检测', '用SKU重量发布']):
                         continue
                     label.click(force=True)
                     time.sleep(0.3)
@@ -869,6 +1271,8 @@ class MiaoshouUpdater:
                         text = (wrapper.inner_text() or '').strip()
                         if not text or '全选' in text:
                             continue
+                        if any(keyword in text for keyword in ['自动发布到店铺', '过滤店铺已发布的产品', '产品价格幅度', '标题随机打乱', '自动添加店铺名水印', '主图随机排序', '违禁词检测', '用SKU重量发布']):
+                            continue
                         wrapper.click(force=True)
                         time.sleep(0.3)
                         selected = True
@@ -880,7 +1284,7 @@ class MiaoshouUpdater:
 
         if not selected:
             selected = bool(dialog.evaluate(
-                """(root) => {
+                r"""(root) => {
                     const visible = (el) => !!el && el.offsetParent !== null;
                     const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
                     const markChecked = (node) => {
@@ -924,15 +1328,7 @@ class MiaoshouUpdater:
 
         time.sleep(0.5)
 
-        return bool(dialog.evaluate(
-            """(root) => {
-                const visible = (el) => !!el && el.offsetParent !== null;
-                const inputs = Array.from(root.querySelectorAll('input[type="checkbox"]')).filter((node) => visible(node));
-                if (inputs.some((input) => input.checked)) return true;
-                const wrappers = Array.from(root.querySelectorAll('.el-checkbox')).filter((node) => visible(node));
-                return wrappers.some((node) => (node.className || '').toString().includes('is-checked'));
-            }"""
-        ))
+        return self._has_selected_publish_store(dialog)
 
     def _confirm_publish(self, dialog) -> bool:
         return self._click_visible_button(['确定发布', '批量发布'], container=dialog)
@@ -972,6 +1368,24 @@ class MiaoshouUpdater:
             except Exception:
                 pass
             time.sleep(0.4)
+
+    def _get_visible_dialog_texts(self) -> List[str]:
+        try:
+            texts = self.page.evaluate(
+                """() => {
+                    const visible = (el) => !!el && el.offsetParent !== null;
+                    const result = [];
+                    for (const dialog of document.querySelectorAll('.el-dialog, .jx-dialog, .ant-modal')) {
+                        if (!visible(dialog)) continue;
+                        const text = (dialog.innerText || '').trim();
+                        if (text) result.push(text);
+                    }
+                    return result;
+                }"""
+            )
+            return texts or []
+        except Exception:
+            return []
 
     def _wait_for_publish_completion(self, timeout: float = 15.0) -> bool:
         deadline = time.time() + timeout
@@ -1015,7 +1429,7 @@ class MiaoshouUpdater:
             time.sleep(0.5)
         return False
 
-    def update_product(self, product: Any) -> bool:
+    def update_product(self, product: Any, publish: bool = True) -> bool:
         normalized = self._augment_with_sku_data(self._normalize_product_input(product))
         source_item_id = normalized.get('alibaba_product_id') or normalized.get('product_id')
         if not source_item_id:
@@ -1042,11 +1456,36 @@ class MiaoshouUpdater:
         self._fill_weight_dimensions(dialog, normalized)
         self._fill_required_attributes(dialog, normalized)
 
-        if not self._click_save_and_publish(dialog):
-            self.screenshot('save_publish_click_failed')
-            raise RuntimeError('未能触发 保存并发布')
+        if not self._click_save_action(dialog, publish=publish):
+            self.screenshot('save_action_click_failed')
+            raise RuntimeError('未能触发保存动作')
+
+        if not publish:
+            completed = self._wait_for_save_only_completion(timeout=20.0)
+            if not completed:
+                self.screenshot('save_only_completion_timeout')
+                raise RuntimeError('保存修改后未观察到成功态或编辑框关闭')
+
+            self._close_result_dialogs()
+            logger.info(f'商品保存成功（未发布）: {source_item_id}')
+            return True
 
         publish_dialog = self._wait_for_publish_dialog()
+        if publish_dialog is None:
+            blocker = self._detect_publish_blocker()
+            if blocker:
+                self.screenshot('publish_blocked_by_guide')
+                if self._dismiss_blocking_dialogs():
+                    if not self._click_save_action(dialog, publish=True):
+                        raise RuntimeError(f'{blocker}；且关闭引导窗后未能重新触发保存并发布')
+                    publish_dialog = self._wait_for_publish_dialog(timeout=5.0)
+                    if publish_dialog is not None:
+                        self.screenshot('publish_dialog_after_guide_close')
+                    else:
+                        raise RuntimeError(blocker)
+                else:
+                    raise RuntimeError(blocker)
+
         if publish_dialog is None:
             self.screenshot('publish_dialog_not_found')
             raise RuntimeError('保存并发布后未出现发布确认对话框')
@@ -1063,10 +1502,20 @@ class MiaoshouUpdater:
         self.screenshot('publish_confirm_clicked')
 
         success = self._wait_for_publish_completion(timeout=30.0)
-        self._close_result_dialogs()
         if not success:
+            dialog_titles = ' | '.join(self._get_visible_dialog_titles())
+            dialog_texts = self._get_visible_dialog_texts()
+            if dialog_titles:
+                logger.warning(f'发布超时，可见弹窗标题: {dialog_titles}')
+            if dialog_texts:
+                snippet = dialog_texts[0][:500].replace('\n', ' ')
+                logger.warning(f'发布超时，可见弹窗内容: {snippet}')
+            self.screenshot('publish_completion_timeout_before_close')
+            self._close_result_dialogs()
             self.screenshot('publish_completion_timeout')
             raise RuntimeError('发布流程超时，未观察到成功态')
+
+        self._close_result_dialogs()
 
         if normalized.get('id'):
             self.update_product_status(normalized['id'], 'published')
@@ -1104,9 +1553,10 @@ def main():
     parser.add_argument('--product-id', help='指定商品 id / 货源ID / 主货号')
     parser.add_argument('--list', action='store_true', help='仅列出待处理商品')
     parser.add_argument('--headed', action='store_true', help='使用有头浏览器')
+    parser.add_argument('--cdp-url', help='连接现有 Chrome 的 CDP 地址，例如 http://127.0.0.1:9222')
     args = parser.parse_args()
 
-    updater = MiaoshouUpdater(headless=not args.headed)
+    updater = MiaoshouUpdater(headless=not args.headed, cdp_url=args.cdp_url)
     if args.list:
         for product in updater.get_optimized_products(limit=max(args.limit, 20)):
             title = (product.get('optimized_title') or product.get('title') or '')[:40]

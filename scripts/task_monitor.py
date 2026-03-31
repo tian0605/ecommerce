@@ -14,8 +14,7 @@ WORKSPACE = Path('/root/.openclaw/workspace-e-commerce')
 sys.path.insert(0, str(WORKSPACE / 'scripts'))
 
 import psycopg2
-
-FEISHU_WEBHOOK = "https://open.feishu.cn/open-apis/bot/v2/hook/6af7d281-ca31-42c6-ab88-5ba434404fb9"
+from notification_service import send_feishu_text
 
 
 # ==================== 根因检测规则 ====================
@@ -388,11 +387,8 @@ def generate_report(state_stats, log_stats, failed_tasks, stuck_count, root_caus
 
 def send_feishu(message):
     """发送飞书通知"""
-    payload = {"msg_type": "text", "content": {"text": message}}
-    try:
-        requests.post(FEISHU_WEBHOOK, json=payload, timeout=10)
-    except Exception as e:
-        print(f"飞书发送失败: {e}")
+    if not send_feishu_text(message):
+        print("飞书发送失败")
 
 
 def main():

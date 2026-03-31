@@ -20,10 +20,24 @@ fi
 # 条件2: 本地服务
 echo ""
 echo "[条件2] 本地1688服务"
-if curl -s --max-time 5 http://127.0.0.1:8080/health > /tmp/health_check.json 2>&1; then
+if python3 - <<'PY' > /tmp/health_check.json 2>&1
+import json
+import urllib.request
+
+probe = urllib.request.Request(
+    'http://127.0.0.1:8080/fetch-weight',
+    data=json.dumps({'product_id': '1031400982378'}).encode(),
+    headers={'Content-Type': 'application/json'}
+)
+
+with urllib.request.urlopen(probe, timeout=10) as resp:
+    body = resp.read().decode('utf-8', errors='replace')
+    print(body)
+PY
+then
     STATUS=$(cat /tmp/health_check.json)
     echo "  ✅ 本地服务正常"
-    echo "     响应: $STATUS"
+    echo "     业务接口响应: $STATUS"
 else
     echo "  ❌ 本地服务未启动或无响应"
 fi

@@ -223,6 +223,7 @@ def run():
         
         # 标记开始
         tm.mark_start(task_name)
+        tm.mark_executing(task_name)
         log.finish("running")
         
         # 使用Popen执行

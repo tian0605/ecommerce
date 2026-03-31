@@ -1,7 +1,8 @@
 ---
 name: mem0-memory
-version: 2.2.0
 description: "mem0 本地记忆层完整实现（增强版）。基于10维触发场景体系，智能存储/检索/管理用户记忆。WAL 协议，SESSION-STATE，多级记忆（User/Session/Agent）。使用 Ollama qwen2.5:1.5b 作为LLM，Ollama nomic-embed-text 作为embedder。"
+metadata:
+  version: 2.2.0
 ---
 
 # mem0 Memory 🧠 — 增强版（10维触发体系）
@@ -123,6 +124,17 @@ python skills/mem0-memory/scripts/mem0_wrapper.py get_all <user_id>
 python skills/mem0-memory/scripts/mem0_wrapper.py chat <user_id> "<问题>" [--limit 5]
 ```
 
+## 当前实现说明
+
+- `add` 会先走触发引擎：
+  - `mem0_add`：只写 mem0 长期记忆
+  - `session_state`：只写 `SESSION-STATE.md`
+  - `both`：同时写 mem0 和 `SESSION-STATE.md`
+- mem0 写入使用 `infer=False`，默认保留原文，不再让 LLM 擅自改写成失真的“事实”
+- wrapper 兼容当前 mem0 返回结构：`add/search/get_all` 解析 `results[].memory`
+- wrapper 会优先检查 Ollama，必要时尝试自动拉起 `ollama serve`
+- LLM 模型优先 `qwen2.5:1.5b`，缺失时回退 `qwen2.5:latest`
+
 ---
 
 ## WAL 协议（触发必做）
@@ -176,3 +188,4 @@ python skills/mem0-memory/scripts/mem0_wrapper.py chat <user_id> "<问题>" [--l
 - **搜索很快**：仅embedder（毫秒级）
 - **隐私保护**：敏感信息需用户确认
 - User ID: `e-commerce`
+- 如果 OpenClaw 主运行时未识别该技能，需要同时安装到 `/home/ubuntu/.openclaw/skills/mem0-memory/`

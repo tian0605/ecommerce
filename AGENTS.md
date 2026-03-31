@@ -24,12 +24,13 @@
 - 支持断点续传
 - 超时自动恢复
 - 完成后主动通知
+- 通知可审计（写回 tasks 的通知字段和反馈文档链接）
 
 **执行流程：**
 ```
 [用户发送复杂任务]
     ↓
-[创建 TEMP 任务 + 立即响应用户]
+[创建 TEMP 任务 + 立即响应用户（状态: 已创建，等待调度执行）]
     ↓
 [后台异步执行，定期更新 checkpoint]
     ↓
@@ -39,7 +40,7 @@
 **Checkpoint 规则：**
 - 每完成一个步骤 → 更新 checkpoint
 - 每10分钟心跳 → 自动续命
-- 超时判定：last_executed_at + expected_duration + buffer(10分钟) 无更新
+- 超时判定：仅对 `processing` 状态生效；`last_executed_at + expected_duration + buffer(10分钟)` 无更新才视为超时
 
 **示例：**
 ```python

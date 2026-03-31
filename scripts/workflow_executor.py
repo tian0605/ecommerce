@@ -199,6 +199,21 @@ def execute_skill(skill_name: str, action: str = None, params: dict = None) -> d
     if not skill_module:
         result['message'] = f"未知的技能: {skill_name}"
         return result
+
+    required_param_map = {
+        'listing-optimizer': 'product_id',
+        'listing_optimizer': 'product_id',
+        'miaoshou-updater': 'product_id',
+        'miaoshou_updater': 'product_id',
+        'profit-analyzer': 'product_id',
+        'profit_analyzer': 'product_id',
+        'local-1688-weight': 'product_id',
+        'local_1688_weight': 'product_id',
+    }
+    required_param = required_param_map.get(skill_name)
+    if required_param and not params.get(required_param):
+        result['message'] = f"缺少关键参数: {required_param}，停止执行以避免误操作"
+        return result
     
     try:
         # 添加到搜索路径
@@ -292,23 +307,7 @@ def execute_skill(skill_name: str, action: str = None, params: dict = None) -> d
             optimizer_class = getattr(module, 'ListingOptimizer', None)
             if optimizer_class:
                 optimizer = optimizer_class()
-                # 获取product_id，如果没有则从数据库获取最新的
                 product_id = params.get('product_id')
-                if not product_id:
-                    # 从数据库获取最新商品
-                    import psycopg2
-                    try:
-                        conn = psycopg2.connect(host='localhost', database='ecommerce_data', user='superuser', password='Admin123!')
-                        cur = conn.cursor()
-                        cur.execute("SELECT product_id_new FROM products ORDER BY id DESC LIMIT 1")
-                        row = cur.fetchone()
-                        if row:
-                            product_id = row[0]
-                            print(f"自动获取最新商品ID: {product_id}")
-                        conn.close()
-                    except Exception as e:
-                        print(f"获取最新商品失败: {e}")
-                
                 data = optimizer.optimize_product(product_id)
                 result['success'] = data.get('success', False) if isinstance(data, dict) else False
                 result['message'] = data.get('message', '执行完成') if isinstance(data, dict) else '执行完成'
@@ -390,8 +389,10 @@ def main(task_name: str):
         tm.close()
         return
     
-    # 标记开始执行
-    tm.mark_start(task_name)
+    # 标记开始执行。若由 cron 拉起，任务通常已处于 processing；手动调用时再补 mark_start。
+    if task.get('exec_state') != 'processing':
+        tm.mark_start(task_name)
+    tm.mark_executing(task_name)
     
     # 获取父任务ID（作为workflow_id）
     workflow_id = parent_task or task_name

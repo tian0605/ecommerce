@@ -8,9 +8,10 @@ import json
 from pathlib import Path
 from datetime import datetime
 
+from notification_service import append_text_to_docx, get_docx_url, send_feishu_text
+
 WORKSPACE = Path('/root/.openclaw/workspace-e-commerce')
 FEISHU_DOC_ID = "UVlkd1NHrorLumxC8K7cLMBUnDe"
-FEISHU_WEBHOOK = "https://open.feishu.cn/open-apis/bot/v2/hook/6af7d281-ca31-42c6-ab88-5ba434404fb9"
 
 def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
@@ -101,53 +102,71 @@ def send_to_feishu_group(results, improvements):
     
     message = ''.join(lines)
     
-    import urllib.request
-    
-    payload = json.dumps({
-        "msg_type": "text",
-        "content": {"text": message}
-    }).encode('utf-8')
-    
-    try:
-        req = urllib.request.Request(
-            FEISHU_WEBHOOK,
-            data=payload,
-            headers={'Content-Type': 'application/json'},
-            method='POST'
-        )
-        with urllib.request.urlopen(req, timeout=10) as response:
-            result = json.loads(response.read().decode('utf-8'))
-            if result.get('code') == 0:
-                log("✅ 飞书群通知发送成功")
-                return True
-            else:
-                log(f"⚠️ 飞书群通知失败")
-                return False
-    except Exception as e:
-        log(f"⚠️ 飞书群通知失败: {e}")
-        return False
+    if send_feishu_text(message):
+        log("✅ 飞书群通知发送成功")
+        return True
 
-def write_to_feishu(results, improvements):
+    log("⚠️ 飞书群通知失败")
+    return False
+
+def write_to_feishu(results, improvements, task_name=None):
     """写入飞书文档并发送通知"""
     # 1. 构建内容
     content = build_feishu_content(results, improvements)
     
     # 2. 写入本地文件
-    write_to_markdown(content)
+    markdown_file = write_to_markdown(content)
     
-    # 3. 发送飞书群通知
-    send_to_feishu_group(results, improvements)
-    
-    # 4. 生成 OpenClaw 命令用于写入飞书文档
-    # 由于 Python 无法直接调用 feishu_doc 工具，输出命令供手动执行
-    log(f"📄 完整报告已保存，请手动同步到飞书文档")
-    log(f"URL: https://pcn0wtpnjfsd.feishu.cn/docx/{FEISHU_DOC_ID}")
+    # 3. 自动写入飞书文档
+    doc_sync_success = False
+    doc_sync_error = None
+    doc_url = get_docx_url(FEISHU_DOC_ID)
+    try:
+        append_result = append_text_to_docx(FEISHU_DOC_ID, content)
+        doc_sync_success = append_result.get('success', False)
+        doc_url = append_result.get('url', doc_url)
+        log(f"📄 飞书文档自动写入成功: {doc_url}")
+    except Exception as exc:
+        doc_sync_error = str(exc)
+        log(f"⚠️ 飞书文档自动写入失败: {doc_sync_error}")
+
+    # 4. 发送飞书群通知
+    group_notify_success = send_to_feishu_group(results, improvements)
+
+    # 5. 如有 task_name，则写回任务审计
+    if task_name:
+        from task_manager import TaskManager
+
+        tm = TaskManager()
+        try:
+            tm.record_feedback_artifacts(task_name, doc_url=doc_url, markdown_file=markdown_file)
+            tm.record_notification(
+                task_name=task_name,
+                event='task_report_doc_sync',
+                message=f'任务报告同步到飞书文档: {doc_url}',
+                success=doc_sync_success,
+                error=doc_sync_error,
+                metadata={'markdown_file': markdown_file},
+            )
+            tm.record_notification(
+                task_name=task_name,
+                event='task_report_group_notify',
+                message=f'任务报告摘要已发送到飞书群: {doc_url}',
+                success=group_notify_success,
+                error=None if group_notify_success else '飞书群摘要发送失败',
+                metadata={'doc_url': doc_url},
+            )
+        finally:
+            tm.close()
     
     # 输出 JSON 格式结果，供外部程序读取
     output = {
         "content": content,
-        "doc_url": f"https://pcn0wtpnjfsd.feishu.cn/docx/{FEISHU_DOC_ID}",
-        "markdown_file": str(WORKSPACE / 'logs' / 'task_results_latest.md')
+        "doc_url": doc_url,
+        "markdown_file": markdown_file,
+        "doc_sync_success": doc_sync_success,
+        "doc_sync_error": doc_sync_error,
+        "group_notify_success": group_notify_success,
     }
     print(f"\n__FEISHU_CONTENT__:{json.dumps(output, ensure_ascii=False)}")
     
@@ -163,11 +182,14 @@ if __name__ == '__main__':
             data = json.loads(sys.argv[1])
             results = data.get('results', [])
             improvements = data.get('improvements', [])
+            task_name = data.get('task_name')
         except:
             results = []
             improvements = []
+            task_name = None
     else:
         results = []
         improvements = []
+        task_name = None
     
-    write_to_feishu(results, improvements)
+    write_to_feishu(results, improvements, task_name=task_name)

@@ -53,11 +53,22 @@
 2. **断点续传**：执行过程定期保存 `progress_checkpoint`（JSON）
 3. **超时自动重置**：心跳检测到超时时，自动重置为 `new` 状态
 4. **完成后通知**：任务完成时主动推送飞书通知
+5. **超时判定仅针对执行中任务**：只有 `exec_state='processing'` 且 `last_executed_at + expected_duration + buffer` 超时才重置
 
 **数据库字段：**
 ```sql
 ALTER TABLE tasks ADD COLUMN expected_duration INTEGER;
 ALTER TABLE tasks ADD COLUMN progress_checkpoint JSONB;
+ALTER TABLE tasks ADD COLUMN notification_status TEXT;
+ALTER TABLE tasks ADD COLUMN notification_attempts INTEGER;
+ALTER TABLE tasks ADD COLUMN notification_success_count INTEGER;
+ALTER TABLE tasks ADD COLUMN notification_failure_count INTEGER;
+ALTER TABLE tasks ADD COLUMN notification_last_event TEXT;
+ALTER TABLE tasks ADD COLUMN notification_last_error TEXT;
+ALTER TABLE tasks ADD COLUMN notification_last_attempt_at TIMESTAMP;
+ALTER TABLE tasks ADD COLUMN notification_last_sent_at TIMESTAMP;
+ALTER TABLE tasks ADD COLUMN notification_audit JSONB;
+ALTER TABLE tasks ADD COLUMN feedback_doc_url TEXT;
 ```
 
 **Checkpoint数据结构：**
@@ -92,7 +103,7 @@ send_feishu(f"""🔔 **临时任务已创建**
 任务ID: {task_name}
 描述: {description}
 预计完成: {expected_duration}分钟
-状态: 执行中
+状态: 已创建，等待调度执行
 
 完成后将通知你。""")
 ```
@@ -127,6 +138,11 @@ for ot in overtime_temp:
 > 耗时：45分钟
 > 状态：✅ 成功
 > 下一步：报告已生成，请查看
+
+**通知审计要求：**
+- 每次创建/完成/失败通知都要写回 `tasks.notification_audit`
+- 至少记录：事件类型、发送结果、时间、错误原因
+- 任务报告同步到飞书文档后，回写 `feedback_doc_url`
 
 ---
 
