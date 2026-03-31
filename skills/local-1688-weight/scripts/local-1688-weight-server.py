@@ -339,4 +339,4 @@ if __name__ == '__main__':
     print("=" * 50)
     
     # 使用单线程模式避免Playwright与多线程冲突
-app.run(host='127.0.0.1', port=9090, debug=False, threaded=True, use_reloader=False)
+app.run(host='127.0.0.1', port=8080, debug=False, threaded=True, use_reloader=False)

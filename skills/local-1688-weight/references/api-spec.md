@@ -5,7 +5,7 @@
 ### 健康检查
 
 ```
-GET http://127.0.0.1:9090/health
+GET http://127.0.0.1:8080/health
 ```
 
 响应:
@@ -16,7 +16,7 @@ GET http://127.0.0.1:9090/health
 ### 获取重量
 
 ```
-POST http://127.0.0.1:9090/fetch-weight
+POST http://127.0.0.1:8080/fetch-weight
 Content-Type: application/json
 
 {

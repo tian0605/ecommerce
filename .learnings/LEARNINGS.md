@@ -150,7 +150,7 @@ AgentSkill标准格式：每个技能应包含SKILL.md + scripts/ + references/ 
 ### Details
 通过MobaXterm SSH隧道访问本地Windows机器上的Flask服务：
 - 本地服务: 127.0.0.1:8080
-- 隧道映射: 127.0.0.1:9090 → 远程
+- 隧道映射: 127.0.0.1:8080 → 远程
 - 用户Chrome已登录1688，本地IP不受反爬限制
 
 优势：

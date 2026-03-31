@@ -1,7 +1,7 @@
 # SESSION-STATE.md
 
 **Status:** Active  
-**Last Updated:** 2026-03-24
+**Last Updated:** 2026-03-31 17:09:22
 
 ---
 
@@ -28,3 +28,11 @@
 ## Danger Zone Log
 
 **(At 60% context, append exchanges here)**
+
+---
+
+## Memory Captures
+
+- 2026-03-31 17:07:52 | e-commerce | P0 | 目标设定 | 我的目标是让 mem0-memory 在 openclaw 里稳定可用
+
+- 2026-03-31 17:09:22 | e-commerce | P0 | 目标设定 | 我希望 mem0-memory 在 OpenClaw 主运行时也能正确写入
