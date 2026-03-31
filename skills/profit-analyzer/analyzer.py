@@ -563,6 +563,82 @@ class ProfitAnalyzer:
         deduped.sort(key=lambda item: (item.get('alibaba_product_id') or '', item.get('product_id_new') or '', item.get('sku_name') or ''))
         return [self.analyze_row(row) for row in deduped]
 
+    def analyze_product(self, product_payload: Dict[str, Any]) -> Dict[str, Any]:
+        alibaba_product_id = str(product_payload.get('alibaba_product_id') or '').strip()
+        if not alibaba_product_id:
+            return {
+                'status': 'error',
+                'message': '缺少 alibaba_product_id',
+            }
+
+        rows = self.analyze_products([alibaba_product_id])
+        success_rows = [row for row in rows if row.get('分析状态') == 'success']
+        if success_rows:
+            primary = success_rows[0]
+            return {
+                'status': 'success',
+                'message': '利润分析成功',
+                'module': 'profit-analyzer',
+                'alibaba_product_id': alibaba_product_id,
+                'product_id_new': primary.get('商品主货号'),
+                'sku_name': primary.get('SKU名称'),
+                'weight_g': primary.get('重量(g)'),
+                'weight_kg': primary.get('重量(kg)'),
+                'purchase_price_cny': primary.get('采购价(CNY)'),
+                'exchange_rate': self.exchange_rate,
+                'sls_twd': primary.get('卖家运费(TWD)'),
+                'sls_shipping_twd': primary.get('卖家运费(TWD)'),
+                'buyer_shipping_twd': primary.get('买家运费(TWD)'),
+                'hidden_shipping_twd': primary.get('藏价(TWD)'),
+                'hidden_shipping_cny': primary.get('藏价(CNY)'),
+                'commission_twd': primary.get('佣金(TWD)'),
+                'commission_cny': primary.get('佣金(CNY)'),
+                'transaction_fee_twd': primary.get('交易手续费(TWD)'),
+                'transaction_fee_cny': primary.get('交易手续费(CNY)'),
+                'pre_sale_service_fee_twd': primary.get('预售服务费(TWD)'),
+                'pre_sale_service_fee_cny': primary.get('预售服务费(CNY)'),
+                'platform_fee_twd': primary.get('平台费(TWD)'),
+                'total_platform_fee_twd': primary.get('平台费(TWD)'),
+                'platform_fee_cny': primary.get('平台费(CNY)'),
+                'total_cost_twd': primary.get('总成本(TWD)'),
+                'total_cost_cny': primary.get('总成本(CNY)'),
+                'suggested_price_twd': primary.get('建议售价(TWD)'),
+                'suggested_price_cny': primary.get('建议售价(CNY)'),
+                'target_profit_rate': self.target_profit_rate,
+                'profit_rate': primary.get('利润率(%)'),
+                'estimated_profit_twd': round(
+                    float(primary.get('建议售价(TWD)') or 0)
+                    - float(primary.get('平台费(TWD)') or 0)
+                    - float(primary.get('总成本(TWD)') or 0),
+                    2,
+                ),
+                'gross_profit_twd': round(
+                    float(primary.get('建议售价(TWD)') or 0)
+                    - float(primary.get('平台费(TWD)') or 0)
+                    - float(primary.get('总成本(TWD)') or 0),
+                    2,
+                ),
+                'estimated_profit_cny': primary.get('预计利润(CNY)'),
+                'rows': rows,
+            }
+
+        if rows:
+            first_error = rows[0]
+            return {
+                'status': 'error',
+                'message': first_error.get('错误信息') or '利润分析失败',
+                'module': 'profit-analyzer',
+                'alibaba_product_id': alibaba_product_id,
+                'rows': rows,
+            }
+
+        return {
+            'status': 'error',
+            'message': f'未找到可分析的商品数据: {alibaba_product_id}',
+            'module': 'profit-analyzer',
+            'alibaba_product_id': alibaba_product_id,
+        }
+
     def run(self, alibaba_ids: List[str]) -> Dict[str, Any]:
         results = self.analyze_products(alibaba_ids)
         sync_result = self.feishu.upsert_records(results)
