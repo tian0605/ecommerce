@@ -145,34 +145,30 @@ class ProductStorer:
         
         try:
             with db.get_cursor() as cur:
-                # 查找当前渠道+供应商+系列的最大序号
                 pattern = f'{channel_code}{self.supplier_code}{self.series_code}{year}%'
                 cur.execute("""
-                    SELECT product_id_new FROM products 
+                    SELECT COALESCE(MAX(CAST(RIGHT(product_id_new, 7) AS INTEGER)), 0)
+                    FROM products 
                     WHERE product_id_new LIKE %s
-                    ORDER BY product_id_new DESC
-                    LIMIT 1
                 """, (pattern,))
-                
                 result = cur.fetchone()
-                if result:
-                    last_id = result[0]
-                    # 提取最后7位序号并+1
-                    if len(last_id) >= 7:
-                        last_seq = int(last_id[-7:])
-                        seq = last_seq + 1
-                    else:
-                        seq = 1
-                else:
-                    seq = 1
+                seq = (int(result[0]) if result and result[0] is not None else 0) + 1
                     
         except Exception as e:
             logger.warning(f"获取序号失败，使用默认值: {e}")
             seq = 1
-        
-        # 组合18位货号
-        product_id_new = f"{channel_code}{self.supplier_code}{self.series_code}{year}{seq:07d}"
-        return product_id_new
+
+        while True:
+            product_id_new = f"{channel_code}{self.supplier_code}{self.series_code}{year}{seq:07d}"
+            try:
+                with db.get_cursor() as cur:
+                    cur.execute("SELECT 1 FROM products WHERE product_id_new = %s LIMIT 1", (product_id_new,))
+                    if not cur.fetchone():
+                        return product_id_new
+            except Exception as e:
+                logger.warning(f"校验主货号唯一性失败，回退当前值: {e}")
+                return product_id_new
+            seq += 1
     
     def _generate_sku_id_new(self, product_id_new: str, sku_index: int) -> str:
         """
@@ -242,6 +238,17 @@ class ProductStorer:
             source_url = product_data.get('source_url', '')
             alibaba_id = product_data.get('alibaba_product_id')
             channel_code = self._get_channel_code(source_url, alibaba_id)
+
+            # 预先整理通用字段，便于插入和已存在商品更新复用
+            category_raw = product_data.get('category', '')
+            category_formatted = f"{self._get_category_code(category_raw)}-{category_raw}" if category_raw else self._get_category_code(category_raw)
+            main_images = self._serialize_json(product_data.get('main_images', []))
+            sku_images = self._serialize_json(product_data.get('sku_images', []))
+            skus = self._serialize_json(product_data.get('skus', []))
+            logistics = self._serialize_json(product_data.get('logistics', {}))
+            supplier_info = self._serialize_json(product_data.get('supplier_info', {}))
+            key_attributes = self._serialize_json(product_data.get('key_attributes', []))
+            purchase_cost_history = self._serialize_json(product_data.get('purchase_cost_history', []))
             
             # 生成新格式主货号（18位）
             product_id_new = self._generate_product_id_new(channel_code)
@@ -260,9 +267,8 @@ class ProductStorer:
                 with db.get_cursor() as cur:
                     cur.execute("""
                         SELECT product_id FROM products 
-                        WHERE created_at::date = CURRENT_DATE
-                        AND product_id LIKE %s
-                        ORDER BY product_id DESC
+                        WHERE product_id LIKE %s
+                        ORDER BY CAST(SUBSTRING(product_id FROM 2) AS INTEGER) DESC
                         LIMIT 1
                     """, (f'{date_code}%',))
                     res = cur.fetchone()
@@ -284,12 +290,48 @@ class ProductStorer:
                 with db.get_cursor() as cur:
                     cur.execute("""
                         SELECT id, product_id, product_id_new FROM products 
-                        WHERE alibaba_product_id = %s
+                                                WHERE alibaba_product_id = %s
+                                                    AND COALESCE(is_deleted, 0) = 0
+                                                ORDER BY id ASC
+                                                LIMIT 1
                     """, (alibaba_id,))
                     existing = cur.fetchone()
                     if existing:
                         result['message'] = f"商品已存在 (ID: {existing[0]}, product_id: {existing[1]}, product_id_new: {existing[2]})"
                         logger.warning(result['message'])
+                        cur.execute("""
+                            UPDATE products
+                            SET title = %s,
+                                description = %s,
+                                category = %s,
+                                brand = %s,
+                                origin = %s,
+                                main_images = %s,
+                                sku_images = %s,
+                                skus = %s,
+                                logistics = %s,
+                                source_url = %s,
+                                supplier_info = %s,
+                                key_attributes = %s,
+                                purchase_cost_history = %s,
+                                updated_at = CURRENT_TIMESTAMP
+                            WHERE id = %s
+                        """, (
+                            product_data.get('title'),
+                            product_data.get('description'),
+                            category_formatted,
+                            product_data.get('brand'),
+                            product_data.get('origin'),
+                            main_images,
+                            sku_images,
+                            skus,
+                            logistics,
+                            product_data.get('source_url'),
+                            supplier_info,
+                            key_attributes,
+                            purchase_cost_history,
+                            existing[0],
+                        ))
                         # 商品已存在，视为成功（可继续后续步骤）
                         result['success'] = True
                         result['main_product_no'] = existing[2]  # 兼容 workflow_runner（使用新格式）
@@ -306,20 +348,6 @@ class ProductStorer:
                             logger.info(f"SKU更新结果: {result['sku_message']}")
                         
                         return result
-            
-            # 处理类目编码
-            category_raw = product_data.get('category', '')
-            category_code = self._get_category_code(category_raw)
-            category_formatted = f"{category_code}-{category_raw}" if category_raw else category_code
-            
-            # 序列化JSON字段
-            main_images = self._serialize_json(product_data.get('main_images', []))
-            sku_images = self._serialize_json(product_data.get('sku_images', []))
-            skus = self._serialize_json(product_data.get('skus', []))
-            logistics = self._serialize_json(product_data.get('logistics', {}))
-            supplier_info = self._serialize_json(product_data.get('supplier_info', {}))
-            key_attributes = self._serialize_json(product_data.get('key_attributes', []))
-            purchase_cost_history = self._serialize_json(product_data.get('purchase_cost_history', []))
             
             # 插入数据库
             with db.get_cursor() as cur:
@@ -372,6 +400,7 @@ class ProductStorer:
                 inserted_id = cur.fetchone()[0]
             
             result['success'] = True
+            result['id'] = inserted_id
             result['main_product_no'] = product_id_new  # 兼容 workflow_runner
             result['message'] = f"落库成功 (ID: {inserted_id}, product_id: {product_id}, product_id_new: {product_id_new})"
             logger.info(result['message'])
@@ -434,7 +463,10 @@ class ProductStorer:
         
         try:
             # 导入COS存储
-            from shared.cos_storage import COSStorage
+            try:
+                from shared.cos_storage import COSStorage
+            except ImportError:
+                from cos_storage import COSStorage
             cos = COSStorage()
             
             # 生成目录名：商品id_商品标题（截取50字符，UTF-8约50字节）
@@ -581,86 +613,140 @@ class ProductStorer:
                 spec_map = {s['sku_name']: s for s in sku_weight_list}
             else:
                 spec_map = {}
+
+            def normalize_text(value: Any) -> str:
+                return re.sub(r'\s+', '', str(value or ''))
+
+            prepared_skus = []
+            for idx, sku in enumerate(skus_data):
+                raw_name = sku.get('name', '')
+                color = sku.get('color', '') or sku.get('name', '')
+                size = sku.get('size', '')
+
+                if raw_name:
+                    sku_name = raw_name
+                elif color and size:
+                    sku_name = f"{color}-{size}"
+                elif color:
+                    sku_name = color
+                else:
+                    sku_name = f'SKU-{idx+1}'
+
+                price = sku.get('price')
+                stock = sku.get('stock')
+
+                matched_spec = None
+                candidate_names = [
+                    sku_name,
+                    f"{color}-{size}" if color and size else '',
+                    color,
+                    size,
+                ]
+                normalized_candidates = [normalize_text(item) for item in candidate_names if item]
+
+                for sku_weight_name, spec_data in spec_map.items():
+                    normalized_weight_name = normalize_text(sku_weight_name)
+                    if any(
+                        candidate and (
+                            candidate == normalized_weight_name
+                            or candidate in normalized_weight_name
+                            or normalized_weight_name in candidate
+                        )
+                        for candidate in normalized_candidates
+                    ):
+                        matched_spec = spec_data
+                        break
+
+                weight_g = default_weight_g
+                length_cm = None
+                width_cm = None
+                height_cm = None
+
+                if matched_spec:
+                    weight_g = matched_spec.get('weight_g') or default_weight_g
+                    length_cm = matched_spec.get('length_cm')
+                    width_cm = matched_spec.get('width_cm')
+                    height_cm = matched_spec.get('height_cm')
+                elif default_weight_g:
+                    weight_g = default_weight_g
+
+                prepared_skus.append({
+                    'index': idx,
+                    'sku_name': sku_name,
+                    'color': color or '',
+                    'size': size or '',
+                    'price': price,
+                    'stock': stock,
+                    'weight_g': weight_g,
+                    'length_cm': length_cm,
+                    'width_cm': width_cm,
+                    'height_cm': height_cm,
+                })
             
             # 插入SKU
             sku_ids = []
             with db.get_cursor() as cur:
-                for idx, sku in enumerate(skus_data):
-                    # 优先使用完整的name（包含颜色+规格组合）
-                    # 如果name不存在或不完整，则用color+size组合
-                    raw_name = sku.get('name', '')
-                    color = sku.get('color', '') or sku.get('name', '')
-                    size = sku.get('size', '')
-                    
-                    # 构建完整SKU名称：优先用name，否则用color-size组合
-                    if raw_name:
-                        # 如果name已包含组合信息（如"奶黄色-100L"），直接用
-                        sku_name = raw_name
-                    elif color and size:
-                        # 否则用颜色-规格组合
-                        sku_name = f"{color}-{size}"
-                    elif color:
-                        sku_name = color
-                    else:
-                        sku_name = f'SKU-{idx+1}'
-                    
-                    price = sku.get('price')
-                    stock = sku.get('stock')
-                    
-                    # 查找对应的重量数据 - 优先按color匹配，其次按默认
-                    matched_spec = None
-                    
-                    # 先尝试按color匹配
-                    for sku_weight_name, spec_data in spec_map.items():
-                        if color and (color in sku_weight_name or sku_weight_name in color):
-                            matched_spec = spec_data
-                            break
-                    
-                    # 如果没匹配到，尝试按默认重量（所有SKU共用）
-                    weight_g = default_weight_g
-                    length_cm = None
-                    width_cm = None
-                    height_cm = None
-                    
-                    if matched_spec:
-                        weight_g = matched_spec.get('weight_g') or default_weight_g
-                        length_cm = matched_spec.get('length_cm')
-                        width_cm = matched_spec.get('width_cm')
-                        height_cm = matched_spec.get('height_cm')
-                    elif default_weight_g:
-                        # 使用默认重量
-                        weight_g = default_weight_g
-                    
-                    # 生成sku_id_new
-                    sku_id_new = self._generate_sku_id_new(product_id_new, idx)
-                    
-                    # 检查是否已存在同名SKU
+                incoming_keys = {
+                    (item['sku_name'], item['color'], item['size'])
+                    for item in prepared_skus
+                }
+                cur.execute("""
+                    SELECT id, sku_name, COALESCE(color, ''), COALESCE(size, '')
+                    FROM product_skus
+                    WHERE product_id = %s AND COALESCE(is_deleted, 0) = 0
+                """, (db_product_id,))
+                for existing_id, existing_name, existing_color, existing_size in cur.fetchall():
+                    existing_key = (existing_name or '', existing_color or '', existing_size or '')
+                    if existing_key not in incoming_keys:
+                        cur.execute("UPDATE product_skus SET is_deleted = 1 WHERE id = %s", (existing_id,))
+                        logger.info(f"标记旧SKU为删除: {existing_name}")
+
+                for item in prepared_skus:
+                    sku_name = item['sku_name']
+                    color = item['color']
+                    size = item['size']
+                    price = item['price']
+                    stock = item['stock']
+                    weight_g = item['weight_g']
+                    length_cm = item['length_cm']
+                    width_cm = item['width_cm']
+                    height_cm = item['height_cm']
+
+                    sku_id_new = self._generate_sku_id_new(product_id_new, item['index'])
+
                     cur.execute("""
-                        SELECT id, package_weight FROM product_skus 
-                        WHERE product_id = %s AND (sku_name = %s OR color = %s)
-                    """, (db_product_id, sku_name, color))
+                        SELECT id, package_weight FROM product_skus
+                        WHERE product_id = %s
+                          AND sku_name = %s
+                          AND COALESCE(color, '') = %s
+                          AND COALESCE(size, '') = %s
+                        ORDER BY COALESCE(is_deleted, 0) ASC, id ASC
+                        LIMIT 1
+                    """, (db_product_id, sku_name, color, size))
                     existing_sku = cur.fetchone()
                     
                     if existing_sku:
                         existing_id, existing_weight = existing_sku
-                        # 如果已有SKU但重量为0/None，则更新
-                        if not existing_weight or existing_weight == 0:
-                            cur.execute("""
-                                UPDATE product_skus SET
-                                    package_length = COALESCE(%s, package_length),
-                                    package_width = COALESCE(%s, package_width),
-                                    package_height = COALESCE(%s, package_height),
-                                    package_weight = COALESCE(%s, package_weight)
-                                WHERE id = %s
-                            """, (length_cm, width_cm, height_cm, weight_g, existing_id))
+                        cur.execute("""
+                            UPDATE product_skus SET
+                                color = %s,
+                                size = %s,
+                                price = %s,
+                                stock = %s,
+                                package_length = COALESCE(%s, package_length),
+                                package_width = COALESCE(%s, package_width),
+                                package_height = COALESCE(%s, package_height),
+                                package_weight = COALESCE(%s, package_weight),
+                                sku_id_new = %s,
+                                is_deleted = 0
+                            WHERE id = %s
+                        """, (color, size, price, stock, length_cm, width_cm, height_cm, weight_g, sku_id_new, existing_id))
+                        if weight_g and (not existing_weight or existing_weight == 0):
                             logger.info(f"更新SKU重量: {sku_name} -> {weight_g}g")
-                            sku_ids.append(existing_id)
                         else:
-                            # 重量已有值，跳过
-                            logger.info(f"跳过已有效重量的SKU: {sku_name} ({existing_weight}g)")
-                            sku_ids.append(existing_id)
+                            logger.info(f"更新SKU信息: {sku_name}")
+                        sku_ids.append(existing_id)
                     else:
-                        # 插入新SKU
                         cur.execute("""
                             INSERT INTO product_skus (
                                 product_id, sku_name, color, size, price, stock,
@@ -712,7 +798,11 @@ class ProductStorer:
                     SELECT id, product_id, product_id_new, alibaba_product_id, title, description,
                            category, brand, origin, main_images, sku_images,
                            skus, logistics, source_url, status, created_at
-                    FROM products WHERE alibaba_product_id = %s
+                                        FROM products
+                                        WHERE alibaba_product_id = %s
+                                            AND COALESCE(is_deleted, 0) = 0
+                                        ORDER BY id ASC
+                                        LIMIT 1
                 """, (alibaba_product_id,))
                 
                 row = cur.fetchone()
