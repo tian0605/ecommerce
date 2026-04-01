@@ -520,14 +520,30 @@ class MiaoshouUpdater:
 
         self._close_popups()
 
-    def _search_source_item(self, source_item_id: str, timeout: float = 15.0) -> bool:
+    def _search_source_item(self, source_item_id: str, timeout: float = 15.0, tab_label: str = '未发布', capture_failure: bool = True) -> bool:
         self._ensure_page()
         self._close_popups()
 
         try:
-            unpublished_tab = self.page.get_by_text('未发布', exact=False).first
-            if unpublished_tab.count() > 0 and unpublished_tab.is_visible(timeout=1000):
-                unpublished_tab.click(force=True)
+            tab_switched = bool(self.page.evaluate(
+                r"""(label) => {
+                    const visible = (el) => !!el && el.offsetParent !== null;
+                    const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
+                    const candidates = Array.from(document.querySelectorAll(
+                        '.el-radio-button, .el-radio-button__inner, .el-tabs__item, [role="tab"], [role="radio"], button, span, div'
+                    ));
+                    const target = candidates.find((node) => {
+                        if (!visible(node)) return false;
+                        const text = normalize(node.innerText);
+                        return text === label || text.startsWith(`${label}(`);
+                    });
+                    if (!target) return false;
+                    target.click();
+                    return true;
+                }""",
+                str(tab_label),
+            ))
+            if tab_switched:
                 time.sleep(0.8)
         except Exception:
             pass
@@ -571,7 +587,8 @@ class MiaoshouUpdater:
             str(source_item_id),
         ))
         if not filled:
-            self.screenshot('source_search_input_not_found')
+            if capture_failure:
+                self.screenshot('source_search_input_not_found')
             raise RuntimeError('未找到货源ID搜索框')
 
         clicked = self._click_visible_button(['搜索'])
@@ -581,17 +598,92 @@ class MiaoshouUpdater:
         deadline = time.time() + timeout
         while time.time() < deadline:
             try:
-                body_text = self.page.locator('body').inner_text(timeout=1000)
-            except Exception:
-                body_text = ''
+                match_state = self.page.evaluate(
+                    r"""(payload) => {
+                        const sourceId = String(payload.sourceId);
+                        const tabLabel = String(payload.tabLabel);
+                        const visible = (el) => !!el && el.offsetParent !== null;
+                        const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
 
-            if str(source_item_id) in body_text:
+                        const activeTab = Array.from(document.querySelectorAll(
+                            '.el-radio-button.is-active, .el-tabs__item.is-active, [role="tab"][aria-selected="true"], [role="radio"].is-active'
+                        ))
+                            .map((node) => normalize(node.innerText))
+                            .find(Boolean) || '';
+
+                        const itemNodes = Array.from(document.querySelectorAll(
+                            '.vue-recycle-scroller__item-view, .el-table__row, .collect-item, .source-item'
+                        )).filter((node) => visible(node));
+
+                        const matchedNode = itemNodes.find((node) => normalize(node.innerText).includes(sourceId));
+                        if (matchedNode) {
+                            return {state: 'found', activeTab};
+                        }
+
+                        const emptyTexts = ['暂无数据', '共0条', '没有数据'];
+                        const bodyText = normalize(document.body?.innerText || '');
+                        if (emptyTexts.some((text) => bodyText.includes(text))) {
+                            return {state: 'empty', activeTab};
+                        }
+
+                        if (activeTab && !(activeTab === tabLabel || activeTab.startsWith(`${tabLabel}(`))) {
+                            return {state: 'wrong-tab', activeTab};
+                        }
+
+                        return {state: 'pending', activeTab};
+                    }""",
+                    {'sourceId': str(source_item_id), 'tabLabel': str(tab_label)},
+                )
+            except Exception:
+                match_state = {'state': 'pending', 'activeTab': ''}
+
+            if match_state.get('state') == 'found':
                 return True
-            if '暂无数据' in body_text or '共0条' in body_text:
+            if match_state.get('state') in {'empty', 'wrong-tab'}:
                 break
             time.sleep(0.5)
 
-        self.screenshot('source_search_no_result')
+        if capture_failure:
+            self.screenshot('source_search_no_result')
+        return False
+
+    def _get_product_publish_state(self, source_item_id: str) -> Dict[str, bool]:
+        self._goto_collect_box()
+        in_unpublished = self._search_source_item(str(source_item_id), timeout=6.0, tab_label='未发布', capture_failure=False)
+
+        self._goto_collect_box()
+        in_published = self._search_source_item(str(source_item_id), timeout=6.0, tab_label='已发布', capture_failure=False)
+
+        return {
+            'in_unpublished': in_unpublished,
+            'in_published': in_published,
+        }
+
+    def _verify_product_published(self, source_item_id: str) -> bool:
+        state = self._get_product_publish_state(source_item_id)
+        if state['in_unpublished']:
+            self.screenshot('publish_still_in_unpublished')
+            return False
+
+        if not state['in_published']:
+            self.screenshot('publish_not_found_in_published')
+            return False
+
+        return True
+
+    def _wait_for_product_published(self, source_item_id: str, timeout: float = 60.0) -> bool:
+        deadline = time.time() + timeout
+        last_state = {'in_unpublished': False, 'in_published': False}
+        while time.time() < deadline:
+            last_state = self._get_product_publish_state(source_item_id)
+            if not last_state['in_unpublished'] and last_state['in_published']:
+                return True
+            time.sleep(2.0)
+
+        if last_state['in_unpublished']:
+            self.screenshot('publish_still_in_unpublished')
+        if not last_state['in_published']:
+            self.screenshot('publish_not_found_in_published')
         return False
 
     def _close_popups(self):
@@ -1064,6 +1156,70 @@ class MiaoshouUpdater:
             dimension_text,
         )
 
+    def _derive_sales_attribute_options(self, product: Dict[str, Any]) -> List[str]:
+        options: List[str] = []
+        for sku in product.get('skus') or []:
+            sku_name = (sku.get('sku_name') or '').strip()
+            if not sku_name:
+                continue
+            candidate = sku_name.split('-')[0].strip() or sku_name[:30].strip()
+            if len(candidate) > 30:
+                candidate = candidate[:30].strip()
+            if candidate and candidate not in options:
+                options.append(candidate)
+        return options
+
+    def _normalize_sales_attribute_values(self, dialog, product: Dict[str, Any]):
+        options = self._derive_sales_attribute_options(product)
+        if not options:
+            return
+
+        try:
+            updated = dialog.evaluate(
+                r"""(root, { options }) => {
+                    const visible = (el) => !!el && el.offsetParent !== null;
+                    const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
+                    const setValue = (node, value) => {
+                        node.focus();
+                        node.select?.();
+                        node.value = value;
+                        node.dispatchEvent(new Event('input', { bubbles: true }));
+                        node.dispatchEvent(new Event('change', { bubbles: true }));
+                        node.dispatchEvent(new Event('blur', { bubbles: true }));
+                    };
+
+                    const candidates = Array.from(root.querySelectorAll('input'))
+                        .filter((node) => visible(node))
+                        .filter((node) => {
+                            const placeholder = (node.getAttribute('placeholder') || '').trim();
+                            if (placeholder !== '请输入选项名称') return false;
+                            const containerText = normalize(
+                                node.closest('.sale-spec-table, .sale-spec-wrapper, .el-form-item, .sku-item, .el-table__row, tr, .el-dialog__body')?.innerText
+                                || node.parentElement?.parentElement?.innerText
+                                || node.parentElement?.innerText
+                                || ''
+                            );
+                            return containerText.includes('销售属性')
+                                || containerText.includes('规格一')
+                                || containerText.includes('添加选项')
+                                || /\b\d+\s*\/30\b/.test(containerText);
+                        });
+
+                    let changed = 0;
+                    for (let index = 0; index < candidates.length && index < options.length; index += 1) {
+                        setValue(candidates[index], options[index]);
+                        changed += 1;
+                    }
+                    return changed;
+                }""",
+                {'options': options},
+            )
+            if updated:
+                logger.info(f'销售属性名称已规范化: {options}')
+                time.sleep(0.5)
+        except Exception:
+            pass
+
     def _click_visible_button(self, text_candidates: Sequence[str], container=None) -> bool:
         target = container if container is not None else self.page
         for text in text_candidates:
@@ -1110,7 +1266,9 @@ class MiaoshouUpdater:
                         if not dialog.is_visible():
                             continue
                         title = dialog.locator('.el-dialog__title').first
-                        if title.count() > 0 and '发布产品' in title.inner_text():
+                        title_text = title.inner_text() if title.count() > 0 else ''
+                        dialog_text = dialog.inner_text(timeout=500)
+                        if '发布产品' in title_text or '确定发布' in dialog_text or '发布到选中店铺' in dialog_text:
                             return dialog
                     except Exception:
                         continue
@@ -1387,6 +1545,64 @@ class MiaoshouUpdater:
         except Exception:
             return []
 
+    def _get_form_validation_errors(self, dialog) -> List[str]:
+        try:
+            errors = dialog.evaluate(
+                r"""(root) => {
+                    const visible = (el) => !!el && el.offsetParent !== null;
+                    const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
+                    const values = [];
+
+                    for (const node of root.querySelectorAll('.el-form-item__error, .ant-form-item-explain-error')) {
+                        if (!visible(node)) continue;
+                        const text = normalize(node.innerText || '');
+                        if (text) values.push(text);
+                    }
+
+                    for (const node of root.querySelectorAll('.el-form-item.is-error')) {
+                        if (!visible(node)) continue;
+                        const text = normalize(node.innerText || '');
+                        if (!text) continue;
+                        const matched = text.match(/(不能为空|请选择[^\s]+|请填写[^\s]+|必填)/g) || [];
+                        for (const item of matched) values.push(item);
+                    }
+
+                    return Array.from(new Set(values));
+                }"""
+            )
+            return errors or []
+        except Exception:
+            return []
+
+    def _describe_publish_branch_after_save(self, dialog) -> Dict[str, Any]:
+        titles = self._get_visible_dialog_titles()
+        texts = self._get_visible_dialog_texts()
+        errors = self._get_form_validation_errors(dialog)
+        try:
+            body_text = self.page.locator('body').inner_text(timeout=1000)
+        except Exception:
+            body_text = ''
+
+        branch = 'unknown'
+        if errors:
+            branch = 'validation_error'
+        elif any('发布产品' in title for title in titles):
+            branch = 'publish_dialog_visible'
+        elif any(keyword in body_text for keyword in ['保存成功', '修改成功', '操作成功']):
+            branch = 'save_only_success'
+        elif any(keyword in body_text for keyword in ['新手指南', '店铺授权', '请选择一个平台进行店铺授权']):
+            branch = 'publish_blocked'
+        elif any(keyword in title for title in titles for keyword in ['基本信息', '产品图片', '物流信息', '销售信息']):
+            branch = 'still_in_edit_dialog'
+
+        return {
+            'branch': branch,
+            'titles': titles,
+            'errors': errors,
+            'body_excerpt': body_text[:500].replace('\n', ' '),
+            'dialog_excerpt': texts[0][:500].replace('\n', ' ') if texts else '',
+        }
+
     def _wait_for_publish_completion(self, timeout: float = 15.0) -> bool:
         deadline = time.time() + timeout
         while time.time() < deadline:
@@ -1455,6 +1671,7 @@ class MiaoshouUpdater:
         self._fill_category(dialog, normalized)
         self._fill_weight_dimensions(dialog, normalized)
         self._fill_required_attributes(dialog, normalized)
+        self._normalize_sales_attribute_values(dialog, normalized)
 
         if not self._click_save_action(dialog, publish=publish):
             self.screenshot('save_action_click_failed')
@@ -1487,8 +1704,14 @@ class MiaoshouUpdater:
                     raise RuntimeError(blocker)
 
         if publish_dialog is None:
+            diagnostics = self._describe_publish_branch_after_save(dialog)
             self.screenshot('publish_dialog_not_found')
-            raise RuntimeError('保存并发布后未出现发布确认对话框')
+            detail_parts = [f"branch={diagnostics.get('branch')}"]
+            if diagnostics.get('errors'):
+                detail_parts.append(f"errors={'; '.join(diagnostics['errors'])}")
+            if diagnostics.get('titles'):
+                detail_parts.append(f"titles={' | '.join(diagnostics['titles'])}")
+            raise RuntimeError(f"保存并发布后未出现发布确认对话框 ({', '.join(detail_parts)})")
 
         self.screenshot('publish_dialog_open')
         if not self._select_publish_targets(publish_dialog):
@@ -1516,6 +1739,9 @@ class MiaoshouUpdater:
             raise RuntimeError('发布流程超时，未观察到成功态')
 
         self._close_result_dialogs()
+
+        if not self._wait_for_product_published(str(source_item_id), timeout=60.0):
+            raise RuntimeError('发布后核验失败，商品未从未发布移出或未出现在已发布列表')
 
         if normalized.get('id'):
             self.update_product_status(normalized['id'], 'published')

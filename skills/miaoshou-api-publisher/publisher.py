@@ -489,9 +489,7 @@ class MiaoshouAPIPublisher:
         exists, existing = self.check_product_exists(alibaba_id)
         if exists:
             print(f"⚠️ 商品已在采集箱，跳过")
-            # 更新状态为已发布
-            self.update_product_status(product.get('id'), 'published')
-            return True, '商品已在采集箱（已同步状态）'
+            return False, '商品已在采集箱，未执行真实发布核验，拒绝自动标记为 published'
         
         # 2. 获取SKU数据
         skus = self.get_skus(product.get('id'))
@@ -519,9 +517,7 @@ class MiaoshouAPIPublisher:
             
             # 检查是否是数据冲突（商品正在被编辑或刚刚发布）
             if '编辑过程中' in reason or '数据发生变动' in reason or '正在被编辑' in reason:
-                # 更新状态为published（因为商品已经在采集箱了）
-                self.update_product_status(product.get('id'), 'published')
-                return True, '商品已在采集箱（数据冲突，已同步状态）'
+                return False, f'发布状态不确定: {reason}'
             
             return False, reason
 

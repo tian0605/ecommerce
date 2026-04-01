@@ -110,6 +110,45 @@ class WorkflowRunner:
 
         return None
 
+    def _lookup_product_status(self, product_identifier: Any) -> Optional[str]:
+        if isinstance(product_identifier, dict):
+            identifiers = [
+                ('id', product_identifier.get('id')),
+                ('product_id_new', product_identifier.get('product_id_new')),
+                ('product_id', product_identifier.get('product_id')),
+                ('alibaba_product_id', product_identifier.get('alibaba_product_id')),
+            ]
+        else:
+            value = str(product_identifier)
+            identifiers = [
+                ('id', value),
+                ('product_id_new', value),
+                ('product_id', value),
+                ('alibaba_product_id', value),
+            ]
+
+        try:
+            conn = psycopg2.connect(host='localhost', database='ecommerce_data', user='superuser', password='Admin123!')
+            cur = conn.cursor()
+            for field, value in identifiers:
+                if value in (None, ''):
+                    continue
+                if field == 'id':
+                    cur.execute("SELECT status FROM products WHERE id::text = %s ORDER BY id DESC LIMIT 1", (str(value),))
+                else:
+                    cur.execute(f"SELECT status FROM products WHERE {field} = %s ORDER BY id DESC LIMIT 1", (value,))
+                row = cur.fetchone()
+                if row:
+                    cur.close()
+                    conn.close()
+                    return row[0]
+            cur.close()
+            conn.close()
+        except Exception as exc:
+            logger.warning(f'[lookup] 查询商品状态失败: {exc}')
+
+        return None
+
     def check_preconditions(self, require_local_weight: bool = True) -> Dict[str, Any]:
         logger.info('=' * 60)
         logger.info('[预检] 检查工作流前置条件')
@@ -276,8 +315,21 @@ class WorkflowRunner:
             updater.launch()
             success = updater.update_product(product_identifier, publish=publish)
             if success:
-                logger.info('[step6] 回写成功')
-                return {'success': True, 'product_id': product_identifier, 'published': publish}
+                observed_status = self._lookup_product_status(product_identifier)
+                is_published = observed_status == 'published'
+                if publish and not is_published:
+                    return self._fail('step6_update', '妙手回写完成，但未核验到 published 状态', {
+                        'product_id': product_identifier,
+                        'status': observed_status,
+                        'published': False,
+                    })
+                logger.info(f'[step6] 回写成功，当前状态: {observed_status or "unknown"}')
+                return {
+                    'success': True,
+                    'product_id': product_identifier,
+                    'published': is_published,
+                    'status': observed_status,
+                }
             return self._fail('step6_update', '妙手回写返回失败', {'product_id': product_identifier})
         except Exception as exc:
             return self._fail('step6_update', str(exc), {'product_id': product_identifier})
