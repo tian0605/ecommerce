@@ -21,6 +21,13 @@ class Logger:
         self.run_message = ""
         self.run_content = ""
         self.log_level = "INFO"
+
+    @staticmethod
+    def _clip(value: Optional[str], limit: int) -> Optional[str]:
+        if value is None:
+            return None
+        text = str(value)
+        return text[:limit]
     
     def set_task(self, task_name: str):
         """设置关联任务"""
@@ -105,13 +112,13 @@ class Logger:
                     run_status, run_message, run_content
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
-                self.log_type,
-                self.log_level,
-                self.task_name,
+                self._clip(self.log_type, 50),
+                self._clip(self.log_level, 20),
+                self._clip(self.task_name, 255),
                 self.start_time,
                 end_time,
                 duration_ms,
-                self.run_status,
+                self._clip(self.run_status, 50),
                 (self.run_message or "")[:500],
                 (self.run_content or "")[-5000:]
             ))

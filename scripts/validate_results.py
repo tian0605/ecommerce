@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pyright: reportUnknownVariableType=false, reportUnknownArgumentType=false, reportUnknownMemberType=false, reportMissingParameterType=false
 """
 验证任务执行结果
 检查 task_state.json 中的结果是否满足成功标准
@@ -9,26 +10,111 @@ import sys
 import re
 from pathlib import Path
 from datetime import datetime
+from typing import Any, Dict, List, cast
+
+SCRIPTS_DIR = Path('/root/.openclaw/workspace-e-commerce/scripts')
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
+
+from multisite_config import load_market_bundle, normalize_site_context  # type: ignore
 
 WORKSPACE = Path('/root/.openclaw/workspace-e-commerce')
 STATE_FILE = WORKSPACE / 'logs' / 'task_state.json'
 QUEUE_FILE = WORKSPACE / 'docs' / 'dev-task-queue.md'
 FEISHU_TABLE_URL = "https://pcn0wtpnjfsd.feishu.cn/base/DyzjbfaZZaYeJls6lDFc5DavnPd"
 
-def log(msg):
+
+DEFAULT_TITLE_FORBIDDEN_TERMS = ['现货', '現貨']
+DEFAULT_DESC_FORBIDDEN_TERMS = ['现货', '現貨']
+
+
+def parse_float(value: Any, default: float = 0.0) -> float:
+    try:
+        if value is None or value == '':
+            return default
+        return float(value)
+    except Exception:
+        return default
+
+
+def parse_json_object(value: Any) -> Dict[str, Any]:
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str):
+        try:
+            decoded = json.loads(value)
+        except Exception:
+            return {}
+        return decoded if isinstance(decoded, dict) else {}
+    return {}
+
+
+def shipping_profile_value(shipping_profile: Dict[str, Any], key: str) -> Any:
+    direct = shipping_profile.get(key)
+    if direct not in (None, ''):
+        return direct
+    return parse_json_object(shipping_profile.get('metadata')).get(key)
+
+
+def resolve_runtime_bundle(payload: Dict[str, Any] | None = None) -> Dict[str, Any]:
+    payload_dict = payload or {}
+    site_context = cast(Dict[str, Any], normalize_site_context(payload_dict))
+    try:
+        return load_market_bundle(None, market_code=site_context.get('market_code'), site_code=site_context.get('site_code'))
+    except Exception:
+        return {
+            'site_context': site_context,
+            'market_config': {},
+            'shipping_profile': {},
+            'content_policy': {},
+        }
+
+
+def merge_forbidden_terms(content_policy: Dict[str, Any]) -> List[str]:
+    forbidden_terms = list(DEFAULT_TITLE_FORBIDDEN_TERMS)
+    for term in cast(List[Any], content_policy.get('forbidden_terms_json') or []):
+        normalized = str(term or '').strip()
+        if normalized and normalized not in forbidden_terms:
+            forbidden_terms.append(normalized)
+    return forbidden_terms
+
+
+def looks_traditional_chinese(text: str) -> bool:
+    traditional_chars = ['顧','擔','鐵','銅','錢','錯','復','華','國','開','關','櫃','檯','術','發','飾','門','間','體','燈']
+    return any(char in text for char in traditional_chars)
+
+
+def looks_english_text(text: str) -> bool:
+    if not text:
+        return False
+    latin_letters = re.findall(r'[A-Za-z]', text)
+    chinese_chars = re.findall(r'[\u4e00-\u9fff]', text)
+    return len(latin_letters) >= 10 and len(latin_letters) > len(chinese_chars)
+
+def log(msg: Any) -> None:
     print(f"[{datetime.now().strftime('%H:%M:%S')}] 验证: {msg}", flush=True)
 
-def validate_listing_optimizer(data, db_id):
+def validate_listing_optimizer(data: Dict[str, Any], db_id: Any):
     """验证 listing-optimizer 成功标准 - 直接从数据库检查"""
-    issues = []
+    bundle = resolve_runtime_bundle(data)
+    site_context = bundle.get('site_context') or {}
+    content_policy = bundle.get('content_policy') or {}
+    listing_language = str(content_policy.get('listing_language') or site_context.get('listing_language') or 'zh-Hant').strip()
+    forbidden_terms = merge_forbidden_terms(content_policy)
+    title_min_length = int(content_policy.get('title_min_length') or 20)
+    title_max_length = int(content_policy.get('title_max_length') or 80)
+    description_min_length = int(content_policy.get('description_min_length') or 300)
+    description_max_length = int(content_policy.get('description_max_length') or 2000)
+
+    issues: List[str] = []
     checks = {
         'title_optimized': False,
-        'title_traditional': False,
+        'title_language': False,
         'title_length': False,
-        'title_no_stock': False,
+        'title_no_forbidden_terms': False,
         'desc_optimized': False,
         'desc_length': False,
-        'desc_no_stock': False,
+        'desc_no_forbidden_terms': False,
         'saved_to_db': False
     }
     
@@ -58,18 +144,18 @@ def validate_listing_optimizer(data, db_id):
                 checks['title_optimized'] = True
                 checks['saved_to_db'] = True
                 
-                # 检查繁体中文（包含常用繁体字）
-                if any(c in optimized_title for c in ['顧','擔','鐵','銅','錢','錯','復','華','國','開','關','櫃','檯','術','發','飾','櫃','開','關','門','間']):
-                    checks['title_traditional'] = True
+                if listing_language.lower().startswith('en'):
+                    checks['title_language'] = looks_english_text(optimized_title)
+                else:
+                    checks['title_language'] = looks_traditional_chinese(optimized_title)
                 
                 # 检查长度（去掉空格后的字符数）
                 clean_title = optimized_title.replace(' ', '').replace('｜', '')
-                if 20 <= len(clean_title) <= 80:  # 放宽到20-80
+                if title_min_length <= len(clean_title) <= title_max_length:
                     checks['title_length'] = True
                 
-                # 检查不含"现货"
-                if '現貨' not in optimized_title and '现货' not in optimized_title:
-                    checks['title_no_stock'] = True
+                if not any(term in optimized_title for term in forbidden_terms):
+                    checks['title_no_forbidden_terms'] = True
             else:
                 issues.append("优化标题为空")
             
@@ -77,12 +163,11 @@ def validate_listing_optimizer(data, db_id):
                 checks['desc_optimized'] = True
                 
                 # 检查长度
-                if 300 <= len(optimized_desc) <= 2000:
+                if description_min_length <= len(optimized_desc) <= description_max_length:
                     checks['desc_length'] = True
                 
-                # 检查不含"现货"
-                if '現貨' not in optimized_desc and '现货' not in optimized_desc:
-                    checks['desc_no_stock'] = True
+                if not any(term in optimized_desc for term in forbidden_terms):
+                    checks['desc_no_forbidden_terms'] = True
             else:
                 issues.append("优化描述为空或太短")
                 
@@ -96,29 +181,35 @@ def validate_listing_optimizer(data, db_id):
     for check in failed_checks:
         if check == 'title_optimized':
             issues.append("优化标题为空")
-        elif check == 'title_traditional':
-            issues.append("标题未使用繁体中文")
+        elif check == 'title_language':
+            if listing_language.lower().startswith('en'):
+                issues.append("标题未使用英语输出")
+            else:
+                issues.append("标题未使用配置要求的繁体中文")
         elif check == 'title_length':
-            issues.append(f"标题长度不符合要求（应20-80字符）")
-        elif check == 'title_no_stock':
-            issues.append("标题包含'现货'等违规词汇")
+            issues.append(f"标题长度不符合要求（应 {title_min_length}-{title_max_length} 字符）")
+        elif check == 'title_no_forbidden_terms':
+            issues.append("标题包含 content policy 禁用词")
         elif check == 'desc_optimized':
             issues.append("描述未被优化或太短")
         elif check == 'desc_length':
-            issues.append("描述长度不符合 300-2000 字要求")
-        elif check == 'desc_no_stock':
-            issues.append("描述包含'现货'等违规词汇")
+            issues.append(f"描述长度不符合 {description_min_length}-{description_max_length} 字要求")
+        elif check == 'desc_no_forbidden_terms':
+            issues.append("描述包含 content policy 禁用词")
         elif check == 'saved_to_db':
             issues.append("优化结果未保存到数据库")
     
     return issues, checks
 
-def validate_miaoshou_updater(data):
+def validate_miaoshou_updater(data: Dict[str, Any]):
     """验证 miaoshou-updater 成功标准"""
-    issues = []
+    issues: List[str] = []
+    bundle = resolve_runtime_bundle(data)
+    market_config = bundle.get('market_config') or {}
     checks = {
         'has_optimized_title': False,
         'has_optimized_desc': False,
+        'publish_allowed': market_config.get('allow_publish', True) is True,
         'browser_needed': True  # 需要浏览器，无法自动验证
     }
     
@@ -146,18 +237,34 @@ def validate_miaoshou_updater(data):
             issues.append(f"数据库读取失败: {e}")
     
     # 如果任务被跳过
-    if data.get('note') and '跳过' in data.get('note'):
-        issues.append(f"任务跳过: {data.get('note')}")
+    note = str(data.get('note') or '')
+    if note and '跳过' in note:
+        issues.append(f"任务跳过: {note}")
+
+    if not checks['publish_allowed']:
+        issues.append("当前 market config 禁止发布")
     
     return issues, checks
 
-def validate_profit_analyzer(data):
+def validate_profit_analyzer(data: Dict[str, Any]):
     """验证 profit-analyzer 成功标准"""
-    issues = []
+    bundle = resolve_runtime_bundle(data)
+    market_config = bundle.get('market_config') or {}
+    shipping_profile = bundle.get('shipping_profile') or {}
+    local_currency = str(market_config.get('default_currency') or data.get('currency') or 'TWD').upper()
+    first_weight_g = parse_float(shipping_profile_value(shipping_profile, 'first_weight_g'), 500)
+    first_weight_fee = parse_float(shipping_profile_value(shipping_profile, 'first_weight_fee'), 70)
+    continue_weight_g = max(parse_float(shipping_profile_value(shipping_profile, 'continue_weight_g'), 500), 1)
+    continue_weight_fee = parse_float(shipping_profile_value(shipping_profile, 'continue_weight_fee'), 30)
+    commission_rate = parse_float(shipping_profile_value(shipping_profile, 'commission_rate'), 0.14)
+    transaction_fee_rate = parse_float(shipping_profile_value(shipping_profile, 'transaction_fee_rate'), 0.025)
+    pre_sale_service_rate = parse_float(shipping_profile_value(shipping_profile, 'pre_sale_service_rate'), 0.03)
+
+    issues: List[str] = []
     checks = {
         'has_price_data': False,
         'has_weight_data': False,
-        'sls_calculated': False,
+        'shipping_calculated': False,
         'commission_calculated': False,
         'has_suggested_price': False,
         'price_reasonable': False,
@@ -165,10 +272,10 @@ def validate_profit_analyzer(data):
     }
     
     purchase_price = data.get('purchase_price_cny', 0)
-    weight_g = data.get('weight_g', 0)
-    sls_twd = data.get('sls_twd', 0)
-    commission_twd = data.get('commission_twd', 0)
-    suggested_price = data.get('suggested_price_twd', 0)
+    weight_g = data.get('chargeable_weight_g') or data.get('weight_g', 0)
+    shipping_fee_local = data.get('platform_shipping_fee_local') or data.get('sls_twd', 0)
+    commission_local = data.get('commission_local') or data.get('commission_twd', 0)
+    suggested_price = data.get('suggested_price_local') or data.get('suggested_price_twd', 0)
     
     if purchase_price and purchase_price > 0:
         checks['has_price_data'] = True
@@ -176,32 +283,33 @@ def validate_profit_analyzer(data):
     if weight_g and weight_g > 0:
         checks['has_weight_data'] = True
     
-    if sls_twd and sls_twd > 0:
-        checks['sls_calculated'] = True
-        # 验证 SLS 运费计算（首重500g=70 TWD，续重每500g=30 TWD）
-        expected_sls = 70 if weight_g <= 500 else 70 + ((weight_g - 500) // 500 + 1) * 30
-        if abs(sls_twd - expected_sls) > 5:  # 允许5 TWD误差
-            issues.append(f"SLS运费计算可能有误: 实际{sls_twd}，预期{expected_sls}")
+    if shipping_fee_local and shipping_fee_local > 0:
+        checks['shipping_calculated'] = True
+        expected_shipping = first_weight_fee if weight_g <= first_weight_g else first_weight_fee + (((weight_g - first_weight_g) // continue_weight_g) + 1) * continue_weight_fee
+        if abs(parse_float(shipping_fee_local) - expected_shipping) > max(5, continue_weight_fee):
+            issues.append(f"运费计算可能有误: 实际{shipping_fee_local} {local_currency}，预期{expected_shipping:.0f} {local_currency}")
     
-    if commission_twd and commission_twd > 0:
+    if commission_local and commission_local > 0:
         checks['commission_calculated'] = True
-        # 验证佣金计算（14%）
-        expected_commission = int(suggested_price * 0.14)
-        if abs(commission_twd - expected_commission) > 5:
-            issues.append(f"佣金计算可能有误: 实际{commission_twd}，预期{expected_commission}")
+        expected_commission = suggested_price * commission_rate
+        if abs(parse_float(commission_local) - expected_commission) > 5:
+            issues.append(f"佣金计算可能有误: 实际{commission_local} {local_currency}，预期{expected_commission:.0f} {local_currency}")
     
     if suggested_price and suggested_price > 0:
         checks['has_suggested_price'] = True
         
         # 检查售价是否合理（至少覆盖成本）
-        if purchase_price and sls_twd:
+        if purchase_price and shipping_fee_local:
             # 总成本包含佣金
-            total_cost_cny = purchase_price + 3 + (sls_twd / 4.5)
-            min_price_twd = total_cost_cny * 4.5 * 1.1  # 至少10%利润
-            if suggested_price >= min_price_twd:
+            exchange_rate = parse_float(data.get('exchange_rate'), 4.5 if local_currency == 'TWD' else 7.8)
+            agent_fee_cny = parse_float(data.get('agent_fee_cny'), parse_float(shipping_profile_value(shipping_profile, 'agent_fee_cny'), 3))
+            total_fee_rate = commission_rate + transaction_fee_rate + pre_sale_service_rate
+            total_cost_cny = purchase_price + agent_fee_cny + (parse_float(shipping_fee_local) / exchange_rate)
+            min_price_local = total_cost_cny * exchange_rate * max(1.05, 1 + total_fee_rate)
+            if suggested_price >= min_price_local:
                 checks['price_reasonable'] = True
             else:
-                issues.append(f"建议售价{suggested_price} TWD 可能低于成本{min_price_twd:.0f} TWD")
+                issues.append(f"建议售价{suggested_price} {local_currency} 可能低于成本{min_price_local:.0f} {local_currency}")
     
     # 检查是否发送到飞书（需要日志验证）
     # 目前无法自动验证，标记为需手动确认
@@ -231,13 +339,12 @@ def validate_results():
         log("无执行结果")
         return "skip"
     
-    all_issues = []
-    all_checks = {}
+    all_issues: List[Dict[str, Any]] = []
+    all_checks: Dict[str, Dict[str, bool]] = {}
     
     for r in results:
         step = r.get('step', 'unknown')
-        success = r.get('success', False)
-        data = r.get('data', {})
+        data = cast(Dict[str, Any], r.get('data', {}))
         
         log(f"验证 {step}...")
         
@@ -294,7 +401,7 @@ def validate_results():
         log("\n✅ 所有步骤验证通过!")
         return "all_ok"
 
-def update_queue(issues):
+def update_queue(issues: List[Dict[str, Any]]) -> None:
     """更新任务队列，添加发现的问题"""
     
     if not issues:

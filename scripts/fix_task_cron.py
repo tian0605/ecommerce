@@ -10,7 +10,6 @@ fix_task_cron - 修复任务执行定时器
 """
 import sys
 import subprocess
-import time
 from pathlib import Path
 from datetime import datetime
 
@@ -18,7 +17,7 @@ WORKSPACE = Path('/root/.openclaw/workspace-e-commerce')
 SCRIPTS_DIR = WORKSPACE / 'scripts'
 sys.path.insert(0, str(SCRIPTS_DIR))
 
-from task_manager import TaskManager
+from task_manager import TaskManager, TaskStage
 from logger import get_logger
 
 FIX_SCRIPT = f'{SCRIPTS_DIR}/subtask_executor.py'
@@ -92,7 +91,7 @@ def main():
     log = get_logger('fix_cron')
     
     # 检查是否有卡死的FIX任务
-    cur_tasks = tm.get_actionable_tasks(limit=5)
+    cur_tasks = tm.claim_runnable_tasks_by_stage(limit=5, task_types=['修复'])
     
     # 只处理修复类任务
     fix_tasks = [t for t in cur_tasks if t.get('task_type') == '修复']
@@ -115,10 +114,13 @@ def main():
         if is_task_stuck(task_name):
             print(f"[FIX-CRON] 任务卡死: {task_name}")
             kill_task_process(task_name)
-            tm.reset_task(task_name, exec_state='new')
+            tm.fail_stage(
+                task_name,
+                task.get('current_stage') or TaskStage.BUILD.value,
+                '修复任务执行超时',
+                error_type='timeout_overtime',
+            )
         
-        # 标记开始
-        tm.mark_start(task_name)
         log.set_task(task_name).set_message(f"fix_cron执行").finish("running")
         
         # 执行
@@ -126,11 +128,23 @@ def main():
         
         # 更新状态
         if success:
-            tm.mark_end(task_name, "fix_cron执行成功")
+            refreshed = tm.get_task(task_name) or {}
+            if refreshed.get('exec_state') != 'end':
+                tm.mark_end(task_name, "fix_cron执行成功")
+            tm.sync_parent_from_fix_result(task_name, True, 'fix_cron执行成功')
             log.set_message(f"fix_cron成功").finish("success")
             print(f"[FIX-CRON] ✅ {task_name} 执行成功")
         else:
-            tm.mark_error_fix_pending(task_name, "执行失败")
+            try:
+                tm.mark_error_fix_pending(task_name, "执行失败")
+            except Exception as exc:
+                tm.update_task(
+                    task_name,
+                    status='failed',
+                    exec_state='requires_manual',
+                    last_error=f"fix_cron失败且状态回写异常: {str(exc)[:200]}",
+                )
+            tm.sync_parent_from_fix_result(task_name, False, 'fix_cron执行失败')
             log.set_message(f"fix_cron失败").finish("failed")
             print(f"[FIX-CRON] ❌ {task_name} 执行失败")
     

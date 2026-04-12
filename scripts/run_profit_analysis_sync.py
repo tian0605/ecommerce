@@ -18,6 +18,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('alibaba_ids', nargs='*', help='1688 商品 ID 列表')
     parser.add_argument('--ids', help='逗号分隔的 1688 商品 ID 列表')
     parser.add_argument('--profit-rate', type=float, default=0.20, help='目标利润率，默认 0.20')
+    parser.add_argument('--market-code', help='市场代码，例如 shopee_tw / shopee_ph')
+    parser.add_argument('--site-code', help='站点代码，例如 shopee_tw / shopee_ph')
+    parser.add_argument('--site', help='兼容旧入口的站点短码，例如 TW / PH')
+    parser.add_argument('--skip-feishu', action='store_true', help='仅写入本地利润明细，不同步飞书')
     return parser.parse_args()
 
 
@@ -51,6 +55,14 @@ def main() -> int:
         '--profit-rate',
         str(args.profit_rate),
     ]
+    if args.market_code:
+        cmd.extend(['--market-code', args.market_code])
+    if args.site_code:
+        cmd.extend(['--site-code', args.site_code])
+    elif args.site:
+        cmd.extend(['--site-code', args.site])
+    if args.skip_feishu:
+        cmd.append('--skip-feishu')
     completed = subprocess.run(cmd, cwd=str(WORKSPACE))
     return completed.returncode
 

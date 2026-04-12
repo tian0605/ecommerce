@@ -19,6 +19,9 @@ TRANSACTION_FEE_RATE = 0.025  # 交易手续费2.5%
 PRE_SALE_SERVICE_RATE = 0.0   # 预售服务费固定为0
 AGENT_FEE_CNY = 3.00          # 货代费3元/单
 
+# 头程运费
+# 来自 local-1688-weight 服务返回的 freight_info.total_cost（单位 CNY）
+
 # SLS运费
 FIRST_WEIGHT_G = 500
 FIRST_WEIGHT_TWD = 70.00      # 首重500g=70TWD
@@ -36,12 +39,12 @@ DEFAULT_TARGET_PROFIT_RATE = 0.20  # 默认目标利润率20%
 ## 利润计算公式
 
 ```
-总成本 = 采购价(CNY) + 货代费(CNY) + SLS运费(TWD) + 平台费(TWD)
+总成本 = 采购价(CNY) + 头程运费(CNY) + 货代费(CNY) + SLS运费(TWD) + 平台费(TWD)
 平台费 = 售价 × (佣金14% + 交易手续费2.5% + 预售服务费3%)
 
 SLS运费 = 首重70 + ceil((重量g - 500) / 500) × 30
 
-建议售价 = (采购价 × 汇率 + 货代费 + 平台费) / (1 - 佣金率 - 手续费率 - 预售费率)
+建议售价 = (采购价 × 汇率 + 头程运费 × 汇率 + 货代费 + 平台费) / (1 - 佣金率 - 手续费率 - 预售费率)
 ```
 
 ## 使用方法
@@ -66,10 +69,14 @@ print(result)
     'alibaba_product_id': '1027205078815',
     'weight_kg': 0.627,
     'purchase_price_cny': 25.0,
+    'domestic_shipping_cny': 5.0,
+    'agent_fee_cny': 3.0,
     'exchange_rate': 4.5,
     'sls_shipping_twd': 85.0,
+    'domestic_shipping_twd': 22.5,
+    'agent_fee_twd': 13.5,
     'platform_fee_twd': 87.25,
-    'total_cost_twd': 384.75,
+    'total_cost_twd': 407.25,
     'suggested_price_twd': 549,
     'target_profit_rate': 0.20,
     'estimated_profit_twd': 77.0,
@@ -84,6 +91,9 @@ print(result)
 - **app_token**: GlqObu4Z2aumBks2SPpcNKRDnWf
 - **table_id**: tblHsfVWolBpeSNg
 - **URL**: https://pcn0wtpnjfsd.feishu.cn/base/GlqObu4Z2aumBks2SPpcNKRDnWf
+
+当前飞书明细中会单独输出 `货代费(CNY)` 和 `货代费(TWD)` 字段，便于运营核对固定 3 元/单的海外发运前成本。
+如果本地1688服务返回 `freight_info`，飞书中还会单独输出 `头程运费(CNY)` 和 `头程运费(TWD)`。
 
 ## 调试方式
 

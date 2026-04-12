@@ -43,6 +43,43 @@ from task_manager import TaskManager
 from logger import get_logger
 
 
+def parse_structured_metadata(*sources: str) -> dict:
+    metadata = {}
+    for raw in sources:
+        if not raw:
+            continue
+        for part in re.split(r'[;\n]+', str(raw)):
+            if '=' not in part:
+                continue
+            key, value = part.split('=', 1)
+            key = key.strip().lower()
+            value = value.strip()
+            if key and value and key not in metadata:
+                metadata[key] = value
+    return metadata
+
+
+def handle_structured_fix(tm: TaskManager, log, task: dict, metadata: dict) -> bool:
+    """为受控场景提供非LLM的确定性修复路径。"""
+    action = metadata.get('action', '').strip().lower()
+    current_stage = task.get('current_stage') or 'build'
+    task_name = task.get('task_name')
+    if action == 'simulate_fix_success':
+        tm.record_stage_artifact(task_name, current_stage, 'fix_resolution', {
+            'mode': 'structured',
+            'metadata': metadata,
+        })
+        tm.set_stage(task_name, current_stage, status='done', result='结构化修复成功')
+        tm.mark_end(task_name, '结构化修复成功')
+        log.set_message('结构化修复成功').finish('success')
+        return True
+    if action == 'simulate_fix_failure':
+        tm.fail_stage(task_name, current_stage, '结构化修复失败', error_type=metadata.get('error_type', 'stage_failed'))
+        log.set_message('结构化修复失败').finish('failed')
+        return True
+    return False
+
+
 # ==================== 增强分析函数 ====================
 
 def search_solution_with_tavily(query: str, max_results: int = 3) -> str:
@@ -714,10 +751,16 @@ def main(task_name: str):
     description = task.get('description', '')
     fix_suggestion = task.get('fix_suggestion', '')
     last_error = task.get('last_error', '')
+    current_stage = task.get('current_stage') or 'build'
+    metadata = parse_structured_metadata(description, fix_suggestion, task.get('plan', ''))
     
     print(f"任务: {task_name}")
     print(f"描述: {description}")
     print(f"错误: {last_error}")
+
+    if handle_structured_fix(tm, log, task, metadata):
+        tm.close()
+        return
     
     # 增强错误分析
     enhanced_analysis = enhance_error_analysis(last_error)
@@ -747,7 +790,8 @@ def main(task_name: str):
     
     if not response:
         print("LLM调用失败")
-        tm.mark_error_fix_pending(task_name, "LLM调用失败")
+        tm.fail_stage(task_name, current_stage, 'LLM调用失败', error_type='stage_failed')
+        tm.close()
         return
     
     print(f"\nLLM返回:\n{response}")
@@ -781,10 +825,23 @@ def main(task_name: str):
 """
         
         if success:
+            tm.record_stage_artifact(task_name, current_stage, 'fix_resolution', {
+                'analysis': parsed['analysis'],
+                'message': msg,
+            })
+            tm.set_stage(task_name, current_stage, status='done', result='修复成功')
             tm.mark_end(task_name, "修复成功")
             log.set_message(f"修复成功").set_content(fix_content).finish("success")
         else:
-            tm.mark_error_fix_pending(task_name, msg)
+            try:
+                tm.fail_stage(task_name, current_stage, msg, error_type='stage_failed')
+            except Exception as exc:
+                tm.update_task(
+                    task_name,
+                    status='failed',
+                    exec_state='requires_manual',
+                    last_error=f"修复失败且状态回写异常: {str(exc)[:200]}",
+                )
             log.set_message(f"修复失败: {msg}").set_content(fix_content).finish("failed")
     else:
         print("没有可执行的修复代码")
@@ -795,7 +852,15 @@ def main(task_name: str):
 结果: 没有可执行的修复代码
 """
         log.set_message(f"没有可执行的修复代码").set_content(no_code_content).finish("failed")
-        tm.mark_error_fix_pending(task_name, "没有可执行的修复代码")
+        try:
+            tm.fail_stage(task_name, current_stage, '没有可执行的修复代码', error_type='stage_failed')
+        except Exception as exc:
+            tm.update_task(
+                task_name,
+                status='failed',
+                exec_state='requires_manual',
+                last_error=f"无修复代码且状态回写异常: {str(exc)[:200]}",
+            )
     
     tm.close()
 

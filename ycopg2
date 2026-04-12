@@ -1,34 +1,56 @@
-                                                                        Table "public.tasks"
-       Column        |            Type             | Collation | Nullable |              Default              | Storage  | Compression | Stats target | Description 
----------------------+-----------------------------+-----------+----------+-----------------------------------+----------+-------------+--------------+-------------
- id                  | integer                     |           | not null | nextval('tasks_id_seq'::regclass) | plain    |             |              | 
- task_name           | character varying(100)      |           | not null |                                   | extended |             |              | 
- display_name        | character varying(200)      |           |          |                                   | extended |             |              | 
- description         | text                        |           |          |                                   | extended |             |              | 
- status              | character varying(20)       |           |          | 'pending'::character varying      | extended |             |              | 
- last_executed_at    | timestamp without time zone |           |          |                                   | plain    |             |              | 
- last_result         | text                        |           |          |                                   | extended |             |              | 
- last_error          | text                        |           |          |                                   | extended |             |              | 
- execution_count     | integer                     |           |          | 0                                 | plain    |             |              | 
- created_at          | timestamp without time zone |           |          | CURRENT_TIMESTAMP                 | plain    |             |              | 
- updated_at          | timestamp without time zone |           |          | CURRENT_TIMESTAMP                 | plain    |             |              | 
- priority            | character varying(10)       |           |          | 'P1'::character varying           | extended |             |              | 
- exec_state          | character varying(30)       |           |          | 'new'::character varying          | extended |             |              | 
- fix_suggestion      | text                        |           |          |                                   | extended |             |              | 
- parent_task_id      | character varying(50)       |           |          |                                   | extended |             |              | 
- task_level          | integer                     |           |          | 1                                 | plain    |             |              | 
- root_task_id        | character varying(50)       |           |          |                                   | extended |             |              | 
- retry_count         | integer                     |           |          | 0                                 | plain    |             |              | 
- solution            | text                        |           |          |                                   | extended |             |              | 
- is_void             | boolean                     |           |          | false                             | plain    |             |              | 
- success_criteria    | text                        |           |          |                                   | extended |             |              | 
- analysis            | text                        |           |          |                                   | extended |             |              | 
- plan                | text                        |           |          |                                   | extended |             |              | 
- task_type           | character varying(20)       |           |          | '常规'::character varying         | extended |             |              | 
- expected_duration   | integer                     |           |          |                                   | plain    |             |              | 
- progress_checkpoint | jsonb                       |           |          |                                   | extended |             |              | 
-Indexes:
-    "tasks_pkey" PRIMARY KEY, btree (id)
-    "tasks_task_name_key" UNIQUE CONSTRAINT, btree (task_name)
-Access method: heap
+         column_name          
+------------------------------
+ id
+ task_name
+ display_name
+ description
+ status
+ last_executed_at
+ last_result
+ last_error
+ execution_count
+ created_at
+ updated_at
+ priority
+ exec_state
+ fix_suggestion
+ parent_task_id
+ task_level
+ root_task_id
+ retry_count
+ solution
+ is_void
+ success_criteria
+ analysis
+ plan
+ task_type
+ expected_duration
+ progress_checkpoint
+ notification_status
+ notification_attempts
+ notification_success_count
+ notification_failure_count
+ notification_last_event
+ notification_last_message
+ notification_last_error
+ notification_last_attempt_at
+ notification_last_sent_at
+ notification_audit
+ feedback_doc_url
+ feedback_markdown_file
+ error_signature
+ agent_id
+ attribution_source
+ attribution_version
+ current_stage
+ stage_status
+ stage_started_at
+ stage_updated_at
+ stage_owner
+ stage_result
+ blocked_reason
+ next_stage
+ source_stage
+ stage_context
+(52 rows)
 

@@ -17,15 +17,16 @@ else
     echo "  ❌ Cookies文件不存在"
 fi
 
-# 条件2: 本地服务
+# 条件2: 本地1688服务（公网地址）
 echo ""
-echo "[条件2] 本地1688服务"
+echo "[条件2] 1688重量服务 (公网)"
+SERVICE_URL="http://43.139.213.66:8080"
 if python3 - <<'PY' > /tmp/health_check.json 2>&1
 import json
 import urllib.request
 
 probe = urllib.request.Request(
-    'http://127.0.0.1:8080/fetch-weight',
+    'http://43.139.213.66:8080/fetch-weight',
     data=json.dumps({'product_id': '1031400982378'}).encode(),
     headers={'Content-Type': 'application/json'}
 )
@@ -36,20 +37,21 @@ with urllib.request.urlopen(probe, timeout=10) as resp:
 PY
 then
     STATUS=$(cat /tmp/health_check.json)
-    echo "  ✅ 本地服务正常"
-    echo "     业务接口响应: $STATUS"
+    if echo "$STATUS" | grep -q '"success":true'; then
+        echo "  ✅ 服务正常 (43.139.213.66:8080)"
+        echo "     响应: $(echo $STATUS | python3 -c 'import sys,json; d=json.load(sys.stdin); print("商品:" + str(d.get("product_id","?")) + " SKU数:" + str(len(d.get("spec_list",[]))))')"
+    else
+        echo "  ⚠️ 服务响应异常"
+        echo "     $STATUS"
+    fi
 else
-    echo "  ❌ 本地服务未启动或无响应"
+    echo "  ❌ 服务无响应 (43.139.213.66:8080)"
 fi
 
-# 条件3: 隧道
+# 条件3: SSH隧道（已弃用，改用公网）
 echo ""
 echo "[条件3] SSH隧道"
-if ss -tlnp 2>/dev/null | grep -q "127.0.0.1:8080"; then
-    echo "  ✅ 隧道已建立 (127.0.0.1:8080 LISTEN)"
-else
-    echo "  ❌ 隧道未建立"
-fi
+echo "  ⏭️ 已弃用，改用公网地址 43.139.213.66:8080"
 
 echo ""
 echo "=== 检查完成 ==="

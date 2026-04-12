@@ -1,0 +1,16 @@
+[Unit]
+Description=OpenClaw Ops Dashboard API
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/root/.openclaw/workspace-e-commerce
+EnvironmentFile=-/etc/openclaw/ops-dashboard.env
+ExecStart=/root/.openclaw/workspace-e-commerce/.venv/bin/python -m uvicorn services.ops-api.app.main:app --host 127.0.0.1 --port 8010
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

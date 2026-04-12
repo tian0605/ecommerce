@@ -7,14 +7,21 @@ import argparse
 import json
 import math
 import os
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple, cast
 
 import psycopg2
 import requests
 
 WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
+SCRIPTS_DIR = WORKSPACE_ROOT / 'scripts'
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
+
+from multisite_config import load_market_bundle, normalize_site_context  # type: ignore
+
 CONFIG_ENV_PATH = WORKSPACE_ROOT / 'config' / 'config.env'
 FEISHU_CONFIG_PATH = WORKSPACE_ROOT / 'config' / 'profit_analysis_feishu.json'
 
@@ -57,6 +64,8 @@ REQUIRED_FIELDS: List[Tuple[str, int]] = [
     ('商品主货号', TEXT_FIELD),
     ('采购价(CNY)', NUMBER_FIELD),
     ('藏价(CNY)', NUMBER_FIELD),
+    ('头程运费(CNY)', NUMBER_FIELD),
+    ('货代费(CNY)', NUMBER_FIELD),
     ('是否免佣期', TEXT_FIELD),
     ('生效佣金率(%)', NUMBER_FIELD),
     ('佣金(CNY)', NUMBER_FIELD),
@@ -75,6 +84,8 @@ REQUIRED_FIELDS: List[Tuple[str, int]] = [
     ('卖家运费(TWD)', NUMBER_FIELD),
     ('买家运费(TWD)', NUMBER_FIELD),
     ('藏价(TWD)', NUMBER_FIELD),
+    ('头程运费(TWD)', NUMBER_FIELD),
+    ('货代费(TWD)', NUMBER_FIELD),
     ('佣金(TWD)', NUMBER_FIELD),
     ('交易手续费(TWD)', NUMBER_FIELD),
     ('预售服务费(TWD)', NUMBER_FIELD),
@@ -124,6 +135,18 @@ def round_or_none(value: Optional[float], digits: int = 2) -> Optional[float]:
     if value is None:
         return None
     return round(value, digits)
+
+
+def parse_json_object(value: Any) -> Dict[str, Any]:
+    if isinstance(value, dict):
+        return cast(Dict[str, Any], value)
+    if isinstance(value, str):
+        try:
+            decoded = json.loads(value)
+        except json.JSONDecodeError:
+            return {}
+        return cast(Dict[str, Any], decoded) if isinstance(decoded, dict) else {}
+    return {}
 
 
 class FeishuBitableClient:
@@ -254,12 +277,27 @@ class FeishuBitableClient:
     def upsert_records(self, rows: List[Dict[str, Any]]) -> Dict[str, int]:
         self.ensure_schema()
         removed_empty = self.cleanup_empty_records()
+        removed_stale = 0
         existing_by_key: Dict[str, str] = {}
-        for item in self.list_records():
+        existing_records = self.list_records()
+        incoming_keys = {str(row['唯一键']) for row in rows if row.get('唯一键')}
+        target_alibaba_ids = {str(row.get('货源ID') or '') for row in rows if row.get('货源ID')}
+
+        for item in existing_records:
             fields = item.get('fields', {})
             unique_key = fields.get('唯一键')
             if unique_key:
                 existing_by_key[str(unique_key)] = item['record_id']
+
+        if target_alibaba_ids:
+            for item in existing_records:
+                fields = item.get('fields', {})
+                unique_key = str(fields.get('唯一键') or '')
+                alibaba_id = str(fields.get('货源ID') or '')
+                if alibaba_id in target_alibaba_ids and unique_key and unique_key not in incoming_keys:
+                    self.delete_record(item['record_id'])
+                    existing_by_key.pop(unique_key, None)
+                    removed_stale += 1
 
         created = 0
         updated = 0
@@ -281,7 +319,7 @@ class FeishuBitableClient:
                     json_body={'fields': fields},
                 )
                 created += 1
-        return {'created': created, 'updated': updated, 'removed_empty': removed_empty}
+        return {'created': created, 'updated': updated, 'removed_empty': removed_empty, 'removed_stale': removed_stale}
 
 
 class ProfitAnalyzer:
@@ -300,7 +338,7 @@ class ProfitAnalyzer:
     def _connect(self):
         return psycopg2.connect(**self.db_config)
 
-    def _get_exchange_rate(self) -> float:
+    def _get_exchange_rate(self, to_currency: str = 'TWD') -> float:
         try:
             with self._connect() as conn:
                 with conn.cursor() as cur:
@@ -308,17 +346,79 @@ class ProfitAnalyzer:
                         """
                         SELECT rate
                         FROM exchange_rates
-                        WHERE from_currency = 'CNY' AND to_currency = 'TWD'
+                        WHERE from_currency = 'CNY' AND to_currency = %s
                         ORDER BY created_at DESC
                         LIMIT 1
-                        """
+                        """,
+                        (to_currency,),
                     )
                     row = cur.fetchone()
                     if row and row[0]:
                         return float(row[0])
         except Exception:
             pass
+        if str(to_currency).upper() == 'PHP':
+            return 7.80
         return 4.50
+
+    def _resolve_runtime_bundle(self, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        site_context = normalize_site_context(payload or {})
+        try:
+            return load_market_bundle(None, market_code=site_context.get('market_code'), site_code=site_context.get('site_code'))
+        except Exception:
+            return {
+                'site_context': site_context,
+                'market_config': {},
+                'shipping_profile': {},
+                'fee_profile': {},
+                'content_policy': {},
+                'prompt_profile': {},
+            }
+
+    def _fee_profile_value(self, fee_profile: Optional[Dict[str, Any]], key: str) -> Any:
+        profile = fee_profile or {}
+        direct = profile.get(key)
+        if direct not in (None, ''):
+            return direct
+        metadata = parse_json_object(profile.get('metadata'))
+        return metadata.get(key)
+
+    def _runtime_value(self, fee_profile: Optional[Dict[str, Any]], shipping_profile: Optional[Dict[str, Any]], key: str) -> Any:
+        fee_value = self._fee_profile_value(fee_profile, key)
+        if fee_value not in (None, ''):
+            return fee_value
+        return self._shipping_profile_value(shipping_profile, key)
+
+    def _shipping_profile_value(self, shipping_profile: Optional[Dict[str, Any]], key: str) -> Any:
+        profile = shipping_profile or {}
+        direct = profile.get(key)
+        if direct not in (None, ''):
+            return direct
+        metadata = parse_json_object(profile.get('metadata'))
+        return metadata.get(key)
+
+    def _calculate_chargeable_weight_g(self, row: Dict[str, Any], shipping_profile: Dict[str, Any]) -> float:
+        actual_weight_g = parse_float(row.get('package_weight')) or 0.0
+        length = parse_float(row.get('package_length')) or 0.0
+        width = parse_float(row.get('package_width')) or 0.0
+        height = parse_float(row.get('package_height')) or 0.0
+        divisor = parse_float(self._shipping_profile_value(shipping_profile, 'volumetric_divisor'))
+        mode = str(self._shipping_profile_value(shipping_profile, 'chargeable_weight_mode') or '').strip().lower()
+
+        volumetric_weight_g = 0.0
+        if divisor and divisor > 0 and length > 0 and width > 0 and height > 0:
+            volumetric_weight_g = (length * width * height / divisor) * 1000.0
+
+        if mode in ('max_actual_or_volumetric', 'max_actual_volumetric'):
+            chargeable_weight_g = max(actual_weight_g, volumetric_weight_g)
+        else:
+            chargeable_weight_g = actual_weight_g
+
+        rounding_base = parse_float(self._shipping_profile_value(shipping_profile, 'weight_rounding_base_g'))
+        if rounding_base and rounding_base > 0:
+            chargeable_weight_g = math.ceil(chargeable_weight_g / rounding_base) * rounding_base
+
+        return round(chargeable_weight_g, 2)
 
     def fetch_target_rows(self, alibaba_ids: List[str]) -> List[Dict[str, Any]]:
         sql = """
@@ -330,8 +430,10 @@ class ProfitAnalyzer:
                 COALESCE(NULLIF(p.optimized_title, ''), NULLIF(p.title, ''), '') AS display_title,
                 p.status,
                 p.skus,
+                p.logistics,
                 p.created_at,
                 p.listing_updated_at,
+                ps.id AS product_sku_db_id,
                 ps.sku_name,
                 ps.price,
                 ps.stock,
@@ -366,15 +468,17 @@ class ProfitAnalyzer:
                 'title': row[4],
                 'status': row[5],
                 'product_skus': product_skus or [],
-                'created_at': row[7],
-                'listing_updated_at': row[8],
-                'sku_name': row[9],
-                'price': row[10],
-                'stock': row[11],
-                'package_weight': row[12],
-                'package_length': row[13],
-                'package_width': row[14],
-                'package_height': row[15],
+                'logistics': row[7],
+                'created_at': row[8],
+                'listing_updated_at': row[9],
+                'product_sku_db_id': row[10],
+                'sku_name': row[11],
+                'price': row[12],
+                'stock': row[13],
+                'package_weight': row[14],
+                'package_length': row[15],
+                'package_width': row[16],
+                'package_height': row[17],
             })
         return results
 
@@ -402,14 +506,15 @@ class ProfitAnalyzer:
                 return price
         return None
 
-    def dedupe_rows(self, rows: Iterable[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def dedupe_rows(self, rows: Iterable[Dict[str, Any]], site_context: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+        normalized_context = normalize_site_context(site_context or {})
         deduped: Dict[str, Dict[str, Any]] = {}
         for row in rows:
             sku_name = (row.get('sku_name') or '').strip()
             product_id_new = (row.get('product_id_new') or '').strip()
             if not sku_name or not product_id_new:
                 continue
-            key = f'{CHANNEL}|{SITE}|{product_id_new}|{sku_name}'
+            key = f'{CHANNEL}|{normalized_context.get("site_code", "shopee_tw")}|{product_id_new}|{sku_name}'
             price = parse_float(row.get('price'))
             weight = parse_float(row.get('package_weight'))
             score = (
@@ -423,39 +528,92 @@ class ProfitAnalyzer:
                 deduped[key] = {**row, '_score': score, 'unique_key': key}
         return list(deduped.values())
 
-    def calculate_sls_shipping(self, weight_g: float, order_type: str = 'ordinary') -> Dict[str, float]:
-        if weight_g <= FIRST_WEIGHT_G:
-            seller_pays_twd = FIRST_WEIGHT_TWD
-        else:
-            seller_pays_twd = FIRST_WEIGHT_TWD + math.ceil((weight_g - FIRST_WEIGHT_G) / CONTINUE_WEIGHT_G) * CONTINUE_WEIGHT_TWD
+    def calculate_sls_shipping(self, weight_g: float, order_type: str = 'ordinary', shipping_profile: Optional[Dict[str, Any]] = None, fee_profile: Optional[Dict[str, Any]] = None, exchange_rate: Optional[float] = None) -> Dict[str, float]:
+        shipping_profile = shipping_profile or {}
+        fee_profile = fee_profile or {}
+        exchange_rate = exchange_rate or self.exchange_rate
 
-        if order_type == 'discount':
-            buyer_pays_twd = BUYER_SHIPPING_DISCOUNT
-        elif order_type == 'free':
-            buyer_pays_twd = BUYER_SHIPPING_FREE
+        first_weight_g = parse_float(self._shipping_profile_value(shipping_profile, 'first_weight_g')) or FIRST_WEIGHT_G
+        first_weight_fee = parse_float(self._shipping_profile_value(shipping_profile, 'first_weight_fee')) or FIRST_WEIGHT_TWD
+        continue_weight_g = parse_float(self._shipping_profile_value(shipping_profile, 'continue_weight_g')) or CONTINUE_WEIGHT_G
+        continue_weight_fee = parse_float(self._shipping_profile_value(shipping_profile, 'continue_weight_fee')) or CONTINUE_WEIGHT_TWD
+
+        if weight_g <= first_weight_g:
+            seller_pays_twd = first_weight_fee
         else:
-            buyer_pays_twd = BUYER_SHIPPING_ORDINARY
+            seller_pays_twd = first_weight_fee + math.ceil((weight_g - first_weight_g) / max(1.0, continue_weight_g)) * continue_weight_fee
+
+        subsidy_rules = shipping_profile.get('subsidy_rules_json') or {}
+        if order_type == 'discount':
+            buyer_pays_twd = parse_float(self._fee_profile_value(fee_profile, 'buyer_shipping_discount')) or parse_float(subsidy_rules.get('discount_buyer_shipping')) or BUYER_SHIPPING_DISCOUNT
+        elif order_type == 'free':
+            buyer_pays_twd = parse_float(self._fee_profile_value(fee_profile, 'buyer_shipping_free')) or parse_float(subsidy_rules.get('free_buyer_shipping')) or BUYER_SHIPPING_FREE
+        else:
+            buyer_pays_twd = parse_float(self._fee_profile_value(fee_profile, 'buyer_shipping_ordinary')) or parse_float(subsidy_rules.get('ordinary_buyer_shipping')) or BUYER_SHIPPING_ORDINARY
 
         hidden_price_twd = seller_pays_twd - buyer_pays_twd
         return {
             'seller_pays_twd': round(seller_pays_twd, 2),
             'buyer_pays_twd': round(buyer_pays_twd, 2),
             'hidden_price_twd': round(hidden_price_twd, 2),
-            'hidden_price_cny': round(hidden_price_twd / self.exchange_rate, 4),
+            'hidden_price_cny': round(hidden_price_twd / exchange_rate, 4),
         }
 
-    def _commission_rate_for_row(self, row: Dict[str, Any]) -> float:
+    def _commission_rate_for_row(self, row: Dict[str, Any], shipping_profile: Optional[Dict[str, Any]] = None, fee_profile: Optional[Dict[str, Any]] = None) -> float:
         reference = row.get('listing_updated_at') or row.get('created_at')
         if isinstance(reference, str):
             try:
                 reference = datetime.fromisoformat(reference)
             except ValueError:
                 reference = None
-        if isinstance(reference, datetime) and datetime.now() - reference <= timedelta(days=COMMISSION_FREE_DAYS):
+        shipping_profile = shipping_profile or {}
+        commission_free_days = int(parse_float(self._runtime_value(fee_profile, shipping_profile, 'commission_free_days')) or COMMISSION_FREE_DAYS)
+        commission_rate = parse_float(self._runtime_value(fee_profile, shipping_profile, 'commission_rate'))
+        if isinstance(reference, datetime) and datetime.now() - reference <= timedelta(days=commission_free_days):
             return 0.0
-        return COMMISSION_RATE
+        return commission_rate if commission_rate is not None else COMMISSION_RATE
 
-    def analyze_row(self, row: Dict[str, Any]) -> Dict[str, Any]:
+    def _domestic_shipping_cny_for_row(self, row: Dict[str, Any]) -> float:
+        logistics = row.get('logistics') or {}
+        if isinstance(logistics, str):
+            try:
+                logistics = json.loads(logistics)
+            except json.JSONDecodeError:
+                logistics = {}
+        if not isinstance(logistics, dict):
+            return 0.0
+
+        freight_info = logistics.get('freight_info') or {}
+        if not isinstance(freight_info, dict):
+            return 0.0
+
+        total_cost = parse_float(freight_info.get('total_cost'))
+        if total_cost is not None:
+            return max(total_cost, 0.0)
+
+        display_amount = str(freight_info.get('display_amount') or '').strip()
+        if display_amount:
+            cleaned = display_amount.replace('¥', '').replace('CNY', '').replace('起', '').strip()
+            amount = parse_float(cleaned)
+            if amount is not None:
+                return max(amount, 0.0)
+
+        display_text = str(freight_info.get('display_text') or '').strip()
+        if display_text:
+            amount = parse_float(display_text.replace('运费', '').replace('¥', '').replace('起', '').strip())
+            if amount is not None:
+                return max(amount, 0.0)
+
+        return 0.0
+
+    def analyze_row(self, row: Dict[str, Any], bundle: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        bundle = bundle or self._resolve_runtime_bundle(row)
+        site_context = bundle.get('site_context') or normalize_site_context(row)
+        market_config = bundle.get('market_config') or {}
+        shipping_profile = bundle.get('shipping_profile') or {}
+        fee_profile = bundle.get('fee_profile') or {}
+        local_currency = str(market_config.get('default_currency') or site_context.get('default_currency') or 'TWD').upper()
+        exchange_rate = self._get_exchange_rate(local_currency)
         price_cny = parse_float(row.get('price'))
         if price_cny is None:
             price_cny = self._fallback_price(row)
@@ -465,7 +623,7 @@ class ProfitAnalyzer:
             '商品标题': row.get('title') or '',
             '唯一键': unique_key,
             '渠道': CHANNEL,
-            '站点': SITE,
+            '站点': site_context.get('site_code', 'shopee_tw'),
             '商品主货号': row.get('product_id_new') or row.get('product_id') or '',
             '货源ID': row.get('alibaba_product_id') or '',
             'SKU名称': row.get('sku_name') or '',
@@ -474,6 +632,8 @@ class ProfitAnalyzer:
             '错误信息': '',
             '采购价(CNY)': None,
             '藏价(CNY)': None,
+            '头程运费(CNY)': None,
+            '货代费(CNY)': None,
             '是否免佣期': '',
             '生效佣金率(%)': None,
             '佣金(CNY)': None,
@@ -492,6 +652,8 @@ class ProfitAnalyzer:
             '卖家运费(TWD)': None,
             '买家运费(TWD)': None,
             '藏价(TWD)': None,
+            '头程运费(TWD)': None,
+            '货代费(TWD)': None,
             '佣金(TWD)': None,
             '交易手续费(TWD)': None,
             '预售服务费(TWD)': None,
@@ -511,43 +673,58 @@ class ProfitAnalyzer:
             result['错误信息'] = '缺少SKU重量'
             return result
 
-        shipping = self.calculate_sls_shipping(weight_g)
-        total_cost_cny = price_cny + AGENT_FEE_CNY + shipping['hidden_price_cny']
-        total_cost_twd = total_cost_cny * self.exchange_rate
+        chargeable_weight_g = self._calculate_chargeable_weight_g(row, shipping_profile)
+        shipping = self.calculate_sls_shipping(chargeable_weight_g, shipping_profile=shipping_profile, fee_profile=fee_profile, exchange_rate=exchange_rate)
+        domestic_shipping_cny = self._domestic_shipping_cny_for_row(row)
+        domestic_shipping_twd = domestic_shipping_cny * exchange_rate
+        agent_fee_cny = parse_float(self._runtime_value(fee_profile, shipping_profile, 'agent_fee_cny')) or AGENT_FEE_CNY
+        agent_fee_twd = agent_fee_cny * exchange_rate
+        total_cost_cny = price_cny + domestic_shipping_cny + agent_fee_cny + shipping['hidden_price_cny']
+        total_cost_twd = total_cost_cny * exchange_rate
 
-        commission_rate = self._commission_rate_for_row(row)
+        commission_rate = self._commission_rate_for_row(row, shipping_profile=shipping_profile, fee_profile=fee_profile)
         is_commission_free = commission_rate == 0.0
-        total_fee_rate = commission_rate + TRANSACTION_FEE_RATE + PRE_SALE_SERVICE_RATE
+        transaction_fee_rate = parse_float(self._runtime_value(fee_profile, shipping_profile, 'transaction_fee_rate'))
+        if transaction_fee_rate is None:
+            transaction_fee_rate = TRANSACTION_FEE_RATE
+        pre_sale_service_rate = parse_float(self._runtime_value(fee_profile, shipping_profile, 'pre_sale_service_rate'))
+        if pre_sale_service_rate is None:
+            pre_sale_service_rate = PRE_SALE_SERVICE_RATE
+        total_fee_rate = commission_rate + transaction_fee_rate + pre_sale_service_rate
         suggested_price_raw_twd = total_cost_twd / max(0.01, 1 - total_fee_rate - self.target_profit_rate)
         suggested_price_twd = math.ceil(suggested_price_raw_twd)
-        suggested_price_cny = suggested_price_twd / self.exchange_rate
+        suggested_price_cny = suggested_price_twd / exchange_rate
 
         commission_twd = suggested_price_twd * commission_rate
-        transaction_fee_twd = suggested_price_twd * TRANSACTION_FEE_RATE
-        pre_sale_service_twd = suggested_price_twd * PRE_SALE_SERVICE_RATE
+        transaction_fee_twd = suggested_price_twd * transaction_fee_rate
+        pre_sale_service_twd = suggested_price_twd * pre_sale_service_rate
         platform_fee_twd = commission_twd + transaction_fee_twd + pre_sale_service_twd
         profit_twd = suggested_price_twd - platform_fee_twd - total_cost_twd
-        profit_cny = profit_twd / self.exchange_rate
+        profit_cny = profit_twd / exchange_rate
         profit_rate = (profit_twd / suggested_price_twd) * 100 if suggested_price_twd else 0
 
         result.update({
             '采购价(CNY)': round(price_cny, 4),
             '藏价(CNY)': shipping['hidden_price_cny'],
+            '头程运费(CNY)': round(domestic_shipping_cny, 4),
+            '货代费(CNY)': round(agent_fee_cny, 4),
             '是否免佣期': '是' if is_commission_free else '否',
             '生效佣金率(%)': round(commission_rate * 100, 2),
-            '佣金(CNY)': round(commission_twd / self.exchange_rate, 4),
-            '预售服务费(CNY)': round(pre_sale_service_twd / self.exchange_rate, 4),
-            '交易手续费(CNY)': round(transaction_fee_twd / self.exchange_rate, 4),
-            '平台费(CNY)': round(platform_fee_twd / self.exchange_rate, 4),
+            '佣金(CNY)': round(commission_twd / exchange_rate, 4),
+            '预售服务费(CNY)': round(pre_sale_service_twd / exchange_rate, 4),
+            '交易手续费(CNY)': round(transaction_fee_twd / exchange_rate, 4),
+            '平台费(CNY)': round(platform_fee_twd / exchange_rate, 4),
             '建议售价(CNY)': round(suggested_price_cny, 4),
             '建议售价(TWD)': suggested_price_twd,
             '预计利润(CNY)': round(profit_cny, 4),
             '利润率(%)': round(profit_rate, 2),
-            '重量(g)': round(weight_g, 2),
-            '重量(kg)': round(weight_g / 1000.0, 4),
+            '重量(g)': round(chargeable_weight_g, 2),
+            '重量(kg)': round(chargeable_weight_g / 1000.0, 4),
             '卖家运费(TWD)': shipping['seller_pays_twd'],
             '买家运费(TWD)': shipping['buyer_pays_twd'],
             '藏价(TWD)': shipping['hidden_price_twd'],
+            '头程运费(TWD)': round(domestic_shipping_twd, 2),
+            '货代费(TWD)': round(agent_fee_twd, 2),
             '佣金(TWD)': round(commission_twd, 2),
             '交易手续费(TWD)': round(transaction_fee_twd, 2),
             '预售服务费(TWD)': round(pre_sale_service_twd, 2),
@@ -557,11 +734,147 @@ class ProfitAnalyzer:
         })
         return result
 
-    def analyze_products(self, alibaba_ids: List[str]) -> List[Dict[str, Any]]:
+    def analyze_products(self, alibaba_ids: List[str], site_context: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+        entries = self.build_analysis_entries(alibaba_ids, site_context=site_context)
+        return [entry['result'] for entry in entries]
+
+    def build_analysis_entries(self, alibaba_ids: List[str], site_context: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+        bundle = self._resolve_runtime_bundle(site_context or {})
         rows = self.fetch_target_rows(alibaba_ids)
-        deduped = self.dedupe_rows(rows)
+        deduped = self.dedupe_rows(rows, site_context=bundle.get('site_context'))
         deduped.sort(key=lambda item: (item.get('alibaba_product_id') or '', item.get('product_id_new') or '', item.get('sku_name') or ''))
-        return [self.analyze_row(row) for row in deduped]
+        return [
+            {
+                'source': row,
+                'site_context': dict(bundle.get('site_context') or {}),
+                'result': self.analyze_row({**row, **(bundle.get('site_context') or {})}, bundle=bundle),
+            }
+            for row in deduped
+        ]
+
+    def save_results_to_db(self, entries: List[Dict[str, Any]]) -> Dict[str, int]:
+        inserted = 0
+        updated = 0
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                for entry in entries:
+                    source = entry['source']
+                    result = entry['result']
+                    entry_site_context = normalize_site_context(
+                        entry.get('site_context')
+                        or {
+                            'site_code': result.get('站点'),
+                            'market_code': result.get('站点'),
+                        }
+                    )
+                    product_id = source.get('product_db_id')
+                    sku_id = source.get('product_sku_db_id')
+                    if not product_id:
+                        continue
+
+                    bundle = self._resolve_runtime_bundle(entry_site_context)
+                    site_context = bundle.get('site_context') or {}
+                    market_config = bundle.get('market_config') or {}
+                    shipping_profile = bundle.get('shipping_profile') or {}
+                    site = result.get('站点') or entry_site_context.get('site_code') or SITE
+                    currency = str(market_config.get('default_currency') or site_context.get('default_currency') or 'TWD').upper()
+
+                    cur.execute(
+                        """
+                        DELETE FROM product_analysis
+                        WHERE product_id = %s
+                          AND platform = %s
+                          AND site = %s
+                          AND (
+                                (sku_id = %s)
+                                OR (sku_id IS NULL AND %s IS NULL)
+                          )
+                        """,
+                        (product_id, CHANNEL, site, sku_id, sku_id),
+                    )
+                    if cur.rowcount:
+                        updated += cur.rowcount
+
+                    cur.execute(
+                        """
+                        INSERT INTO product_analysis (
+                            product_id,
+                            sku_id,
+                            platform,
+                            site,
+                            currency,
+                            site_listing_id,
+                            fee_profile_code,
+                            shipping_profile_code,
+                            price_policy_code,
+                            chargeable_weight_g,
+                            hidden_shipping_cost_local,
+                            platform_shipping_fee_local,
+                            estimated_profit_local,
+                            purchase_price_cny,
+                            weight_kg,
+                            shipping_cn,
+                            agent_fee_cny,
+                            sls_fee_cny,
+                            sls_fee_twd,
+                            commission_cny,
+                            commission_twd,
+                            service_fee_cny,
+                            service_fee_twd,
+                            transaction_fee_cny,
+                            transaction_fee_twd,
+                            total_cost_cny,
+                            total_cost_twd,
+                            exchange_rate,
+                            suggested_price_twd,
+                            suggested_price_cny,
+                            estimated_profit_cny,
+                            profit_rate,
+                            analysis_date,
+                            remarks,
+                            updated_at
+                        ) VALUES (
+                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_DATE, %s, CURRENT_TIMESTAMP
+                        )
+                        """,
+                        (
+                            product_id,
+                            sku_id,
+                            CHANNEL,
+                            site,
+                            currency,
+                            None,
+                            None,
+                            shipping_profile.get('shipping_profile_code'),
+                            None,
+                            result.get('重量(g)'),
+                            result.get('藏价(TWD)'),
+                            result.get('平台费(TWD)'),
+                            result.get('预计利润(CNY)'),
+                            result.get('采购价(CNY)'),
+                            result.get('重量(kg)'),
+                            result.get('头程运费(CNY)'),
+                            result.get('货代费(CNY)'),
+                            result.get('藏价(CNY)'),
+                            result.get('藏价(TWD)'),
+                            result.get('佣金(CNY)'),
+                            result.get('佣金(TWD)'),
+                            result.get('预售服务费(CNY)'),
+                            result.get('预售服务费(TWD)'),
+                            result.get('交易手续费(CNY)'),
+                            result.get('交易手续费(TWD)'),
+                            result.get('总成本(CNY)'),
+                            result.get('总成本(TWD)'),
+                            self._get_exchange_rate(currency),
+                            result.get('建议售价(TWD)'),
+                            result.get('建议售价(CNY)'),
+                            result.get('预计利润(CNY)'),
+                            round_or_none((result.get('利润率(%)') or 0) / 100.0, 4) if result.get('利润率(%)') is not None else None,
+                            result.get('错误信息') or None,
+                        ),
+                    )
+                    inserted += 1
+        return {'inserted': inserted, 'replaced': updated}
 
     def analyze_product(self, product_payload: Dict[str, Any]) -> Dict[str, Any]:
         alibaba_product_id = str(product_payload.get('alibaba_product_id') or '').strip()
@@ -571,10 +884,12 @@ class ProfitAnalyzer:
                 'message': '缺少 alibaba_product_id',
             }
 
-        rows = self.analyze_products([alibaba_product_id])
+        bundle = self._resolve_runtime_bundle(product_payload)
+        rows = self.analyze_products([alibaba_product_id], site_context=bundle.get('site_context'))
         success_rows = [row for row in rows if row.get('分析状态') == 'success']
         if success_rows:
             primary = success_rows[0]
+            local_currency = str((bundle.get('market_config') or {}).get('default_currency') or (bundle.get('site_context') or {}).get('default_currency') or 'TWD').upper()
             return {
                 'status': 'success',
                 'message': '利润分析成功',
@@ -585,12 +900,17 @@ class ProfitAnalyzer:
                 'weight_g': primary.get('重量(g)'),
                 'weight_kg': primary.get('重量(kg)'),
                 'purchase_price_cny': primary.get('采购价(CNY)'),
-                'exchange_rate': self.exchange_rate,
+                'domestic_shipping_cny': primary.get('头程运费(CNY)'),
+                'agent_fee_cny': primary.get('货代费(CNY)'),
+                'currency': local_currency,
+                'exchange_rate': self._get_exchange_rate(local_currency),
                 'sls_twd': primary.get('卖家运费(TWD)'),
                 'sls_shipping_twd': primary.get('卖家运费(TWD)'),
                 'buyer_shipping_twd': primary.get('买家运费(TWD)'),
                 'hidden_shipping_twd': primary.get('藏价(TWD)'),
                 'hidden_shipping_cny': primary.get('藏价(CNY)'),
+                'domestic_shipping_twd': primary.get('头程运费(TWD)'),
+                'agent_fee_twd': primary.get('货代费(TWD)'),
                 'commission_twd': primary.get('佣金(TWD)'),
                 'commission_cny': primary.get('佣金(CNY)'),
                 'transaction_fee_twd': primary.get('交易手续费(TWD)'),
@@ -639,13 +959,18 @@ class ProfitAnalyzer:
             'alibaba_product_id': alibaba_product_id,
         }
 
-    def run(self, alibaba_ids: List[str]) -> Dict[str, Any]:
-        results = self.analyze_products(alibaba_ids)
-        sync_result = self.feishu.upsert_records(results)
+    def run(self, alibaba_ids: List[str], sync_feishu: bool = True,
+            site_context: Optional[Dict[str, Any]] = None,
+            write_db: bool = True) -> Dict[str, Any]:
+        entries = self.build_analysis_entries(alibaba_ids, site_context=site_context)
+        results = [entry['result'] for entry in entries]
+        db_result = self.save_results_to_db(entries) if write_db else {'inserted': 0, 'replaced': 0}
+        sync_result = self.feishu.upsert_records(results) if sync_feishu else None
         return {
             'results': results,
+            'db_result': db_result,
             'sync_result': sync_result,
-            'feishu_url': self.feishu.url,
+            'feishu_url': self.feishu.url if sync_feishu else None,
         }
 
 
@@ -653,20 +978,37 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Shopee 商品上架利润分析并同步到飞书')
     parser.add_argument('--alibaba-ids', nargs='+', required=True, help='需要分析的 1688 商品 ID 列表')
     parser.add_argument('--profit-rate', type=float, default=DEFAULT_TARGET_PROFIT_RATE, help='目标利润率，默认 0.20')
+    parser.add_argument('--market-code', type=str, default=None, help='市场代码，例如 shopee_tw / shopee_ph')
+    parser.add_argument('--site-code', type=str, default=None, help='站点代码，例如 shopee_tw / shopee_ph')
+    parser.add_argument('--skip-feishu', action='store_true', help='仅写入本地 profit_analysis，不同步飞书')
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
     analyzer = ProfitAnalyzer(target_profit_rate=args.profit_rate)
-    outcome = analyzer.run(args.alibaba_ids)
-    results = outcome['results']
-    print(f"飞书文档: {outcome['feishu_url']}")
-    print(
-        f"同步结果: created={outcome['sync_result']['created']}, "
-        f"updated={outcome['sync_result']['updated']}, "
-        f"removed_empty={outcome['sync_result'].get('removed_empty', 0)}"
+    outcome = analyzer.run(
+        args.alibaba_ids,
+        sync_feishu=not args.skip_feishu,
+        site_context={
+            'market_code': args.market_code,
+            'site_code': args.site_code,
+        },
     )
+    results = outcome['results']
+    print(
+        f"本地写入: inserted={outcome['db_result']['inserted']}, "
+        f"replaced={outcome['db_result']['replaced']}"
+    )
+    if outcome['sync_result']:
+        print(f"飞书文档: {outcome['feishu_url']}")
+        print(
+            f"同步结果: created={outcome['sync_result']['created']}, "
+            f"updated={outcome['sync_result']['updated']}, "
+            f"removed_empty={outcome['sync_result'].get('removed_empty', 0)}"
+        )
+    else:
+        print('飞书同步: skipped')
     print('-' * 80)
     for item in results:
         if item['分析状态'] == 'success':

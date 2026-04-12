@@ -23,7 +23,7 @@ import sys
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 sys.path.insert(0, str(Path(__file__).parent.parent / 'shared'))
 import db
@@ -190,6 +190,97 @@ class ProductStorer:
         if isinstance(data, (dict, list)):
             return json.dumps(data, ensure_ascii=False)
         return str(data)
+
+    def _merge_logistics_payload(self, product_data: Dict[str, Any], weight_data: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+        """合并抓取物流信息与本地服务补充信息。"""
+        logistics_payload = product_data.get('logistics') or {}
+        if isinstance(logistics_payload, str):
+            try:
+                logistics_payload = json.loads(logistics_payload)
+            except json.JSONDecodeError:
+                logistics_payload = {'raw_logistics': logistics_payload}
+        elif not isinstance(logistics_payload, dict):
+            logistics_payload = {}
+
+        freight_info = (weight_data or {}).get('freight_info')
+        if freight_info:
+            logistics_payload['freight_info'] = freight_info
+            logistics_payload['freight_source'] = 'local-1688-weight'
+            logistics_payload['freight_updated_at'] = datetime.now().isoformat()
+
+        dimension_summary = (weight_data or {}).get('dimension_summary')
+        if dimension_summary:
+            logistics_payload['dimension_summary'] = dimension_summary
+            logistics_payload['dimension_source_chain'] = ['local_service', 'description', 'sku_image']
+            logistics_payload['dimension_updated_at'] = datetime.now().isoformat()
+
+        return logistics_payload
+
+    def _normalize_image_urls(self, values: Any) -> List[str]:
+        urls: List[str] = []
+        for value in values or []:
+            if isinstance(value, str) and value.startswith(('http://', 'https://')) and value not in urls:
+                urls.append(value)
+        return urls
+
+    def _build_master_display_images(self, product_data: Dict[str, Any]) -> List[str]:
+        main_images = self._normalize_image_urls(product_data.get('main_images', []))
+        sku_images = self._normalize_image_urls(product_data.get('sku_images', []))
+        detail_images = self._normalize_image_urls(product_data.get('detail_images', []))
+        filtered_main_images = [url for url in main_images if url not in sku_images]
+        return [*filtered_main_images, *[url for url in detail_images if url not in filtered_main_images]]
+
+    def _update_product_image_columns(self, product_db_id: int, master_images: List[str], sku_images: List[str]) -> None:
+        with db.get_cursor() as cur:
+            cur.execute(
+                """
+                    UPDATE products
+                    SET main_images = %s,
+                        sku_images = %s,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """,
+                (
+                    self._serialize_json(master_images),
+                    self._serialize_json(sku_images),
+                    product_db_id,
+                ),
+            )
+
+    def _run_post_persist_steps(
+        self,
+        result: Dict[str, Any],
+        product_db_id: int,
+        product_id_new: str,
+        product_data: Dict[str, Any],
+        weight_data: Dict[str, Any],
+        master_display_images: List[str],
+        sku_image_pool: List[str],
+    ) -> None:
+        skus_data = product_data.get('skus', [])
+        if skus_data:
+            sku_result = self.store_skus(product_id_new, skus_data, weight_data)
+            result['sku_ids'] = sku_result.get('sku_ids', [])
+            result['sku_message'] = sku_result.get('message', '')
+            logger.info(f"SKU落库结果: {result['sku_message']}")
+        else:
+            result['sku_ids'] = []
+            result['sku_message'] = '无SKU数据，跳过'
+
+        try:
+            cos_result = self._upload_images_to_cos(product_data, product_id_new)
+            result['image_upload'] = cos_result
+            if cos_result.get('success'):
+                persisted_master_images = list(cos_result.get('master_images') or master_display_images)
+                persisted_sku_images = list(cos_result.get('sku_images') or sku_image_pool)
+                self._update_product_image_columns(
+                    product_db_id,
+                    persisted_master_images,
+                    persisted_sku_images,
+                )
+        except Exception as e:
+            logger.warning(f"图片上传COS失败: {e}")
+            result['image_upload'] = {'success': False, 'message': str(e)}
     
     def store(self, product_data: Dict[str, Any], weight_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """
@@ -242,10 +333,13 @@ class ProductStorer:
             # 预先整理通用字段，便于插入和已存在商品更新复用
             category_raw = product_data.get('category', '')
             category_formatted = f"{self._get_category_code(category_raw)}-{category_raw}" if category_raw else self._get_category_code(category_raw)
-            main_images = self._serialize_json(product_data.get('main_images', []))
-            sku_images = self._serialize_json(product_data.get('sku_images', []))
+            master_display_images = self._build_master_display_images(product_data)
+            sku_image_pool = self._normalize_image_urls(product_data.get('sku_images', []))
+            main_images = self._serialize_json(master_display_images)
+            sku_images = self._serialize_json(sku_image_pool)
             skus = self._serialize_json(product_data.get('skus', []))
-            logistics = self._serialize_json(product_data.get('logistics', {}))
+            logistics_payload = self._merge_logistics_payload(product_data, weight_data)
+            logistics = self._serialize_json(logistics_payload)
             supplier_info = self._serialize_json(product_data.get('supplier_info', {}))
             key_attributes = self._serialize_json(product_data.get('key_attributes', []))
             purchase_cost_history = self._serialize_json(product_data.get('purchase_cost_history', []))
@@ -285,6 +379,8 @@ class ProductStorer:
             
             logger.info(f"生成主货号: {product_id} / 新格式: {product_id_new}")
             
+            existing_product_meta = None
+
             # 检查是否已存在
             if alibaba_id:
                 with db.get_cursor() as cur:
@@ -302,7 +398,10 @@ class ProductStorer:
                         cur.execute("""
                             UPDATE products
                             SET title = %s,
-                                description = %s,
+                                description = CASE
+                                    WHEN NULLIF(BTRIM(COALESCE(description, '')), '') IS NULL THEN %s
+                                    ELSE description
+                                END,
                                 category = %s,
                                 brand = %s,
                                 origin = %s,
@@ -332,22 +431,29 @@ class ProductStorer:
                             purchase_cost_history,
                             existing[0],
                         ))
-                        # 商品已存在，视为成功（可继续后续步骤）
-                        result['success'] = True
-                        result['main_product_no'] = existing[2]  # 兼容 workflow_runner（使用新格式）
-                        result['product_id_new'] = existing[2]  # 使用真正的新格式货号
-                        result['existing_id'] = existing[0]
-                        
-                        # 仍尝试更新SKU重量数据（如果weight_data有值）
-                        skus_data = product_data.get('skus', [])
-                        if skus_data and weight_data:
-                            logger.info("商品已存在，仍尝试更新SKU重量数据...")
-                            sku_result = self.store_skus(existing[2], skus_data, weight_data)  # 传入真正的新格式货号
-                            result['sku_ids'] = sku_result.get('sku_ids', [])
-                            result['sku_message'] = sku_result.get('message', '')
-                            logger.info(f"SKU更新结果: {result['sku_message']}")
-                        
-                        return result
+                        existing_product_meta = {
+                            'id': existing[0],
+                            'product_id_new': existing[2],
+                            'message': f"商品已存在 (ID: {existing[0]}, product_id: {existing[1]}, product_id_new: {existing[2]})",
+                        }
+
+                if existing_product_meta:
+                    result['message'] = existing_product_meta['message']
+                    logger.warning(result['message'])
+                    result['success'] = True
+                    result['main_product_no'] = existing_product_meta['product_id_new']  # 兼容 workflow_runner（使用新格式）
+                    result['product_id_new'] = existing_product_meta['product_id_new']  # 使用真正的新格式货号
+                    result['existing_id'] = existing_product_meta['id']
+                    self._run_post_persist_steps(
+                        result,
+                        existing_product_meta['id'],
+                        existing_product_meta['product_id_new'],
+                        product_data,
+                        weight_data,
+                        master_display_images,
+                        sku_image_pool,
+                    )
+                    return result
             
             # 插入数据库
             with db.get_cursor() as cur:
@@ -404,25 +510,15 @@ class ProductStorer:
             result['main_product_no'] = product_id_new  # 兼容 workflow_runner
             result['message'] = f"落库成功 (ID: {inserted_id}, product_id: {product_id}, product_id_new: {product_id_new})"
             logger.info(result['message'])
-            
-            # 调用 store_skus() 创建SKU记录
-            skus_data = product_data.get('skus', [])
-            if skus_data:
-                sku_result = self.store_skus(product_id_new, skus_data, weight_data)
-                result['sku_ids'] = sku_result.get('sku_ids', [])
-                result['sku_message'] = sku_result.get('message', '')
-                logger.info(f"SKU落库结果: {result['sku_message']}")
-            else:
-                result['sku_ids'] = []
-                result['sku_message'] = "无SKU数据，跳过"
-            
-            # 下载并上传图片到COS
-            try:
-                cos_result = self._upload_images_to_cos(product_data, product_id_new)
-                result['image_upload'] = cos_result
-            except Exception as e:
-                logger.warning(f"图片上传COS失败: {e}")
-                result['image_upload'] = {'success': False, 'message': str(e)}
+            self._run_post_persist_steps(
+                result,
+                inserted_id,
+                product_id_new,
+                product_data,
+                weight_data,
+                master_display_images,
+                sku_image_pool,
+            )
             
         except Exception as e:
             result['message'] = f"落库失败: {e}"
@@ -458,6 +554,7 @@ class ProductStorer:
             'main_images': [],
             'sku_images': [],
             'detail_images': [],
+            'master_images': [],
             'message': ''
         }
         
@@ -485,11 +582,15 @@ class ProductStorer:
             temp_dir.mkdir(parents=True, exist_ok=True)
             
             # 上传主图
-            main_images = product_data.get('main_images', [])
+            sku_image_set = set(self._normalize_image_urls(product_data.get('sku_images', [])))
+            main_images = [
+                img_url for img_url in product_data.get('main_images', [])
+                if not isinstance(img_url, str) or img_url not in sku_image_set
+            ]
             main_cos_paths = []
             
             for idx, img_url in enumerate(main_images):  # 上传所有主图
-                if not img_url or 'alicdn.com' not in img_url:
+                if not isinstance(img_url, str) or not img_url.startswith(('http://', 'https://')):
                     continue
                     
                 local_path = temp_dir / f"main_{idx:02d}.jpg"
@@ -511,7 +612,7 @@ class ProductStorer:
             sku_cos_paths = []
             
             for idx, img_url in enumerate(sku_images[:20]):  # 最多20张SKU图
-                if not img_url or 'alicdn.com' not in img_url:
+                if not isinstance(img_url, str) or not img_url.startswith(('http://', 'https://')):
                     continue
                     
                 local_path = temp_dir / f"sku_{idx:02d}.jpg"
@@ -532,7 +633,7 @@ class ProductStorer:
             detail_cos_paths = []
             
             for idx, img_url in enumerate(detail_images[:30]):  # 最多30张详情图
-                if not img_url or 'alicdn.com' not in img_url:
+                if not isinstance(img_url, str) or not img_url.startswith(('http://', 'https://')):
                     continue
                     
                 local_path = temp_dir / f"detail_{idx:02d}.jpg"
@@ -547,9 +648,10 @@ class ProductStorer:
                     logger.warning(f"详情图下载/上传失败: {img_url}, {e}")
             
             result['detail_images'] = detail_cos_paths
+            result['master_images'] = [*main_cos_paths, *[path for path in detail_cos_paths if path not in main_cos_paths]]
             
             result['success'] = True
-            result['message'] = f"图片上传完成: 主图{len(main_cos_paths)}张, SKU图{len(sku_cos_paths)}张, 详情图{len(detail_cos_paths)}张"
+            result['message'] = f"图片上传完成: 主档图{len(result['master_images'])}张, SKU图{len(sku_cos_paths)}张, 详情图{len(detail_cos_paths)}张"
             result['cos_dir'] = dir_name
             
             # 清理临时文件
@@ -677,6 +779,7 @@ class ProductStorer:
                     'size': size or '',
                     'price': price,
                     'stock': stock,
+                    'image_url': sku.get('image') if isinstance(sku.get('image'), str) else None,
                     'weight_g': weight_g,
                     'length_cm': length_cm,
                     'width_cm': width_cm,
@@ -707,6 +810,7 @@ class ProductStorer:
                     size = item['size']
                     price = item['price']
                     stock = item['stock']
+                    image_url = item['image_url']
                     weight_g = item['weight_g']
                     length_cm = item['length_cm']
                     width_cm = item['width_cm']
@@ -733,6 +837,7 @@ class ProductStorer:
                                 size = %s,
                                 price = %s,
                                 stock = %s,
+                                image_url = COALESCE(%s, image_url),
                                 package_length = COALESCE(%s, package_length),
                                 package_width = COALESCE(%s, package_width),
                                 package_height = COALESCE(%s, package_height),
@@ -740,7 +845,7 @@ class ProductStorer:
                                 sku_id_new = %s,
                                 is_deleted = 0
                             WHERE id = %s
-                        """, (color, size, price, stock, length_cm, width_cm, height_cm, weight_g, sku_id_new, existing_id))
+                        """, (color, size, price, stock, image_url, length_cm, width_cm, height_cm, weight_g, sku_id_new, existing_id))
                         if weight_g and (not existing_weight or existing_weight == 0):
                             logger.info(f"更新SKU重量: {sku_name} -> {weight_g}g")
                         else:
@@ -750,12 +855,13 @@ class ProductStorer:
                         cur.execute("""
                             INSERT INTO product_skus (
                                 product_id, sku_name, color, size, price, stock,
+                                image_url,
                                 package_length, package_width, package_height, package_weight,
                                 currency, is_domestic_shipping, stock_updated_at, stock_source,
                                 sku_id_new, is_deleted,
                                 created_at
                             ) VALUES (
-                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                                 'CNY', true, %s, 'system',
                                 %s, 0,
                                 CURRENT_TIMESTAMP
@@ -768,6 +874,7 @@ class ProductStorer:
                             size,
                             price,
                             stock,
+                            image_url,
                             length_cm,
                             width_cm,
                             height_cm,

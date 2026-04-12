@@ -445,13 +445,13 @@ class CollectorScraper:
                         if (node instanceof HTMLElement) node.click();
                     };
 
-                    const rows = Array.from(document.querySelectorAll('tr, .el-table__row, .el-table__body tr, li, .item, .item-row, [class*="row"]'));
+                    const rows = Array.from(document.querySelectorAll('tr, .el-table__row, .el-table__body tr, .jx-pro-virtual-table__row, li, .item, .item-row, [class*="row"]'));
                     for (const row of rows) {
                         if (!visible(row)) continue;
                         const rowText = normalize(row.innerText || '');
                         if (!rowText.includes(sourceId) || !rowText.includes('编辑')) continue;
 
-                        const candidates = Array.from(row.querySelectorAll('button, a, span, div'));
+                        const candidates = Array.from(row.querySelectorAll('button.J_shopeeCollectBoxEdit, button, a, span, div'));
                         for (const candidate of candidates) {
                             if (!visible(candidate)) continue;
                             if (normalize(candidate.innerText) !== '编辑') continue;
@@ -482,15 +482,109 @@ class CollectorScraper:
         except Exception:
             return False
 
+    def _count_visible_editable_rows(self) -> int:
+        try:
+            return int(self.page.evaluate(
+                r"""() => {
+                    const visible = (el) => !!el && el.offsetParent !== null;
+                    const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
+                    const rowSelectors = [
+                        'tr',
+                        '.el-table__row',
+                        '.el-table__body tr',
+                        '.jx-pro-virtual-table__row',
+                        'li',
+                        '.item',
+                        '.item-row',
+                    ];
+                    const rows = Array.from(document.querySelectorAll(rowSelectors.join(',')));
+                    let count = 0;
+                    for (const row of rows) {
+                        if (!visible(row)) continue;
+                        const text = normalize(row.innerText || '');
+                        if (!text.includes('编辑')) continue;
+                        if (!(text.includes('1688') || text.includes('货源') || text.includes('主货号') || text.includes('搜1688同款'))) continue;
+                        count += 1;
+                    }
+                    return count;
+                }"""
+            ))
+        except Exception:
+            return 0
+
+    def _click_edit_by_index(self, product_index: int) -> bool:
+        try:
+            clicked = self.page.evaluate(
+                r"""(targetIndex) => {
+                    const visible = (el) => !!el && el.offsetParent !== null;
+                    const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
+                    const dispatchClick = (node) => {
+                        node.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+                        node.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                        node.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+                        node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                        if (node instanceof HTMLElement) node.click();
+                    };
+
+                    const rowSelectors = [
+                        'tr',
+                        '.el-table__row',
+                        '.el-table__body tr',
+                        '.jx-pro-virtual-table__row',
+                        'li',
+                        '.item',
+                        '.item-row',
+                    ];
+                    const rows = Array.from(document.querySelectorAll(rowSelectors.join(',')));
+                    let matchedIndex = 0;
+
+                    for (const row of rows) {
+                        if (!visible(row)) continue;
+                        const text = normalize(row.innerText || '');
+                        if (!text.includes('编辑')) continue;
+                        if (!(text.includes('1688') || text.includes('货源') || text.includes('主货号') || text.includes('搜1688同款'))) continue;
+                        if (matchedIndex !== Number(targetIndex)) {
+                            matchedIndex += 1;
+                            continue;
+                        }
+
+                        const candidates = Array.from(row.querySelectorAll('button.J_shopeeCollectBoxEdit, button, a, span, div'));
+                        for (const candidate of candidates) {
+                            if (!visible(candidate)) continue;
+                            if (normalize(candidate.innerText) !== '编辑') continue;
+                            dispatchClick(candidate);
+                            return true;
+                        }
+                        return false;
+                    }
+                    return false;
+                }""",
+                int(product_index),
+            )
+            return bool(clicked)
+        except Exception:
+            return False
+
     def _wait_for_edit_dialog(self, timeout=10):
         """等待编辑对话框出现"""
         start = time.time()
         while time.time() - start < timeout:
-            dialogs = self.page.query_selector_all('.el-dialog__wrapper')
+            dialogs = self.page.query_selector_all('.el-dialog__wrapper, .el-dialog, .el-overlay-dialog, [role="dialog"]')
             for d in dialogs:
-                cls = d.get_attribute('class') or ''
-                if 'collect-box-edit' in cls and d.is_visible():
-                    return d
+                try:
+                    if not d.is_visible():
+                        continue
+                    cls = d.get_attribute('class') or ''
+                    text = re.sub(r'\s+', ' ', d.inner_text() or '')
+                    box = d.bounding_box() or {}
+                    if box.get('width', 0) < 400 or box.get('height', 0) < 250:
+                        continue
+                    if 'collect-box-edit' in cls:
+                        return d
+                    if any(keyword in text for keyword in ['货源链接', '货源ID', '主货号', '产品图片', '商品图片', '规格图片', '详情图片']):
+                        return d
+                except Exception:
+                    continue
             time.sleep(0.5)
         return None
 
@@ -511,9 +605,19 @@ class CollectorScraper:
             '商品图片': 'main_images',
             '产品图片': 'main_images',
             '规格图片': 'sku_images',
+            'SKU图片': 'sku_images',
             '详情图片': 'detail_images',
             '详情描述': 'detail_images',
         }
+
+        def match_tab_label(raw_text: str) -> Optional[str]:
+            normalized = re.sub(r'\s+', '', raw_text or '')
+            if not normalized:
+                return None
+            for tab_name in tab_targets:
+                if normalized.startswith(tab_name):
+                    return tab_name
+            return None
 
         def is_product_image_url(url: str) -> bool:
             if not url or url.startswith('data:'):
@@ -552,7 +656,7 @@ class CollectorScraper:
             selectors = '.el-tabs__item, [role="tab"], .tab-item, .jx-tabs__item, span, div, button, li'
             for element in dialog.query_selector_all(selectors):
                 try:
-                    text = re.sub(r'\s+', '', element.inner_text() or '')
+                    text = match_tab_label(element.inner_text() or '')
                     if text not in tab_targets:
                         continue
                     box = element.bounding_box()
@@ -652,7 +756,7 @@ class CollectorScraper:
         logger.info(f"找到 {len(products)} 个商品")
         return products
 
-    def scrape_product(self, product_index=0, source_item_id: Optional[str] = None, allow_index_fallback: bool = True) -> Optional[Dict[str, Any]]:
+    def scrape_product(self, product_index=0, source_item_id: Optional[str] = None, allow_index_fallback: bool = False) -> Optional[Dict[str, Any]]:
         """
         爬取指定索引商品的完整数据
 
@@ -704,27 +808,20 @@ class CollectorScraper:
                 logger.warning(f"未按货源ID找到商品 {source_item_id}，回退到索引模式")
 
         if not clicked:
-            edit_btns = self.page.query_selector_all('button:has-text("编辑")')
-            if not edit_btns or product_index >= len(edit_btns):
+            visible_rows = self._count_visible_editable_rows()
+            if visible_rows <= 0:
+                logger.error('当前列表没有可见商品行，停止索引回退')
+                self.screenshot('error_no_visible_rows')
+                return None
+            if product_index >= visible_rows:
                 logger.error(f"没有找到索引为 {product_index} 的商品")
                 return None
 
             logger.info(f"点击第 {product_index + 1} 个商品的编辑按钮")
-            self.page.evaluate(f"""
-                () => {{
-                    var btns = document.querySelectorAll("button");
-                    var count = 0;
-                    for (var b of btns) {{
-                        if (b.innerText.trim() === "编辑") {{
-                            if (count === {product_index}) {{
-                                b.click();
-                                return;
-                            }}
-                            count++;
-                        }}
-                    }}
-                }}
-            """)
+            if not self._click_edit_by_index(product_index):
+                logger.error(f"索引模式点击第 {product_index + 1} 个商品失败")
+                self.screenshot('error_index_click_failed')
+                return None
 
         # 等待编辑对话框
         if not dialog:
@@ -957,6 +1054,14 @@ class CollectorScraper:
             skus = self._extract_skus(body)
             data['skus'] = skus
 
+            if not data['sku_images']:
+                sku_image_urls = []
+                for sku in skus:
+                    image_url = sku.get('image')
+                    if isinstance(image_url, str) and image_url.startswith(('http://', 'https://')) and image_url not in sku_image_urls:
+                        sku_image_urls.append(image_url)
+                data['sku_images'] = sku_image_urls
+
             # 8. 提取物流信息
             logistics = self._extract_logistics(body)
             data['logistics'] = logistics
@@ -983,11 +1088,14 @@ class CollectorScraper:
                 js_result = self.page.evaluate(r"""() => {
                     const result = {
                         skus: [],
+                        rowSkus: [],
                         colorImages: {},
                         overallPrice: null,
                         overallStock: null,
                         debug: {}
                     };
+
+                    const visible = (el) => !!el && el.offsetParent !== null;
                     
                     // 1. 精确查找价格输入框
                     const priceInput = document.querySelector('.jx-pro-input.price-input input.el-input__inner');
@@ -1007,7 +1115,8 @@ class CollectorScraper:
                             }
                         }
                     });
-                    result.allPrices = [...new Set(allPrices)];  // 去重
+                    // 保留原始顺序和重复价格，避免同价SKU被错误折叠导致数量对不上
+                    result.allPrices = allPrices;
                     
                     // 2. 查找所有jx-pro-input元素（价格和库存）
                     const allInputs = document.querySelectorAll('.jx-pro-input input.el-input__inner');
@@ -1085,6 +1194,66 @@ class CollectorScraper:
                     });
                     
                     result.specPriceMap = specPriceMap;
+
+                    // 2.6 直接从SKU表格可见行提取完整规格名、价格和库存。
+                    // 已发布商品页里价格经常只在表格行文本中完整可见，
+                    // 仅靠输入框推断会漏掉后半段规格或把截断名重复展开。
+                    const rowSkus = [];
+                    const rowSelectors = [
+                        '.el-table__body-wrapper tbody tr',
+                        '.el-table__body tr',
+                        'table tbody tr'
+                    ];
+                    const rowSeen = new Set();
+
+                    const parseRowPrice = (text) => {
+                        const directMatch = text.match(/¥\s*([0-9]+(?:\.[0-9]+)?)/);
+                        if (directMatch) return parseFloat(directMatch[1]);
+
+                        const stockAnchoredMatch = text.match(/([0-9]+(?:\.[0-9]+)?)\s+库存\s*[0-9]+\s*台/);
+                        if (stockAnchoredMatch) return parseFloat(stockAnchoredMatch[1]);
+                        return null;
+                    };
+
+                    const parseRowStock = (text) => {
+                        const stockMatch = text.match(/库存\s*([0-9]+)\s*台/);
+                        return stockMatch ? parseInt(stockMatch[1], 10) : null;
+                    };
+
+                    const sanitizeRowName = (text) => {
+                        let name = text.replace(/\s+/g, ' ').trim();
+                        name = name.replace(/¥\s*[0-9]+(?:\.[0-9]+)?[\s\S]*$/, '').trim();
+                        name = name.replace(/[+-]\s*0\s*[+-]?\s*$/, '').trim();
+                        return name;
+                    };
+
+                    rowSelectors.forEach(function(selector) {
+                        document.querySelectorAll(selector).forEach(function(row) {
+                            if (!visible(row)) return;
+
+                            const rowText = (row.innerText || '').replace(/\u00A0/g, ' ');
+                            if (!rowText || rowText.indexOf('库存') === -1) return;
+
+                            const normalizedText = rowText.replace(/\s+/g, ' ').trim();
+                            if (!normalizedText || rowSeen.has(normalizedText)) return;
+
+                            const price = parseRowPrice(normalizedText);
+                            const stock = parseRowStock(normalizedText);
+                            const name = sanitizeRowName(normalizedText);
+
+                            if (!name || name.length < 2 || price === null || !stock) return;
+                            if (name.includes('货源价格') || name.includes('全球价格') || name.includes('全球库存')) return;
+
+                            rowSeen.add(normalizedText);
+                            rowSkus.push({
+                                name: name,
+                                price: price,
+                                stock: stock,
+                            });
+                        });
+                    });
+
+                    result.rowSkus = rowSkus;
                     
                     // 3. 直接查找所有img元素并调试
                     const allImgs = document.querySelectorAll('img');
@@ -1101,47 +1270,76 @@ class CollectorScraper:
                         }
                     });
                     
-                    // 3. 查找.el-image.img-box容器获取颜色图片
-                    const imgBoxes = document.querySelectorAll('.el-image.img-box');
-                    imgBoxes.forEach(function(box) {
-                        const imgEl = box.querySelector('.el-image__inner');
-                        if (!imgEl) return;
-                        let imgUrl = imgEl.src || imgEl.getAttribute('data-src');
-                        if (!imgUrl || imgUrl.indexOf('alicdn') === -1) return;
-                        if (imgUrl.indexOf('-0-cib') !== -1 || imgUrl.indexOf('-1-cib') !== -1) return;
-                        
-                        let name = '';
-                        // 优先查找包含"奶"、"白"、"黄"、"色"等颜色关键字的元素
-                        const textEls = box.querySelectorAll('span, div, p, li');
-                        textEls.forEach(function(el) {
-                            const txt = el.innerText || '';
-                            // 只匹配中文颜色名称（奶白、奶黄等）
-                            if (txt && (txt.indexOf('奶') !== -1 || txt.indexOf('白') !== -1 || txt.indexOf('黄') !== -1 || txt.indexOf('色') !== -1)) {
-                                name = txt.replace(/[\\u00A0\\s\\n\\r]+/g, ' ').trim();
+                    // 3. 查找 SKU 图片区域，优先按 sku-picture-item 的名称节点做 1:1 提取，避免把产品图尺寸误识别成 SKU 名。
+                    const normalizeSkuName = (value) => {
+                        return (value || '').replace(/[\u00A0\s\n\r]+/g, ' ').trim();
+                    };
+
+                    const isNoiseSkuName = (value) => {
+                        const normalized = normalizeSkuName(value);
+                        if (!normalized || normalized.length > 40) return true;
+                        if (normalized.indexOf('请选择') !== -1 || normalized.indexOf('搜索') !== -1 || normalized.indexOf('图片') !== -1) return true;
+                        if (normalized === 'AI' || normalized === 'CNY') return true;
+                        const compact = normalized.replace(/\s+/g, '');
+                        if (/^\d+(?:x\d+)+$/i.test(compact)) return true;
+                        if (/^\d+[xX＊*]\d+$/.test(compact)) return true;
+                        if (/^[\d\sxX＊*I]+$/.test(compact) && compact.replace(/[\dxX＊*I]/gi, '').length === 0) return true;
+                        return false;
+                    };
+
+                    const resolveSkuImageUrl = (node) => {
+                        let current = node;
+                        for (let depth = 0; current && depth < 4; depth += 1, current = current.parentElement) {
+                            const imgEl = current.querySelector('.sku-picture-item.image-item .el-image__inner, .sku-picture-item.image-item img, .el-image__inner, img');
+                            if (!imgEl) continue;
+                            const imgUrl = imgEl.src || imgEl.getAttribute('data-src') || '';
+                            if (imgUrl && imgUrl.indexOf('alicdn') !== -1) {
+                                return imgUrl;
                             }
-                        });
-                        
-                        // 如果box内没找到，尝试父容器
-                        if (!name && box.parentElement) {
-                            const parentText = box.parentElement.innerText || '';
-                            // 查找包含颜色的行
-                            const lines = parentText.split(/[\\n\\r]+/);
-                            lines.forEach(function(line) {
-                                if (line && (line.indexOf('奶') !== -1 || line.indexOf('白') !== -1 || line.indexOf('黄') !== -1)) {
-                                    if (!name) name = line.trim();
-                                }
-                            });
                         }
-                        
-                        if (name && name.length > 0 && name.length < 15) {
-                            name = name.replace(/[\\u00A0\\s\\n\\r]+/g, ' ').trim();
-                            if (name.indexOf('请选择') === -1 && name.indexOf('搜索') === -1) {
-                                if (!result.colorImages[name]) {
-                                    result.colorImages[name] = imgUrl;
-                                }
-                            }
+                        return '';
+                    };
+
+                    const skuNameNodes = Array.from(document.querySelectorAll('.sku-picture-item.name, .sku-picture-name, [class*="sku-picture"] [class*="name"]')).filter(visible);
+                    skuNameNodes.forEach(function(nameNode) {
+                        const name = normalizeSkuName(nameNode.innerText || nameNode.textContent || '');
+                        if (isNoiseSkuName(name)) return;
+
+                        const imgUrl = resolveSkuImageUrl(nameNode);
+                        if (!imgUrl) return;
+
+                        if (!result.colorImages[name]) {
+                            result.colorImages[name] = imgUrl;
                         }
                     });
+
+                    if (Object.keys(result.colorImages).length === 0) {
+                        const imageBlocks = Array.from(document.querySelectorAll('.sku-picture-item-wrap, .sku-picture-wrap-item, .sku-picture-item')).filter(visible);
+                        imageBlocks.forEach(function(block) {
+                            const imgUrl = resolveSkuImageUrl(block);
+                            if (!imgUrl) return;
+
+                            let name = '';
+                            const directNameEl = block.querySelector('.sku-picture-item.name, .sku-picture-name, .name, [class*="name"]');
+                            if (directNameEl) {
+                                name = normalizeSkuName(directNameEl.innerText || directNameEl.textContent || '');
+                            }
+
+                            if (!name) {
+                                let container = block.parentElement;
+                                for (let depth = 0; container && depth < 3 && !name; depth += 1, container = container.parentElement) {
+                                    const siblingNameEl = container.querySelector('.sku-picture-item.name, .sku-picture-name');
+                                    if (siblingNameEl) {
+                                        name = normalizeSkuName(siblingNameEl.innerText || siblingNameEl.textContent || '');
+                                    }
+                                }
+                            }
+
+                            if (!isNoiseSkuName(name) && !result.colorImages[name]) {
+                                result.colorImages[name] = imgUrl;
+                            }
+                        });
+                    }
                     
                     // 4. 过滤库存，去重
                     
@@ -1189,6 +1387,7 @@ class CollectorScraper:
 
                 # 处理提取结果
                 color_images = js_result.get('colorImages', {})
+                row_skus = js_result.get('rowSkus', [])
                 all_prices = js_result.get('allPrices', [])
                 spec_price_map = js_result.get('specPriceMap', {})
                 price = js_result.get('overallPrice')
@@ -1197,6 +1396,285 @@ class CollectorScraper:
 
                 logger.info(f"有效库存: {valid_stocks}, 颜色数: {len(color_images)}, 所有价格: {all_prices}")
                 logger.info(f"规格价格映射: {spec_price_map}")
+                if row_skus:
+                    logger.info(f"表格行直提SKU: {row_skus}")
+
+                def clean_spec_label(value: Any) -> str:
+                    text = str(value or '').replace('\n', '').replace('\r', '').strip()
+                    if not text:
+                        return ''
+                    return re.split(r'[：:]', text, maxsplit=1)[0].strip()
+
+                def normalize_visible_sku_name(value: Any, sku_price: Any = None) -> str:
+                    text = str(value or '')
+                    text = text.replace('\u00A0', ' ')
+                    text = re.sub(r'[\s\u200b\ufeff]+', '', text)
+                    text = re.sub(r'-\d+$', '', text)
+
+                    if text.endswith('【承重180'):
+                        text += '斤】'
+                    elif text.endswith('【承重300'):
+                        text += '斤】'
+                    elif text.startswith('7寸轮') and '7CM越野双刹' in text and '承重' not in text:
+                        prefix = text.split('7CM越野双刹')[0]
+                        suffix = '500斤】' if sku_price == 132 else '400斤】'
+                        text = f'{prefix}7CM越野双刹轮【承重{suffix}'
+                    elif text.startswith('7寸坦克轮') and '10CM越野' in text:
+                        prefix = text.split('10CM越野')[0]
+                        text = f'{prefix}10CM越野双刹轮【承重400斤】'
+
+                    text = re.sub(r'(刹轮【承重400斤】)+', '刹轮【承重400斤】', text)
+
+                    return text
+
+                def finalize_sku_name(sku_name: str, spec_name: str = '') -> str:
+                    normalized = normalize_visible_sku_name(sku_name)
+                    if spec_name and '适用人数' in spec_name and re.search(r'-(\d+-\d+)$', normalized):
+                        normalized += '人'
+                    return normalized
+
+                def normalize_price_group_label(value: Any) -> str:
+                    cleaned = clean_spec_label(value)
+                    if not cleaned:
+                        return ''
+                    return re.sub(r'-\d+$', '', cleaned).strip()
+
+                def infer_group_key_candidates(value: Any) -> List[str]:
+                    cleaned = normalize_price_group_label(value)
+                    if not cleaned:
+                        return []
+
+                    segments = [segment.strip() for segment in re.split(r'[-/|｜]', cleaned) if segment.strip()]
+                    candidates = [cleaned]
+                    if len(segments) > 1:
+                        candidates.append('-'.join(segments[:-1]))
+                        candidates.append(segments[0])
+
+                    deduped = []
+                    for candidate in candidates:
+                        if candidate and candidate not in deduped:
+                            deduped.append(candidate)
+                    return deduped
+
+                def build_price_group_map(labels: List[Any], prices: List[Any]) -> Dict[str, Any]:
+                    if not labels or not prices:
+                        return {}
+
+                    candidate_groups = []
+                    for idx in range(3):
+                        grouped = []
+                        for label in labels:
+                            candidates = infer_group_key_candidates(label)
+                            grouped.append(candidates[idx] if idx < len(candidates) else '')
+                        candidate_groups.append(grouped)
+
+                    for grouped in candidate_groups:
+                        ordered_groups = []
+                        for group in grouped:
+                            if group and group not in ordered_groups:
+                                ordered_groups.append(group)
+                        if len(ordered_groups) == len(prices):
+                            return {group: prices[idx] for idx, group in enumerate(ordered_groups)}
+
+                    # 已发布商品页常把同一规格截断为 "xxx-2/xxx-3" 这样的重复标签，
+                    # 此时价格数组通常只保留每组一次价格，需要按块重复映射。
+                    for grouped in candidate_groups:
+                        if len(grouped) <= len(prices) or len(grouped) % len(prices) != 0:
+                            continue
+
+                        block_size = len(grouped) // len(prices)
+                        block_map: Dict[str, Any] = {}
+                        valid = True
+
+                        for idx, group in enumerate(grouped):
+                            normalized_group = normalize_price_group_label(group)
+                            if not normalized_group:
+                                valid = False
+                                break
+
+                            expected_price = prices[idx // block_size]
+                            existing_price = block_map.get(normalized_group)
+                            if existing_price is None:
+                                block_map[normalized_group] = expected_price
+                            elif existing_price != expected_price:
+                                valid = False
+                                break
+
+                        if valid and len(block_map) == len(prices):
+                            return block_map
+
+                    return {}
+
+                def resolve_price_from_map(label: Any, price_map: Dict[str, Any], fallback_price: Any) -> Any:
+                    if not price_map:
+                        return fallback_price
+
+                    for candidate in infer_group_key_candidates(label):
+                        if candidate in price_map:
+                            return price_map[candidate]
+
+                    return fallback_price
+
+                def match_color_image_for_name(sku_name: Any) -> tuple[str, Optional[str]]:
+                    normalized_name = normalize_visible_sku_name(sku_name)
+                    if not normalized_name or not color_images:
+                        return '', None
+
+                    normalized_map = []
+                    for color_name, image_url in color_images.items():
+                        normalized_color = normalize_visible_sku_name(color_name)
+                        if normalized_color:
+                            normalized_map.append((normalized_color, color_name, image_url))
+
+                    normalized_map.sort(key=lambda item: len(item[0]), reverse=True)
+
+                    for normalized_color, original_color, image_url in normalized_map:
+                        if normalized_color and normalized_color in normalized_name:
+                            return original_color, image_url
+
+                    return '', None
+
+                def collect_scrolled_row_skus() -> List[Dict[str, Any]]:
+                    selector = self.page.evaluate(r'''() => {
+                        const visible = (el) => !!el && el.offsetParent !== null;
+                        const marker = 'data-copilot-sku-scroll-root';
+
+                        for (const node of document.querySelectorAll(`[${marker}]`)) {
+                            node.removeAttribute(marker);
+                        }
+
+                        const mainScroll = document.querySelector('.scroll-menu-wrap');
+                        if (mainScroll && mainScroll.scrollHeight > mainScroll.clientHeight + 80) {
+                            mainScroll.setAttribute(marker, '1');
+                            return `[${marker}="1"]`;
+                        }
+
+                        const optionInputs = Array.from(document.querySelectorAll('input')).filter((input) => {
+                            return visible(input)
+                                && (input.getAttribute('placeholder') || '') === '请输入选项名称'
+                                && (input.value || '').trim();
+                        });
+
+                        if (!optionInputs.length) return null;
+
+                        let current = optionInputs[0].parentElement;
+                        while (current) {
+                            if (current.scrollHeight > current.clientHeight + 80) {
+                                current.setAttribute(marker, '1');
+                                return `[${marker}="1"]`;
+                            }
+                            current = current.parentElement;
+                        }
+
+                        document.body.setAttribute(marker, '1');
+                        return `[${marker}="1"]`;
+                    }''')
+
+                    if not selector:
+                        return []
+
+                    collected: List[Dict[str, Any]] = []
+                    seen_keys = set()
+                    stagnant_rounds = 0
+                    previous_count = 0
+
+                    for _ in range(12):
+                        snapshot = self.page.evaluate(r'''(rootSelector) => {
+                            const visible = (el) => !!el && el.offsetParent !== null;
+                            const root = document.querySelector(rootSelector);
+                            if (!root) return {names: [], prices: [], atBottom: true};
+
+                            const names = Array.from(document.querySelectorAll('input')).filter((input) => {
+                                return visible(input)
+                                    && (input.getAttribute('placeholder') || '') === '请输入选项名称'
+                                    && (input.value || '').trim();
+                            }).map((input) => (input.value || '').replace(/\s+/g, ' ').trim());
+
+                            const prices = Array.from(document.querySelectorAll('.price-input input, .jx-pro-input.price-input input.el-input__inner')).filter((input) => {
+                                if (!visible(input)) return false;
+                                const raw = (input.value || '').replace(/[^\d.]/g, '');
+                                if (!raw) return false;
+                                const num = parseFloat(raw);
+                                return Number.isFinite(num) && num > 0 && num < 10000;
+                            }).map((input) => parseFloat((input.value || '').replace(/[^\d.]/g, '')));
+
+                            return {
+                                names,
+                                prices,
+                                atBottom: root.scrollTop + root.clientHeight >= root.scrollHeight - 8,
+                            };
+                        }''', selector)
+
+                        names = snapshot.get('names', [])
+                        prices = snapshot.get('prices', [])
+                        pair_count = min(len(names), len(prices))
+                        for idx in range(pair_count):
+                            sku_name = normalize_visible_sku_name(names[idx], prices[idx])
+                            sku_price = prices[idx]
+                            if not sku_name:
+                                continue
+                            dedupe_key = f"{sku_name}|{sku_price}"
+                            if dedupe_key in seen_keys:
+                                continue
+                            seen_keys.add(dedupe_key)
+                            collected.append({
+                                'name': sku_name,
+                                'price': sku_price,
+                                'stock': None,
+                            })
+
+                        if len(collected) == previous_count:
+                            stagnant_rounds += 1
+                        else:
+                            stagnant_rounds = 0
+                            previous_count = len(collected)
+
+                        if snapshot.get('atBottom') or stagnant_rounds >= 2:
+                            break
+
+                        self.page.evaluate(r'''(rootSelector) => {
+                            const root = document.querySelector(rootSelector);
+                            if (!root) return;
+                            root.scrollTop = Math.min(
+                                root.scrollTop + Math.max(root.clientHeight - 80, 120),
+                                root.scrollHeight
+                            );
+                        }''', selector)
+                        time.sleep(0.5)
+
+                    return collected
+
+                if not row_skus and not color_images:
+                    row_skus = collect_scrolled_row_skus()
+                    if row_skus:
+                        logger.info(f"滚动采集SKU行结果: {row_skus}")
+
+                if row_skus and len(row_skus) >= max(len(all_prices), 2):
+                    mapped_row_sku_images = 0
+                    for row_sku in row_skus:
+                        sku_name = normalize_visible_sku_name(row_sku.get('name'), row_sku.get('price', price))
+                        if not sku_name:
+                            continue
+                        matched_color, matched_image = match_color_image_for_name(sku_name)
+                        if matched_image:
+                            mapped_row_sku_images += 1
+                        sku_stock = row_sku.get('stock') or (valid_stocks[0] if valid_stocks else None) or stock or 99999
+                        skus.append({
+                            'name': sku_name,
+                            'color': matched_color,
+                            'size': normalize_visible_sku_name(clean_spec_label(sku_name), row_sku.get('price', price)),
+                            'price': row_sku.get('price', price),
+                            'stock': sku_stock,
+                            'image': matched_image
+                        })
+
+                    if skus:
+                        logger.info("使用表格行直提SKU结果，跳过规格推断映射")
+                        logger.info(f"表格行SKU图片映射: {mapped_row_sku_images}/{len(skus)}")
+                        logger.info(f"提取到 {len(skus)} 个SKU")
+                        for sku in skus:
+                            logger.info(f"  SKU: {sku}")
+                        return skus
 
                 # 构建SKU列表 - 修复多规格维度组合
                 if color_images:
@@ -1219,8 +1697,9 @@ class CollectorScraper:
                         except: pass
                     
                     spec_names = [k for k in specs.keys() if k != '颜色']  # 排除颜色维度
+                    all_combinations = []
                     
-                    if spec_names and len(all_combinations := []) == 0:
+                    if spec_names:
                         # 有多规格维度，进行笛卡尔积
                         def cartesian_product(dimensions, idx=0, combo=None):
                             if combo is None:
@@ -1240,11 +1719,17 @@ class CollectorScraper:
                     if all_combinations:
                         # 颜色 × 规格 组合，尝试分配不同价格
                         prices_to_use = all_prices if all_prices else ([price] if price else [26.8])
+                        combination_labels = []
+
+                        for combo in all_combinations:
+                            label = combo.get(spec_names[0], '') if spec_names else ''
+                            combination_labels.append(clean_spec_label(label))
+
+                        combination_price_map = build_price_group_map(combination_labels, prices_to_use)
                         
                         for idx, combo in enumerate(all_combinations):
                             size_name = combo.get(spec_names[0], '') if spec_names else ''
-                            if size_name and '：' in size_name:
-                                size_name = size_name.split('：')[0].strip()
+                            size_name = clean_spec_label(size_name)
                             
                             # 尝试从spec_price_map获取对应价格
                             sku_price = price
@@ -1253,6 +1738,8 @@ class CollectorScraper:
                                     if size_name and size_name in str(spec_key):
                                         sku_price = spec_val
                                         break
+                            elif combination_price_map:
+                                sku_price = resolve_price_from_map(size_name, combination_price_map, price)
                             elif len(prices_to_use) > 1:
                                 # 根据规格索引进价（allPrices是按规格顺序的：[100L价格, 140L价格]）
                                 # 如果size_name包含"100L"用第一个价格，包含"140L"用第二个价格
@@ -1332,19 +1819,26 @@ class CollectorScraper:
                         # 生成所有SKU组合
                         all_combinations = list(cartesian_product(specs))
                         logger.info(f"笛卡尔积组合数: {len(all_combinations)}")
+                        primary_spec_labels = []
+
+                        non_color_spec_names = [name for name in spec_names if name != '颜色']
+                        primary_spec_name = non_color_spec_names[0] if non_color_spec_names else ''
+
+                        for combo in all_combinations:
+                            if primary_spec_name:
+                                primary_spec_labels.append(combo.get(primary_spec_name, ''))
+                            else:
+                                primary_spec_labels.append(list(combo.values())[0] if combo else '')
+
+                        combination_price_map = build_price_group_map(primary_spec_labels, all_prices)
                         
                         for idx, combo in enumerate(all_combinations):
                             # 组合SKU名称：例如 "奶黄色-100L"
-                            non_color_spec_names = [name for name in spec_names if name != '颜色']
-                            primary_spec_name = non_color_spec_names[0] if non_color_spec_names else ''
                             size_spec = combo.get(primary_spec_name, '') if primary_spec_name else ''
-                            if size_spec:
-                                # 规格格式："100L：50*40*50cm" -> 提取 "100L"
-                                size_name = re.split(r'[：:]', size_spec, maxsplit=1)[0].strip()
-                            else:
-                                size_name = ''
+                            size_name = clean_spec_label(size_spec)
                             
                             color_name = combo.get('颜色', '')
+                            combo_label = size_name or (list(combo.values())[0] if combo else '')
                             
                             # 构建完整SKU名称
                             if color_name and size_name:
@@ -1353,13 +1847,18 @@ class CollectorScraper:
                                 sku_name = size_name
                             else:
                                 sku_name = list(combo.values())[0] if combo else f"SKU{idx+1}"
+                            sku_name = finalize_sku_name(sku_name, primary_spec_name)
                             
                             # 分配库存（轮询分配）
                             sku_stock = valid_stocks[idx % len(valid_stocks)] if valid_stocks else (stock or 99999)
                             
                             # 分配价格：优先用all_prices，否则用统一price
-                            if all_prices and len(all_prices) > 0:
-                                sku_price = all_prices[idx % len(all_prices)]
+                            if spec_price_map:
+                                sku_price = resolve_price_from_map(combo_label, spec_price_map, price)
+                            elif combination_price_map:
+                                sku_price = resolve_price_from_map(combo_label, combination_price_map, price)
+                            elif all_prices and len(all_prices) > 0:
+                                sku_price = all_prices[idx] if idx < len(all_prices) else price
                             else:
                                 sku_price = price
                             

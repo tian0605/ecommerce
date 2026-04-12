@@ -2,10 +2,18 @@
 """
 task_monitor.py - 任务运行质量监控
 
-每6小时执行一次，分析任务执行日志，生成质量报告并发送飞书
+每6小时执行一次，分析任务执行日志，生成质量报告并发送飞书。
+
+retrospective batch 会处理两类待复盘对象：
+1. 已处于 retrospective 且尚未 done 的任务
+2. exec_state=requires_manual 但尚未进入 retrospective 的任务
+
+因此一次 batch 运行中，可能同时处理失败父任务和其 requires_manual 子任务，
+出现 processed 大于“你以为只有一个父任务”的情况，这属于预期行为，不是异常。
 """
 import sys
 import os
+import argparse
 import requests
 from pathlib import Path
 from datetime import datetime
@@ -15,6 +23,7 @@ sys.path.insert(0, str(WORKSPACE / 'scripts'))
 
 import psycopg2
 from notification_service import send_feishu_text
+from task_manager import TaskManager, TaskStage, StageStatus
 
 
 # ==================== 根因检测规则 ====================
@@ -208,7 +217,7 @@ def get_root_cause_stats(conn):
     cur.execute("""
         SELECT task_name, last_error
         FROM tasks 
-        WHERE exec_state IN ('ERROR_FIX_PENDING', 'REQUIRES_MANUAL')
+                WHERE LOWER(COALESCE(exec_state, '')) IN ('error_fix_pending', 'requires_manual')
           AND updated_at > NOW() - INTERVAL '24 hours'
         ORDER BY updated_at DESC
     """)
@@ -261,9 +270,9 @@ def get_task_stats(conn):
     
     # 任务状态统计
     cur.execute("""
-        SELECT exec_state, COUNT(*) 
+        SELECT LOWER(COALESCE(exec_state, '')), COUNT(*) 
         FROM tasks 
-        GROUP BY exec_state
+        GROUP BY LOWER(COALESCE(exec_state, ''))
     """)
     state_stats = {row[0]: row[1] for row in cur.fetchall()}
     
@@ -280,7 +289,7 @@ def get_task_stats(conn):
     cur.execute("""
         SELECT task_name, exec_state, retry_count, last_error
         FROM tasks 
-        WHERE exec_state IN ('ERROR_FIX_PENDING', 'NORMAL_CRASH', 'REQUIRES_MANUAL')
+        WHERE LOWER(COALESCE(exec_state, '')) IN ('error_fix_pending', 'normal_crash', 'requires_manual')
         ORDER BY updated_at DESC
         LIMIT 5
     """)
@@ -290,7 +299,7 @@ def get_task_stats(conn):
     cur.execute("""
         SELECT COUNT(*)
         FROM tasks 
-        WHERE exec_state = 'PROCESSING'
+        WHERE LOWER(COALESCE(exec_state, '')) = 'processing'
         AND last_executed_at < NOW() - INTERVAL '10 minutes'
     """)
     stuck_count = cur.fetchone()[0]
@@ -385,6 +394,139 @@ def generate_report(state_stats, log_stats, failed_tasks, stuck_count, root_caus
     return '\n'.join(report)
 
 
+def get_task_logs(conn, task_name: str, limit: int = 20):
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT run_status, run_message, created_at
+        FROM main_logs
+        WHERE task_name = %s OR task_name = LEFT(%s, 50)
+        ORDER BY created_at DESC
+        LIMIT %s
+        """,
+        (task_name, task_name, limit),
+    )
+    rows = cur.fetchall()
+    cur.close()
+    return rows
+
+
+def build_retrospective_payload(tm: TaskManager, task_name: str) -> dict:
+    task = tm.get_task(task_name)
+    if not task:
+        return {'success': False, 'reason': 'missing_task'}
+
+    current_stage = task.get('current_stage')
+    if current_stage != TaskStage.RETROSPECTIVE.value:
+        tm.set_stage(task_name, TaskStage.RETROSPECTIVE.value, status=StageStatus.IN_PROGRESS.value, result='task_monitor 开始生成 retrospective')
+        task = tm.get_task(task_name) or task
+
+    logs = get_task_logs(tm.conn, task_name, limit=12)
+    children = tm.get_sub_tasks(task_name)
+    recent_messages = [str(row[1]) for row in logs if row[1]][:5]
+    last_error = task.get('last_error') or ''
+    exec_state = str(task.get('exec_state') or '').lower()
+    outcome = 'success' if exec_state == 'end' else 'failure'
+
+    debt_items = []
+    if (task.get('retry_count') or 0) > 0:
+        debt_items.append(f"任务发生过{task.get('retry_count')}次重试")
+    unresolved_children = [child['task_name'] for child in children if str(child.get('exec_state') or '').lower() == 'requires_manual']
+    if unresolved_children:
+        debt_items.append(f"仍有需人工介入的子任务: {', '.join(unresolved_children[:3])}")
+
+    debt = {
+        'items': debt_items,
+        'has_followup': bool(debt_items),
+        'updated_at': datetime.now().isoformat(timespec='seconds'),
+    }
+
+    if outcome == 'success':
+        sop = {
+            'summary': task.get('success_criteria') or task.get('last_result') or '任务成功完成并通过生命周期闸门',
+            'reusable_checks': [
+                '确认 current_stage 已推进到 retrospective',
+                '确认关键执行日志存在 success 记录',
+                '确认无未关闭修复子任务',
+            ],
+            'evidence': recent_messages,
+            'task_type': task.get('task_type'),
+        }
+        summary = f"SOP已沉淀: {task.get('display_name') or task_name}"
+        rca = {}
+    else:
+        root_cause = analyze_error_root_cause(last_error)
+        rca = {
+            'summary': root_cause.get('root_cause') or (last_error[:160] if last_error else '任务以失败路径结束，需要人工复盘'),
+            'severity': root_cause.get('severity') or 'high',
+            'fix_suggestion': root_cause.get('fix') or '检查失败日志并补充修复策略',
+            'error': last_error,
+            'evidence': recent_messages,
+            'child_failures': [
+                {
+                    'task_name': child.get('task_name'),
+                    'exec_state': child.get('exec_state'),
+                    'last_error': child.get('last_error'),
+                }
+                for child in children[:5]
+                if child.get('last_error') or str(child.get('exec_state') or '').lower() != 'end'
+            ],
+        }
+        sop = {}
+        summary = f"RCA已生成: {task.get('display_name') or task_name}"
+
+    tm.finalize_retrospective(
+        task_name,
+        summary=summary,
+        rca=rca,
+        sop=sop,
+        debt=debt,
+        outcome=outcome,
+    )
+    return {
+        'success': True,
+        'task_name': task_name,
+        'outcome': outcome,
+        'summary': summary,
+    }
+
+
+def process_retrospective_batch(limit: int = 20) -> list[dict]:
+    """批量处理待复盘对象，而不是仅处理显式处于 retrospective 的父任务。"""
+    tm = TaskManager()
+    cur = tm.conn.cursor()
+    cur.execute(
+        """
+        SELECT task_name
+        FROM tasks
+        WHERE (
+            current_stage = 'retrospective'
+            AND LOWER(COALESCE(stage_status, 'ready')) <> 'done'
+            AND LOWER(COALESCE(exec_state, '')) IN ('new', 'end', 'normal_crash', 'error_fix_pending', 'requires_manual', 'void')
+        )
+        OR (
+            LOWER(COALESCE(exec_state, '')) = 'requires_manual'
+            AND LOWER(COALESCE(current_stage, '')) <> 'retrospective'
+        )
+        ORDER BY updated_at ASC
+        LIMIT %s
+        """,
+        (limit,),
+    )
+    task_names = [row[0] for row in cur.fetchall()]
+    cur.close()
+
+    results = []
+    for task_name in task_names:
+        try:
+            results.append(build_retrospective_payload(tm, task_name))
+        except Exception as exc:
+            results.append({'success': False, 'task_name': task_name, 'reason': str(exc)})
+
+    tm.close()
+    return results
+
+
 def send_feishu(message):
     """发送飞书通知"""
     if not send_feishu_text(message):
@@ -392,7 +534,28 @@ def send_feishu(message):
 
 
 def main():
+    parser = argparse.ArgumentParser(description='task_monitor retrospective/report runner')
+    parser.add_argument('--task', dest='task_name', help='为单个任务生成 retrospective 产物')
+    parser.add_argument('--retrospective-batch', action='store_true', help='批量处理待复盘对象；除 retrospective 未完成任务外，也会自动纳入 requires_manual 且尚未进入 retrospective 的任务')
+    parser.add_argument('--limit', type=int, default=20, help='批量处理上限')
+    parser.add_argument('--report-only', action='store_true', help='仅生成质量报告')
+    args = parser.parse_args()
+
     print(f"[{datetime.now()}] task_monitor 启动")
+
+    if args.task_name:
+        tm = TaskManager()
+        result = build_retrospective_payload(tm, args.task_name)
+        tm.close()
+        print(result)
+        sys.exit(0 if result.get('success') else 1)
+
+    retrospective_results = []
+    if args.retrospective_batch or not args.report_only:
+        retrospective_results = process_retrospective_batch(limit=args.limit)
+        if retrospective_results:
+            succeeded = sum(1 for item in retrospective_results if item.get('success'))
+            print(f"[retrospective] processed={len(retrospective_results)} success={succeeded}")
     
     conn = psycopg2.connect(
         host='localhost',
@@ -407,6 +570,12 @@ def main():
     root_cause_data = get_root_cause_stats(conn)
     
     report = generate_report(state_stats, log_stats, failed_tasks, stuck_count, root_cause_data)
+
+    if retrospective_results:
+        report += "\n\n🧠 Retrospective自动闭环:\n"
+        for item in retrospective_results[:5]:
+            marker = '✅' if item.get('success') else '❌'
+            report += f"\n  {marker} {item.get('task_name', 'unknown')}: {item.get('summary') or item.get('reason') or 'unknown'}"
     
     print(report)
     

@@ -7,6 +7,21 @@
 
 ---
 
+## 2026-04-11 调度修复
+
+**问题：** 部分历史 TEMP 任务虽然实际执行的是完整工作流，但任务阶段停留在 `plan`。执行成功后仅把 `plan` 标记为 `passed`，随后被调度器重新置回 `new`，导致同一任务反复执行。
+
+**处理：**
+- 在 `scripts/temp_task_executor.py` 增加执行前自愈：发现遗留 TEMP 任务仍在 `idea/plan` 时，先切换到 `build` 再执行。
+- 在 `scripts/task_manager.py` 增加创建期防线：如果 TEMP 任务的 checkpoint 明显是可直接执行的工作流任务，则即使调用方漏传 `initial_stage='build'`，也默认初始化到 `build`。
+- 现场修复并确认任务 `AUTO-LISTING-20260411111300-203e` 已从 39 次重复执行收口到 `completed/end`。
+
+**影响面：**
+- 已消除 `plan + passed + new/processing` 这一类 TEMP 重跑环。
+- 当前库内已扫描，无其他同类可运行漂移任务。
+
+---
+
 ## 📊 配置自检对照表
 
 | 配置项 | 成熟度 | 上次检视 | 状态 |

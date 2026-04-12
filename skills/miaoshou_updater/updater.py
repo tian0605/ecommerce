@@ -6,13 +6,19 @@ Playwright-based updater for Miaoshou ERP Shopee collect-box items.
 """
 import argparse
 from contextlib import contextmanager
+from io import BytesIO
 import json
 import os
 import sys
+import tempfile
 import time
+import urllib.parse
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
+
+import requests
+from PIL import Image
 
 WORKSPACE = Path(__file__).resolve().parents[2]
 SCRIPTS_DIR = WORKSPACE / 'scripts'
@@ -28,6 +34,8 @@ try:
     import psycopg2
 except ImportError:
     psycopg2 = None
+
+from multisite_config import normalize_site_context
 
 try:
     from logger import setup_logger
@@ -75,6 +83,12 @@ STORAGE_STATE_CANDIDATES = [
 ]
 
 DEFAULT_CATEGORY_PATH = ['家居生活', '居家收纳', '收纳盒']
+VIDEO_VALIDATION_ERROR_FRAGMENTS = (
+    '视频像素不超过1280×1280px',
+    '视频时长10s~60s',
+    '大小必须小于30M',
+    '格式为MP4',
+)
 DB_CONFIG = {
     'host': 'localhost',
     'database': 'ecommerce_data',
@@ -88,12 +102,14 @@ class MiaoshouUpdater:
         self.cookies_file = Path(cookies_file) if cookies_file else self._detect_cookies_file()
         self.headless = headless
         self.cdp_url = cdp_url or os.environ.get('MIAOSHOU_CDP_URL')
+        self.disable_product_video = os.environ.get('MIAOSHOU_DISABLE_PRODUCT_VIDEO', '1').strip().lower() not in {'0', 'false', 'no', 'off'}
         self.storage_state_file = Path(storage_state_file) if storage_state_file else self._detect_storage_state_file()
         self.playwright = None
         self.browser = None
         self.context = None
         self.page = None
         self._owns_browser = True
+        self._temp_dirs: List[Path] = []
         self.cookies = self._load_cookies() if self.cookies_file else []
         self.storage_state = self._load_storage_state() if self.storage_state_file else None
 
@@ -276,6 +292,191 @@ class MiaoshouUpdater:
         except (TypeError, ValueError):
             return default
 
+    @staticmethod
+    def _normalize_list(value: Any) -> List[Any]:
+        if value in (None, ''):
+            return []
+        if isinstance(value, list):
+            return [item for item in value if item not in (None, '')]
+        if isinstance(value, tuple):
+            return [item for item in value if item not in (None, '')]
+        return [value]
+
+    @staticmethod
+    def _normalize_main_image_url(image: Any) -> str:
+        if isinstance(image, dict):
+            for key in ['url', 'src', 'image_url', 'media_url']:
+                candidate = str(image.get(key) or '').strip()
+                if candidate:
+                    return candidate
+            return ''
+        return str(image or '').strip()
+
+    @staticmethod
+    def _is_webp_image_url(image_url: str) -> bool:
+        normalized_url = str(image_url or '').strip().lower()
+        if not normalized_url:
+            return False
+        return urllib.parse.urlparse(normalized_url).path.endswith('.webp') or '.webp?' in normalized_url
+
+    def _create_temp_dir(self, prefix: str) -> Path:
+        temp_dir = Path(tempfile.mkdtemp(prefix=prefix, dir=str(TMP_DIR)))
+        self._temp_dirs.append(temp_dir)
+        return temp_dir
+
+    def _download_and_prepare_image_file(self, image_url: str, target_dir: Path, index: int) -> Optional[Path]:
+        normalized_url = self._normalize_main_image_url(image_url)
+        if not normalized_url:
+            return None
+
+        response = requests.get(
+            normalized_url,
+            timeout=30,
+            headers={'User-Agent': 'Mozilla/5.0 GitHub-Copilot MiaoshouUpdater'},
+        )
+        response.raise_for_status()
+        image_bytes = response.content
+        parsed = urllib.parse.urlparse(normalized_url)
+        lower_path = parsed.path.lower()
+        content_type = (response.headers.get('content-type') or '').lower()
+        looks_like_webp = lower_path.endswith('.webp') or 'image/webp' in content_type
+
+        if looks_like_webp:
+            with Image.open(BytesIO(image_bytes)) as image:
+                has_alpha = image.mode in {'RGBA', 'LA'} or ('transparency' in image.info)
+                converted = image.convert('RGBA' if has_alpha else 'RGB')
+                suffix = '.png' if has_alpha else '.jpg'
+                output_path = target_dir / f'main_{index:02d}{suffix}'
+                save_kwargs = {} if has_alpha else {'quality': 92}
+                converted.save(output_path, format='PNG' if has_alpha else 'JPEG', **save_kwargs)
+            return output_path
+
+        suffix = Path(lower_path).suffix.lower()
+        if suffix not in {'.jpg', '.jpeg', '.png'}:
+            with Image.open(BytesIO(image_bytes)) as image:
+                has_alpha = image.mode in {'RGBA', 'LA'} or ('transparency' in image.info)
+                converted = image.convert('RGBA' if has_alpha else 'RGB')
+                suffix = '.png' if has_alpha else '.jpg'
+                output_path = target_dir / f'main_{index:02d}{suffix}'
+                save_kwargs = {} if has_alpha else {'quality': 92}
+                converted.save(output_path, format='PNG' if has_alpha else 'JPEG', **save_kwargs)
+            return output_path
+
+        output_path = target_dir / f'main_{index:02d}{suffix}'
+        output_path.write_bytes(image_bytes)
+        return output_path
+
+    def _open_main_image_local_upload(self, dialog):
+        upload_button = dialog.locator('button.J_pictureListUpload').first
+        if upload_button.count() == 0:
+            return None
+
+        upload_button.click()
+        popover_upload = self.page.locator('.el-popover.el-popper .el-upload.el-upload--text input[name="uploadImgFile"]').last
+        try:
+            popover_upload.wait_for(state='attached', timeout=5000)
+        except Exception:
+            return None
+        return popover_upload
+
+    def _read_main_image_count(self, dialog) -> Optional[int]:
+        try:
+            count = dialog.evaluate(
+                r"""(root) => {
+                    const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
+                    const nodes = Array.from(root.querySelectorAll('*'));
+                    for (const node of nodes) {
+                        const text = normalize(node.innerText || '');
+                        if (!text.includes('产品图片') || text.includes('SKU图片') || !text.includes('已选')) continue;
+                        const match = text.match(/产品图片\s*[（(]?已选\s*(\d+)\s*张/);
+                        if (match) return Number(match[1]);
+                    }
+                    return null;
+                }"""
+            )
+            return int(count) if count is not None else None
+        except Exception:
+            return None
+
+    def _clear_main_images_if_present(self, dialog) -> bool:
+        try:
+            select_button = dialog.get_by_text('选中前9张', exact=False).first
+            delete_button = dialog.locator('button.J_pictureListBatchDelete').first
+            if select_button.count() == 0 or delete_button.count() == 0:
+                return False
+
+            select_button.click()
+            time.sleep(0.3)
+            delete_button.click()
+
+            deadline = time.time() + 10.0
+            while time.time() < deadline:
+                current_count = self._read_main_image_count(dialog)
+                if current_count in (None, 0):
+                    return True
+                time.sleep(0.5)
+            return False
+        except Exception:
+            return False
+
+    def _fill_main_images(self, dialog, product: Dict[str, Any]) -> bool:
+        image_urls = [
+            self._normalize_main_image_url(image)
+            for image in self._normalize_list(product.get('main_images'))
+        ]
+        image_urls = [url for url in image_urls if url][:9]
+        if not image_urls:
+            logger.warning('商品缺少主图 URL，跳过产品主图上传')
+            return False
+
+        switched = self._open_tab(dialog, '产品图片')
+        if switched:
+            time.sleep(0.8)
+
+        try:
+            existing_count = self._read_main_image_count(dialog)
+            if existing_count and existing_count > 0:
+                logger.info(f'产品图片区域已有主图，跳过上传: count={existing_count}')
+                return True
+
+            upload_input = self._open_main_image_local_upload(dialog)
+            if upload_input is None or upload_input.count() == 0:
+                logger.warning('未定位到产品图片 -> 本地上传控件')
+                return False
+
+            temp_dir = self._create_temp_dir('main_images_')
+            prepared_files: List[Path] = []
+            for index, image_url in enumerate(image_urls, start=1):
+                try:
+                    local_path = self._download_and_prepare_image_file(image_url, temp_dir, index)
+                except Exception as exc:
+                    logger.warning(f'主图下载或转换失败: {image_url} | {exc}')
+                    continue
+                if local_path:
+                    prepared_files.append(local_path)
+
+            if not prepared_files:
+                logger.warning('未能准备任何可上传的产品主图文件')
+                return False
+
+            upload_input.set_input_files([str(path) for path in prepared_files])
+
+            expected_count = min(len(prepared_files), 9)
+            deadline = time.time() + 30.0
+            while time.time() < deadline:
+                current_count = self._read_main_image_count(dialog)
+                if current_count is not None and current_count >= expected_count:
+                    logger.info(f'产品主图上传成功: count={current_count}')
+                    return True
+                time.sleep(0.5)
+
+            logger.warning(f'产品主图上传后未观察到预期数量: expected={expected_count}, actual={self._read_main_image_count(dialog)}')
+            return False
+        finally:
+            if switched:
+                self._open_tab(dialog, '基本信息')
+                time.sleep(0.5)
+
     def _resolve_cdp_context_page(self):
         if not self.browser:
             raise RuntimeError('CDP 浏览器连接未建立')
@@ -321,20 +522,33 @@ class MiaoshouUpdater:
         return True
 
     def close(self):
-        if self.page and self._owns_browser:
-            self.page.close()
-        if self.context and self._owns_browser:
-            self.context.close()
-        if self.browser and self._owns_browser:
-            self.browser.close()
-        if self.playwright:
-            self.playwright.stop()
-        self.page = None
-        self.context = None
-        self.browser = None
-        self.playwright = None
-        self._owns_browser = True
-        logger.info('浏览器已关闭')
+        try:
+            if self.page and self._owns_browser:
+                self.page.close()
+            if self.context and self._owns_browser:
+                self.context.close()
+            if self.browser and self._owns_browser:
+                self.browser.close()
+            if self.playwright:
+                self.playwright.stop()
+        finally:
+            for temp_dir in self._temp_dirs:
+                try:
+                    for file_path in sorted(temp_dir.glob('**/*'), reverse=True):
+                        if file_path.is_file():
+                            file_path.unlink(missing_ok=True)
+                        elif file_path.is_dir():
+                            file_path.rmdir()
+                    temp_dir.rmdir()
+                except Exception:
+                    pass
+            self._temp_dirs = []
+            self.page = None
+            self.context = None
+            self.browser = None
+            self.playwright = None
+            self._owns_browser = True
+            logger.info('浏览器已关闭')
 
     def screenshot(self, name: str) -> Optional[Path]:
         self._ensure_page()
@@ -418,6 +632,93 @@ class MiaoshouUpdater:
                 (status, product_id),
             )
 
+    def _load_site_listing(self, product_id: int, site_context: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        normalized_context = normalize_site_context(site_context or {})
+        with self._get_cursor() as cur:
+            cur.execute(
+                """
+                SELECT
+                    site_code,
+                    shop_code,
+                    listing_title,
+                    listing_description,
+                    short_description,
+                    status,
+                    publish_status,
+                    listing_language_snapshot,
+                    content_policy_code,
+                    shipping_profile_code,
+                    erp_profile_code,
+                    category_profile_code,
+                    suggested_price,
+                    estimated_profit_local,
+                    profit_rate,
+                    currency
+                FROM site_listings
+                WHERE product_id = %s
+                  AND COALESCE(site_code, 'shopee_tw') = %s
+                  AND COALESCE(shop_code, 'default') = %s
+                  AND is_deleted = 0
+                  AND is_current = TRUE
+                ORDER BY updated_at DESC NULLS LAST, id DESC
+                LIMIT 1
+                """,
+                (
+                    product_id,
+                    normalized_context.get('site_code') or 'shopee_tw',
+                    normalized_context.get('shop_code') or 'default',
+                ),
+            )
+            row = cur.fetchone()
+        if not row:
+            return None
+        return {
+            'site_code': row[0],
+            'shop_code': row[1],
+            'listing_title': row[2],
+            'listing_description': row[3],
+            'short_description': row[4],
+            'status': row[5],
+            'publish_status': row[6],
+            'listing_language_snapshot': row[7],
+            'content_policy_code': row[8],
+            'shipping_profile_code': row[9],
+            'erp_profile_code': row[10],
+            'category_profile_code': row[11],
+            'suggested_price': row[12],
+            'estimated_profit_local': row[13],
+            'profit_rate': row[14],
+            'currency': row[15],
+        }
+
+    def _update_site_listing_status(self, product: Dict[str, Any], status: str, publish_status: Optional[str] = None):
+        if not product.get('id'):
+            return
+        site_context = normalize_site_context(product)
+        with self._get_cursor() as cur:
+            cur.execute(
+                """
+                UPDATE site_listings
+                SET status = %s,
+                    publish_status = COALESCE(%s, publish_status),
+                    updated_at = CURRENT_TIMESTAMP,
+                    last_synced_at = CURRENT_TIMESTAMP,
+                    is_deleted = 0
+                WHERE product_id = %s
+                  AND COALESCE(site_code, 'shopee_tw') = %s
+                  AND COALESCE(shop_code, 'default') = %s
+                  AND is_current = TRUE
+                  AND is_deleted = 0
+                """,
+                (
+                    status,
+                    publish_status,
+                    product['id'],
+                    site_context.get('site_code') or 'shopee_tw',
+                    site_context.get('shop_code') or 'default',
+                ),
+            )
+
     def _load_product_by_identifier(self, identifier: Any) -> Dict[str, Any]:
         try:
             with self._get_cursor() as cur:
@@ -469,7 +770,35 @@ class MiaoshouUpdater:
     def _normalize_product_input(self, product: Any) -> Dict[str, Any]:
         if isinstance(product, dict):
             if product.get('id') or product.get('alibaba_product_id') or product.get('product_id_new'):
-                return dict(product)
+                normalized = dict(product)
+                needs_db_hydration = any(
+                    not normalized.get(field)
+                    for field in [
+                        'id',
+                        'title',
+                        'description',
+                        'optimized_title',
+                        'optimized_description',
+                        'category',
+                        'product_id_new',
+                        'package_weight',
+                        'package_length',
+                        'package_width',
+                        'package_height',
+                    ]
+                )
+                if needs_db_hydration:
+                    identifier = (
+                        normalized.get('id')
+                        or normalized.get('alibaba_product_id')
+                        or normalized.get('product_id_new')
+                        or normalized.get('product_id')
+                    )
+                    if identifier:
+                        loaded = self._load_product_by_identifier(identifier)
+                        loaded.update({key: value for key, value in normalized.items() if value not in (None, '', [], {})})
+                        return loaded
+                return normalized
             identifier = product.get('product_id')
             if identifier:
                 return self._load_product_by_identifier(identifier)
@@ -478,6 +807,17 @@ class MiaoshouUpdater:
 
     def _augment_with_sku_data(self, product: Dict[str, Any]) -> Dict[str, Any]:
         result = dict(product)
+        if not result.get('id'):
+            identifier = (
+                result.get('alibaba_product_id')
+                or result.get('product_id_new')
+                or result.get('product_id')
+            )
+            if identifier:
+                loaded = self._load_product_by_identifier(identifier)
+                loaded.update({key: value for key, value in result.items() if value not in (None, '', [], {})})
+                result = loaded
+
         sku_list = self.get_skus(result['id']) if result.get('id') else []
         result['skus'] = sku_list
         primary_sku = sku_list[0] if sku_list else {}
@@ -486,6 +826,12 @@ class MiaoshouUpdater:
         result['package_length'] = result.get('package_length') or primary_sku.get('package_length')
         result['package_width'] = result.get('package_width') or primary_sku.get('package_width')
         result['package_height'] = result.get('package_height') or primary_sku.get('package_height')
+
+        site_listing = self._load_site_listing(result['id'], result) if result.get('id') else None
+        if site_listing:
+            result['site_listing'] = site_listing
+            result['optimized_title'] = site_listing.get('listing_title') or result.get('optimized_title')
+            result['optimized_description'] = site_listing.get('listing_description') or result.get('optimized_description')
 
         if not result.get('optimized_title'):
             result['optimized_title'] = result.get('title', '')
@@ -726,8 +1072,62 @@ class MiaoshouUpdater:
 
     def _click_edit_for_source(self, source_item_id: str) -> bool:
         self._ensure_page()
+        locator_selectors = [
+            f'.jx-pro-virtual-table__row:has-text("{source_item_id}")',
+            f'.jx-pro-virtual-table__row-cell:has-text("{source_item_id}")',
+            f'tr:has-text("{source_item_id}")',
+            f'.el-table__row:has-text("{source_item_id}")',
+            f'.el-table__body tr:has-text("{source_item_id}")',
+            f'.el-table__body-wrapper tr:has-text("{source_item_id}")',
+        ]
+
+        def try_locator_click() -> bool:
+            for selector in locator_selectors:
+                rows = self.page.locator(selector)
+                try:
+                    count = rows.count()
+                except Exception:
+                    count = 0
+                for index in range(count):
+                    row = rows.nth(index)
+                    try:
+                        if not row.is_visible(timeout=800):
+                            continue
+                    except Exception:
+                        continue
+
+                    try:
+                        row.hover(timeout=800)
+                    except Exception:
+                        pass
+
+                    action_candidates = [
+                        row.locator('button.J_shopeeCollectBoxEdit'),
+                        row.locator('.operate-box button.J_shopeeCollectBoxEdit'),
+                        row.get_by_text('编辑', exact=True),
+                        row.locator('a').filter(has_text='编辑'),
+                        row.locator('button').filter(has_text='编辑'),
+                        row.locator('span').filter(has_text='编辑'),
+                        row.locator('[class*="edit"]'),
+                    ]
+                    for action in action_candidates:
+                        try:
+                            if action.count() == 0:
+                                continue
+                            target = action.first
+                            if not target.is_visible(timeout=800):
+                                continue
+                            target.click(force=True, timeout=1200)
+                            if self._wait_for_edit_dialog(timeout=4.0) is not None:
+                                return True
+                        except Exception:
+                            continue
+            return False
+
         for _ in range(4):
             self._close_popups()
+            if try_locator_click():
+                return True
             clicked = self.page.evaluate(
                     r"""(sourceId) => {
                     const visible = (el) => !!el && el.offsetParent !== null;
@@ -741,15 +1141,59 @@ class MiaoshouUpdater:
                     };
                     const clickEditInside = (root) => {
                         if (!root) return false;
-                        const buttons = Array.from(root.querySelectorAll('a, button, span, div'));
+                        root.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+                        root.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+                        const explicitEditButton = root.querySelector('button.J_shopeeCollectBoxEdit, .operate-box button.J_shopeeCollectBoxEdit');
+                        if (explicitEditButton && visible(explicitEditButton)) {
+                            return clickNode(explicitEditButton);
+                        }
+                        const buttons = Array.from(root.querySelectorAll('a, button, span, div, i'));
                         const target = buttons.find((item) => {
                             const text = textOf(item);
-                            return visible(item) && (text === '编辑' || text === '修改');
+                            const cls = (item.className || '').toString();
+                            return visible(item) && (
+                                text === '编辑'
+                                || text === '修改'
+                                || text.includes('编辑')
+                                || text.includes('修改')
+                                || cls.includes('edit')
+                                || cls.includes('bianji')
+                            );
                         });
                         if (target) {
                             return clickNode(target);
                         }
                         return false;
+                    };
+                    const clickFixedRightAction = () => {
+                        const virtualRows = Array.from(document.querySelectorAll('.jx-pro-virtual-table__row'))
+                            .filter((row) => visible(row));
+                        const virtualRow = virtualRows.find((row) => textOf(row).includes(String(sourceId)));
+                        if (virtualRow && clickEditInside(virtualRow)) return true;
+
+                        const rowSelectors = [
+                            '.el-table__body-wrapper tbody tr.el-table__row',
+                            '.el-table__body tbody tr.el-table__row',
+                        ];
+                        const mainRows = rowSelectors
+                            .flatMap((selector) => Array.from(document.querySelectorAll(selector)))
+                            .filter((row) => visible(row));
+
+                        const rowIndex = mainRows.findIndex((row) => textOf(row).includes(String(sourceId)));
+                        if (rowIndex < 0) return false;
+
+                        const fixedSelectors = [
+                            '.el-table__fixed-right .el-table__fixed-body-wrapper tbody tr.el-table__row',
+                            '.el-table__fixed-right .el-table__body-wrapper tbody tr.el-table__row',
+                            '.el-table__fixed .el-table__fixed-body-wrapper tbody tr.el-table__row',
+                        ];
+                        const fixedRows = fixedSelectors
+                            .flatMap((selector) => Array.from(document.querySelectorAll(selector)))
+                            .filter((row) => visible(row));
+
+                        const fixedRow = fixedRows[rowIndex];
+                        if (!fixedRow) return false;
+                        return clickEditInside(fixedRow);
                     };
                     const rowLike = (node) => {
                         if (!node) return false;
@@ -757,6 +1201,8 @@ class MiaoshouUpdater:
                         const tag = (node.tagName || '').toLowerCase();
                         return tag === 'tr'
                             || String(cls).includes('el-table__row')
+                            || String(cls).includes('jx-pro-virtual-table__row')
+                            || String(cls).includes('jx-pro-virtual-table__row-cell')
                             || String(cls).includes('table-row')
                             || String(cls).includes('list-item')
                             || String(cls).includes('item-row');
@@ -786,6 +1232,16 @@ class MiaoshouUpdater:
                         }
                     }
 
+                    if (clickFixedRightAction()) return true;
+
+                    const actionButtons = Array.from(document.querySelectorAll('a, button, span, div')).filter((node) => {
+                        const text = textOf(node);
+                        return visible(node) && (text === '编辑' || text === '修改');
+                    });
+                    if (actionButtons.length === 1) {
+                        return clickNode(actionButtons[0]);
+                    }
+
                     const loneButtons = Array.from(document.querySelectorAll('a, button')).filter((button) => {
                         const text = textOf(button);
                         return visible(button) && (text === '编辑' || text === '修改');
@@ -798,7 +1254,8 @@ class MiaoshouUpdater:
                 str(source_item_id),
             )
             if clicked:
-                return True
+                if self._wait_for_edit_dialog(timeout=4.0) is not None:
+                    return True
             self.page.mouse.wheel(0, 800)
             time.sleep(0.6)
         return False
@@ -1008,6 +1465,10 @@ class MiaoshouUpdater:
     def _fill_weight_dimensions(self, dialog, product: Dict[str, Any]):
         weight_g = self._safe_float(product.get('package_weight'), 0.0)
         weight_kg = round(weight_g / 1000, 3) if weight_g else self._safe_float(product.get('package_weight_kg'), 0.0)
+        if weight_kg <= 0:
+            weight_kg = 0.01
+        elif 0 < weight_kg < 0.01:
+            weight_kg = 0.01
         length = product.get('package_length') or 30
         width = product.get('package_width') or 20
         height = product.get('package_height') or 10
@@ -1064,6 +1525,88 @@ class MiaoshouUpdater:
         if switched:
             self._open_tab(dialog, '基本信息')
             time.sleep(0.5)
+
+    def _clear_product_video_if_present(self, dialog) -> bool:
+        switched = self._open_tab(dialog, '产品视频')
+        if switched:
+            time.sleep(0.8)
+
+        try:
+            cleared = bool(dialog.evaluate(
+                r"""(root) => {
+                    const visible = (el) => !!el && el.offsetParent !== null;
+                    const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
+                    const compact = (text) => normalize(text).replace(/\s+/g, '');
+                    const click = (node) => {
+                        if (!node || !visible(node)) return false;
+                        node.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                        node.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+                        node.click();
+                        return true;
+                    };
+
+                    const scope = Array.from(root.querySelectorAll('.upload-video-container, .info-item, .scroll-menu-pane, .el-form-item'))
+                        .find((node) => {
+                            if (!visible(node)) return false;
+                            const text = compact(node.innerText || '');
+                            return text.includes('产品视频') || text.includes('上传视频') || text.includes('mp4');
+                        });
+                    if (!scope) return false;
+
+                    const explicitDeleteNodes = Array.from(scope.querySelectorAll('button, span, i, svg, .el-icon-close, .icon-close, [aria-label*="删除"], [title*="删除"], [class*="delete"], [class*="remove"], [class*="close"]'))
+                        .filter((node) => visible(node))
+                        .filter((node) => {
+                            const text = compact(node.innerText || node.getAttribute?.('aria-label') || node.getAttribute?.('title') || '');
+                            const cls = (node.className || '').toString().toLowerCase();
+                            return text.includes('删除')
+                                || text.includes('移除')
+                                || text.includes('清空')
+                                || text.includes('重传')
+                                || text.includes('重新上传')
+                                || cls.includes('delete')
+                                || cls.includes('remove')
+                                || cls.includes('close');
+                        });
+
+                    let changed = false;
+                    for (const node of explicitDeleteNodes) {
+                        changed = click(node) || changed;
+                    }
+                    return changed;
+                }"""
+            ))
+            if cleared:
+                logger.info('检测到产品视频区域，已尝试清理已有视频内容')
+                time.sleep(0.8)
+            return cleared
+        except Exception:
+            return False
+        finally:
+            if switched:
+                self._open_tab(dialog, '基本信息')
+                time.sleep(0.5)
+
+    @staticmethod
+    def _extract_video_validation_errors(errors: Sequence[str]) -> List[str]:
+        matches = []
+        for error in errors:
+            normalized = str(error or '').replace(' ', '')
+            if any(fragment.replace(' ', '') in normalized for fragment in VIDEO_VALIDATION_ERROR_FRAGMENTS):
+                matches.append(str(error))
+        return matches
+
+    def _retry_publish_after_video_cleanup(self, dialog, timeout: float = 15.0):
+        cleaned = self._clear_product_video_if_present(dialog)
+        if cleaned:
+            logger.warning('检测到视频校验错误，已清理产品视频并重试保存并发布')
+        else:
+            logger.warning('检测到视频校验错误，未定位到明确的视频删除控件，仍重试保存并发布')
+
+        if not self._click_save_action(dialog, publish=True):
+            return None
+
+        self._resolve_save_warning_message_boxes()
+        return self._wait_for_publish_dialog(timeout=timeout)
 
     def _fill_category(self, dialog, product: Dict[str, Any]):
         category_path = list(self._resolve_category_path(product.get('category')))
@@ -1156,29 +1699,81 @@ class MiaoshouUpdater:
             dimension_text,
         )
 
+    def _erp_text_units(self, text: str) -> int:
+        total = 0
+        for char in text or '':
+            total += 1 if ord(char) < 128 else 2
+        return total
+
+    def _trim_for_erp_limit(self, text: str, limit: int) -> str:
+        trimmed = []
+        total = 0
+        for char in (text or '').strip():
+            unit = 1 if ord(char) < 128 else 2
+            if total + unit > limit:
+                break
+            trimmed.append(char)
+            total += unit
+        return ''.join(trimmed).strip()
+
     def _derive_sales_attribute_options(self, product: Dict[str, Any]) -> List[str]:
         options: List[str] = []
         for sku in product.get('skus') or []:
             sku_name = (sku.get('sku_name') or '').strip()
             if not sku_name:
                 continue
-            candidate = sku_name.split('-')[0].strip() or sku_name[:30].strip()
-            if len(candidate) > 30:
-                candidate = candidate[:30].strip()
+            candidate = sku_name.split('-')[0].strip() or sku_name
+            candidate = self._trim_for_erp_limit(candidate, 30)
             if candidate and candidate not in options:
                 options.append(candidate)
         return options
 
     def _normalize_sales_attribute_values(self, dialog, product: Dict[str, Any]):
         options = self._derive_sales_attribute_options(product)
-        if not options:
-            return
-
         try:
             updated = dialog.evaluate(
                 r"""(root, { options }) => {
                     const visible = (el) => !!el && el.offsetParent !== null;
                     const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
+                    const measure = (text) => {
+                        let total = 0;
+                        for (const char of Array.from(text || '')) {
+                            total += char.charCodeAt(0) < 128 ? 1 : 2;
+                        }
+                        return total;
+                    };
+                    const trimForLimit = (text, limit) => {
+                        let total = 0;
+                        let result = '';
+                        for (const char of Array.from((text || '').trim())) {
+                            const unit = char.charCodeAt(0) < 128 ? 1 : 2;
+                            if (total + unit > limit) break;
+                            result += char;
+                            total += unit;
+                        }
+                        return result.trim();
+                    };
+                    const ensureUnique = (text, used, limit) => {
+                        const normalizedText = trimForLimit(text, limit) || '规格';
+                        if (!used.has(normalizedText)) {
+                            used.add(normalizedText);
+                            return normalizedText;
+                        }
+
+                        let counter = 2;
+                        while (counter < 1000) {
+                            const suffix = `-${counter}`;
+                            const uniqueValue = `${trimForLimit(normalizedText, limit - measure(suffix))}${suffix}`;
+                            if (!used.has(uniqueValue)) {
+                                used.add(uniqueValue);
+                                return uniqueValue;
+                            }
+                            counter += 1;
+                        }
+
+                        used.add(normalizedText);
+                        return normalizedText;
+                    };
                     const setValue = (node, value) => {
                         node.focus();
                         node.select?.();
@@ -1206,9 +1801,16 @@ class MiaoshouUpdater:
                         });
 
                     let changed = 0;
-                    for (let index = 0; index < candidates.length && index < options.length; index += 1) {
-                        setValue(candidates[index], options[index]);
-                        changed += 1;
+                    const usedValues = new Set();
+                    for (let index = 0; index < candidates.length; index += 1) {
+                        const node = candidates[index];
+                        const fallback = node.value || node.getAttribute('value') || '';
+                        const nextValue = ensureUnique(options[index] || fallback, usedValues, 30);
+                        if (!nextValue) continue;
+                        if (normalize(fallback) !== normalize(nextValue) || measure(fallback) > 30) {
+                            setValue(node, nextValue);
+                            changed += 1;
+                        }
                     }
                     return changed;
                 }""",
@@ -1216,6 +1818,67 @@ class MiaoshouUpdater:
             )
             if updated:
                 logger.info(f'销售属性名称已规范化: {options}')
+                time.sleep(0.5)
+        except Exception:
+            pass
+
+    def _normalize_platform_sku_values(self, dialog, product: Dict[str, Any]):
+        source_id = str(product.get('alibaba_product_id') or product.get('product_id') or '').strip()
+        if not source_id:
+            return
+
+        try:
+            updated = dialog.evaluate(
+                r"""(root, { sourceId }) => {
+                    const visible = (el) => !!el && el.offsetParent !== null;
+                    const measure = (text) => {
+                        let total = 0;
+                        for (const char of Array.from(text || '')) {
+                            total += char.charCodeAt(0) < 128 ? 1 : 2;
+                        }
+                        return total;
+                    };
+                    const trimForLimit = (text, limit) => {
+                        let total = 0;
+                        let result = '';
+                        for (const char of Array.from((text || '').trim())) {
+                            const unit = char.charCodeAt(0) < 128 ? 1 : 2;
+                            if (total + unit > limit) break;
+                            result += char;
+                            total += unit;
+                        }
+                        return result.trim();
+                    };
+                    const setValue = (node, value) => {
+                        node.focus();
+                        node.select?.();
+                        node.value = value;
+                        node.dispatchEvent(new Event('input', { bubbles: true }));
+                        node.dispatchEvent(new Event('change', { bubbles: true }));
+                        node.dispatchEvent(new Event('blur', { bubbles: true }));
+                    };
+
+                    const candidates = Array.from(root.querySelectorAll('input[type="text"]'))
+                        .filter((node) => visible(node))
+                        .filter((node) => {
+                            const value = (node.value || '').trim();
+                            return value.startsWith(`${sourceId}_`) && measure(value) > 30;
+                        });
+
+                    let changed = 0;
+                    for (const node of candidates) {
+                        const current = (node.value || '').trim();
+                        const next = trimForLimit(current, 30);
+                        if (!next || next === current) continue;
+                        setValue(node, next);
+                        changed += 1;
+                    }
+                    return changed;
+                }""",
+                {'sourceId': source_id},
+            )
+            if updated:
+                logger.info(f'平台SKU已规范化: source_id={source_id}, updated={updated}')
                 time.sleep(0.5)
         except Exception:
             pass
@@ -1255,20 +1918,59 @@ class MiaoshouUpdater:
             return self._click_visible_button(['保存并发布'], container=dialog)
         return self._click_visible_button(['保存修改跨境全球', '保存修改'], container=dialog)
 
+    def _resolve_save_warning_message_boxes(self, timeout: float = 8.0) -> bool:
+        deadline = time.time() + timeout
+        handled = False
+
+        while time.time() < deadline:
+            visible_wrapper = None
+            wrapper_text = ''
+
+            try:
+                wrappers = self.page.locator('.el-message-box__wrapper')
+                for index in range(wrappers.count()):
+                    wrapper = wrappers.nth(index)
+                    if not wrapper.is_visible():
+                        continue
+                    visible_wrapper = wrapper
+                    try:
+                        wrapper_text = wrapper.inner_text(timeout=500)
+                    except Exception:
+                        wrapper_text = ''
+                    break
+            except Exception:
+                visible_wrapper = None
+
+            if visible_wrapper is None:
+                return handled
+
+            if '相差超过了7倍' in wrapper_text and '仍然保存修改' in wrapper_text:
+                if self._click_visible_button(['仍然保存修改'], container=visible_wrapper):
+                    handled = True
+                    time.sleep(0.8)
+                    continue
+
+            return handled
+
+        return handled
+
     def _wait_for_publish_dialog(self, timeout: float = 10.0):
         deadline = time.time() + timeout
         while time.time() < deadline:
-            dialogs = self.page.locator('.el-dialog')
-            if dialogs.count() > 0:
+            for selector in ['.el-dialog', '.jx-dialog', '.ant-modal', '[role="dialog"]']:
+                dialogs = self.page.locator(selector)
+                if dialogs.count() == 0:
+                    continue
                 for index in range(dialogs.count()):
                     dialog = dialogs.nth(index)
                     try:
                         if not dialog.is_visible():
                             continue
-                        title = dialog.locator('.el-dialog__title').first
+                        title = dialog.locator('.el-dialog__title, .jx-dialog-title, .ant-modal-title').first
                         title_text = title.inner_text() if title.count() > 0 else ''
                         dialog_text = dialog.inner_text(timeout=500)
-                        if '发布产品' in title_text or '确定发布' in dialog_text or '发布到选中店铺' in dialog_text:
+                        combined = f'{title_text}\n{dialog_text}'
+                        if any(keyword in combined for keyword in ['发布产品', '选择发布店铺', '跨境全球 发布配置', '确定发布', '发布到选中店铺']):
                             return dialog
                     except Exception:
                         continue
@@ -1391,11 +2093,35 @@ class MiaoshouUpdater:
         except Exception:
             return False
 
-    def _select_publish_targets(self, dialog):
+    def _publish_target_keywords(self, product: Optional[Dict[str, Any]] = None) -> List[str]:
+        normalized = normalize_site_context(product or {})
+        keywords: List[str] = []
+        shop_code = str(normalized.get('shop_code') or '').strip()
+        if shop_code and shop_code.lower() != 'default':
+            keywords.append(shop_code)
+
+        site_code = str(normalized.get('site_code') or '').strip().lower()
+        if site_code == 'shopee_ph':
+            keywords.extend(['PH', '菲律宾', 'Philippines'])
+        elif site_code == 'shopee_tw':
+            keywords.extend(['TW', '台湾', 'Taiwan'])
+
+        deduped: List[str] = []
+        seen = set()
+        for keyword in keywords:
+            normalized_keyword = keyword.strip()
+            if not normalized_keyword or normalized_keyword in seen:
+                continue
+            seen.add(normalized_keyword)
+            deduped.append(normalized_keyword)
+        return deduped
+
+    def _select_publish_targets(self, dialog, product: Optional[Dict[str, Any]] = None):
         if self._has_selected_publish_store(dialog):
             return True
 
         selected = False
+        preferred_keywords = self._publish_target_keywords(product)
 
         try:
             checkbox_labels = dialog.locator('label')
@@ -1408,6 +2134,8 @@ class MiaoshouUpdater:
                     if not text or '全选' in text:
                         continue
                     if any(keyword in text for keyword in ['自动发布到店铺', '过滤店铺已发布的产品', '产品价格幅度', '标题随机打乱', '自动添加店铺名水印', '主图随机排序', '违禁词检测', '用SKU重量发布']):
+                        continue
+                    if preferred_keywords and not any(keyword.lower() in text.lower() for keyword in preferred_keywords):
                         continue
                     label.click(force=True)
                     time.sleep(0.3)
@@ -1430,6 +2158,8 @@ class MiaoshouUpdater:
                         if not text or '全选' in text:
                             continue
                         if any(keyword in text for keyword in ['自动发布到店铺', '过滤店铺已发布的产品', '产品价格幅度', '标题随机打乱', '自动添加店铺名水印', '主图随机排序', '违禁词检测', '用SKU重量发布']):
+                            continue
+                        if preferred_keywords and not any(keyword.lower() in text.lower() for keyword in preferred_keywords):
                             continue
                         wrapper.click(force=True)
                         time.sleep(0.3)
@@ -1489,7 +2219,32 @@ class MiaoshouUpdater:
         return self._has_selected_publish_store(dialog)
 
     def _confirm_publish(self, dialog) -> bool:
-        return self._click_visible_button(['确定发布', '批量发布'], container=dialog)
+        if self._click_visible_button(['确定发布', '确认发布', '批量发布', '确定'], container=dialog):
+            return True
+
+        try:
+            clicked = bool(dialog.evaluate(
+                r"""(root) => {
+                    const visible = (el) => !!el && el.offsetParent !== null;
+                    const normalize = (text) => (text || '').replace(/\s+/g, '').trim();
+                    const labels = ['确定发布', '确认发布', '批量发布', '确定'];
+                    const nodes = Array.from(root.querySelectorAll('button, span, div'));
+                    for (const label of labels) {
+                        const node = nodes.find((item) => visible(item) && normalize(item.innerText || '').includes(normalize(label)));
+                        if (!node) continue;
+                        node.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                        node.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+                        node.click();
+                        return true;
+                    }
+                    return false;
+                }"""
+            ))
+            if clicked:
+                time.sleep(0.6)
+            return clicked
+        except Exception:
+            return False
 
     def _get_visible_dialog_titles(self) -> List[str]:
         try:
@@ -1563,8 +2318,25 @@ class MiaoshouUpdater:
                         if (!visible(node)) continue;
                         const text = normalize(node.innerText || '');
                         if (!text) continue;
-                        const matched = text.match(/(不能为空|请选择[^\s]+|请填写[^\s]+|必填)/g) || [];
+                        const matched = text.match(/(不能为空|请选择[^\s]+|请填写[^\s]+|必填|字符数超出限制|不能小于0\.01KG|视频像素不超过1280×1280px|视频时长10s~60s|大小必须小于30M|格式为MP4)/g) || [];
                         for (const item of matched) values.push(item);
+                    }
+
+                    for (const node of root.querySelectorAll('input, textarea')) {
+                        if (!visible(node)) continue;
+                        const holder = normalize(node.getAttribute('placeholder') || '');
+                        const parentText = normalize(node.parentElement?.innerText || node.closest('.el-form-item')?.innerText || '');
+                        const over30 = parentText.match(/\b([3-9]\d|\d{3,})\s*\/\s*30\b/);
+                        const over100 = parentText.match(/\b(10[1-9]|[2-9]\d{2,})\s*\/\s*100\b/);
+                        const over14 = parentText.match(/\b(1[5-9]|[2-9]\d|\d{3,})\s*\/\s*14\b/);
+                        const over180 = parentText.match(/\b(18[1-9]|[2-9]\d{2,})\s*\/\s*180\b/);
+                        const over5000 = parentText.match(/\b(500[1-9]|50[1-9]\d|5[1-9]\d{2}|[6-9]\d{3,})\s*\/\s*5000\b/);
+                        if (over30 || over100 || over14 || over180 || over5000) {
+                            values.push('字符数超出限制');
+                        }
+                        if (holder.includes('KG') && parentText.includes('不能小于0.01KG')) {
+                            values.push('不能小于0.01KG');
+                        }
                     }
 
                     return Array.from(new Set(values));
@@ -1654,8 +2426,18 @@ class MiaoshouUpdater:
         logger.info(f'开始处理商品: {source_item_id}')
         self._goto_collect_box()
 
-        if not self._search_source_item(str(source_item_id)):
+        found_in_unpublished = self._search_source_item(str(source_item_id), capture_failure=False)
+        found_in_published = False
+        if not found_in_unpublished:
+            self._goto_collect_box()
+            found_in_published = self._search_source_item(str(source_item_id), tab_label='已发布', capture_failure=False)
+
+        if not found_in_unpublished and not found_in_published:
+            self.screenshot('source_search_no_result')
             raise RuntimeError(f'搜索后未找到商品 {source_item_id}')
+
+        if found_in_published and not publish:
+            logger.info(f'商品 {source_item_id} 当前位于已发布列表，将执行保存回写而不重新发布')
 
         if not self._click_edit_for_source(str(source_item_id)):
             self.screenshot('edit_button_not_found')
@@ -1669,13 +2451,16 @@ class MiaoshouUpdater:
         self._fill_basic_fields(dialog, normalized)
         self._fill_item_num(dialog, normalized)
         self._fill_category(dialog, normalized)
+        self._fill_main_images(dialog, normalized)
         self._fill_weight_dimensions(dialog, normalized)
         self._fill_required_attributes(dialog, normalized)
         self._normalize_sales_attribute_values(dialog, normalized)
-
+        self._normalize_platform_sku_values(dialog, normalized)
         if not self._click_save_action(dialog, publish=publish):
             self.screenshot('save_action_click_failed')
             raise RuntimeError('未能触发保存动作')
+
+        self._resolve_save_warning_message_boxes()
 
         if not publish:
             completed = self._wait_for_save_only_completion(timeout=20.0)
@@ -1684,7 +2469,13 @@ class MiaoshouUpdater:
                 raise RuntimeError('保存修改后未观察到成功态或编辑框关闭')
 
             self._close_result_dialogs()
-            logger.info(f'商品保存成功（未发布）: {source_item_id}')
+            if found_in_published and normalized.get('id'):
+                self.update_product_status(normalized['id'], 'published')
+                self._update_site_listing_status(normalized, 'published', publish_status='published')
+            save_mode = '已发布' if found_in_published else '未发布'
+            if not found_in_published:
+                self._update_site_listing_status(normalized, 'draft', publish_status='saved')
+            logger.info(f'商品保存成功（{save_mode}）: {source_item_id}')
             return True
 
         publish_dialog = self._wait_for_publish_dialog()
@@ -1695,6 +2486,7 @@ class MiaoshouUpdater:
                 if self._dismiss_blocking_dialogs():
                     if not self._click_save_action(dialog, publish=True):
                         raise RuntimeError(f'{blocker}；且关闭引导窗后未能重新触发保存并发布')
+                    self._resolve_save_warning_message_boxes()
                     publish_dialog = self._wait_for_publish_dialog(timeout=5.0)
                     if publish_dialog is not None:
                         self.screenshot('publish_dialog_after_guide_close')
@@ -1705,6 +2497,30 @@ class MiaoshouUpdater:
 
         if publish_dialog is None:
             diagnostics = self._describe_publish_branch_after_save(dialog)
+            video_errors = self._extract_video_validation_errors(diagnostics.get('errors') or [])
+            if video_errors and self.disable_product_video:
+                self.screenshot('video_validation_error_detected')
+                logger.warning(f'检测到视频校验错误: {video_errors}')
+                publish_dialog = self._retry_publish_after_video_cleanup(dialog, timeout=15.0)
+                diagnostics = self._describe_publish_branch_after_save(dialog)
+            if diagnostics.get('branch') == 'still_in_edit_dialog' and not diagnostics.get('errors'):
+                logger.warning('保存并发布后仍停留在编辑对话框，先额外等待，再重试一次点击保存并发布')
+                publish_dialog = self._wait_for_publish_dialog(timeout=12.0)
+                if publish_dialog is None and self._click_save_action(dialog, publish=True):
+                    self._resolve_save_warning_message_boxes()
+                    publish_dialog = self._wait_for_publish_dialog(timeout=15.0)
+                    if publish_dialog is not None:
+                        self.screenshot('publish_dialog_open_after_retry')
+                if publish_dialog is None:
+                    logger.warning('重试后仍停留在编辑对话框，继续等待保存结果落地')
+                    publish_dialog = self._wait_for_publish_dialog(timeout=20.0)
+                    if publish_dialog is not None:
+                        self.screenshot('publish_dialog_open_after_long_wait')
+                if publish_dialog is None:
+                    diagnostics = self._describe_publish_branch_after_save(dialog)
+
+        if publish_dialog is None:
+            diagnostics = diagnostics if 'diagnostics' in locals() else self._describe_publish_branch_after_save(dialog)
             self.screenshot('publish_dialog_not_found')
             detail_parts = [f"branch={diagnostics.get('branch')}"]
             if diagnostics.get('errors'):
@@ -1714,7 +2530,7 @@ class MiaoshouUpdater:
             raise RuntimeError(f"保存并发布后未出现发布确认对话框 ({', '.join(detail_parts)})")
 
         self.screenshot('publish_dialog_open')
-        if not self._select_publish_targets(publish_dialog):
+        if not self._select_publish_targets(publish_dialog, normalized):
             self.screenshot('publish_targets_not_selected')
             raise RuntimeError('未能勾选发布店铺')
         self.screenshot('publish_targets_selected')
@@ -1735,6 +2551,12 @@ class MiaoshouUpdater:
                 logger.warning(f'发布超时，可见弹窗内容: {snippet}')
             self.screenshot('publish_completion_timeout_before_close')
             self._close_result_dialogs()
+            if self._wait_for_product_published(str(source_item_id), timeout=45.0):
+                if normalized.get('id'):
+                    self.update_product_status(normalized['id'], 'published')
+                    self._update_site_listing_status(normalized, 'published', publish_status='published')
+                logger.warning(f'发布确认弹窗超时，但商品已进入已发布列表，按成功处理: {source_item_id}')
+                return True
             self.screenshot('publish_completion_timeout')
             raise RuntimeError('发布流程超时，未观察到成功态')
 
@@ -1745,6 +2567,7 @@ class MiaoshouUpdater:
 
         if normalized.get('id'):
             self.update_product_status(normalized['id'], 'published')
+            self._update_site_listing_status(normalized, 'published', publish_status='published')
         logger.info(f'商品发布成功: {source_item_id}')
         return True
 

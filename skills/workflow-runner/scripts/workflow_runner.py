@@ -16,6 +16,7 @@ EXTERNAL_SKILLS = Path('/home/ubuntu/.openclaw/skills')
 EXTERNAL_SHARED = EXTERNAL_SKILLS / 'shared'
 WORKSPACE_SCRIPTS = WORKSPACE / 'scripts'
 LOCAL_WEIGHT_SCRIPTS = WORKSPACE / 'skills' / 'local-1688-weight' / 'scripts'
+SHOPEE_COLLECT_URL = 'https://erp.91miaoshou.com/shopee/collect_box/items'
 
 for path in [
     str(EXTERNAL_SHARED),
@@ -32,6 +33,7 @@ for path in [
         sys.path.insert(0, path)
 
 from logger import setup_logger
+from multisite_config import normalize_site_context
 
 logger = setup_logger('workflow-runner')
 
@@ -44,9 +46,10 @@ def extract_alibaba_product_id(url: str) -> Optional[str]:
 
 
 class WorkflowRunner:
-    def __init__(self):
+    def __init__(self, site_context: Optional[Dict[str, Any]] = None):
         self._modules_loaded = False
         self._import_error = None
+        self.site_context = normalize_site_context(site_context)
         self._load_modules()
 
     def _load_modules(self):
@@ -73,11 +76,44 @@ class WorkflowRunner:
             self._modules_loaded = False
 
     def _fail(self, step: str, error: str, extra: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        payload = {'success': False, 'step': step, 'error': error}
+        payload = {'success': False, 'step': step, 'error': error, 'site_context': dict(self.site_context)}
         if extra:
             payload.update(extra)
         logger.error(f'[{step}] {error}')
         return payload
+
+    def _verify_collected_source_item(self, source_item_id: str) -> Optional[bool]:
+        """独立回查采集箱。
+
+        返回值语义：
+        - True: 明确在采集箱中找到商品
+        - False: 明确未找到商品
+        - None: 回查器自身异常，调用方应降级处理而不是误判采集失败
+        """
+        if not source_item_id:
+            return False
+
+        scraper = None
+        try:
+            scraper = self.CollectorScraper()
+            scraper.launch()
+            scraper.page.goto(SHOPEE_COLLECT_URL, wait_until='domcontentloaded')
+            time.sleep(5)
+            scraper._close_popups()
+
+            for tab_label in ['未发布', '全部', '已发布']:
+                if scraper._search_source_item(str(source_item_id), timeout=8.0, tab_label=tab_label):
+                    logger.info(f'[step1.verify] 采集箱回查命中: source_item_id={source_item_id}, tab={tab_label}')
+                    return True
+
+            logger.error(f'[step1.verify] 采集箱回查未命中: source_item_id={source_item_id}')
+            return False
+        except Exception as exc:
+            logger.warning(f'[step1.verify] 采集箱回查异常: source_item_id={source_item_id}, error={exc}')
+            return None
+        finally:
+            if scraper:
+                scraper.close()
 
     def _lookup_product_row_id(self, product_payload: Dict[str, Any]) -> Optional[int]:
         identifiers = [
@@ -170,12 +206,20 @@ class WorkflowRunner:
         if cookie_age_seconds > 24 * 3600:
             logger.warning(f'[precheck] Cookies 可能已过期: {cookie_file}')
 
+        local_weight_available = True
         if require_local_weight and not self.check_local_service_health():
-            return self._fail('precheck', '本地1688重量服务不可用，请检查 SSH 隧道和本地服务')
+            local_weight_available = False
+            logger.warning('[precheck] 本地1688重量服务不可用，将自动降级到描述/SKU图片尺寸兜底链路')
 
         logger.info(f'[precheck] Cookies: {cookie_file}')
         logger.info('[precheck] 前置条件检查通过')
-        return {'success': True, 'cookie_file': str(cookie_file), 'local_weight_required': require_local_weight}
+        return {
+            'success': True,
+            'cookie_file': str(cookie_file),
+            'local_weight_required': require_local_weight,
+            'local_weight_available': local_weight_available,
+            'site_context': dict(self.site_context),
+        }
 
     def step1_collect(self, url: str) -> Dict[str, Any]:
         logger.info('=' * 60)
@@ -188,6 +232,18 @@ class WorkflowRunner:
             collector.launch()
             result = collector.collect(url)
             if result.get('success'):
+                source_item_id = result.get('alibaba_product_id') or extract_alibaba_product_id(url)
+                if os.environ.get('WORKFLOW_RUNNER_STEP1_SECONDARY_VERIFY', '').strip() == '1':
+                    verify_result = self._verify_collected_source_item(str(source_item_id))
+                    if verify_result is False:
+                        result['success'] = False
+                        result['error'] = f'workflow_runner 二次校验失败：采集箱未找到商品 {source_item_id}'
+                        return self._fail('step1_collect', result['error'], result)
+                    if verify_result is None:
+                        logger.warning(
+                            f'[step1] 二次校验异常，保留 collector 原始成功结果继续推进: '
+                            f'source_item_id={source_item_id}'
+                        )
                 logger.info(f"[step1] 采集完成: {result.get('alibaba_product_id')}")
                 return result
             return self._fail('step1_collect', result.get('error') or '采集失败', result)
@@ -197,7 +253,7 @@ class WorkflowRunner:
             if collector:
                 collector.close()
 
-    def step2_scrape(self, product_index: int = 0, source_item_id: Optional[str] = None, max_attempts: int = 3, retry_delay: float = 12.0, allow_index_fallback: bool = True) -> Dict[str, Any]:
+    def step2_scrape(self, product_index: int = 0, source_item_id: Optional[str] = None, max_attempts: int = 3, retry_delay: float = 12.0, allow_index_fallback: bool = False) -> Dict[str, Any]:
         logger.info('=' * 60)
         logger.info('[步骤2] 提取采集箱商品数据')
         logger.info('=' * 60)
@@ -239,17 +295,20 @@ class WorkflowRunner:
 
         return self._fail('step2_scrape', last_error or '未提取到有效商品数据', {'data': last_data})
 
-    def step3_local_weight(self, alibaba_product_id: str) -> Dict[str, Any]:
+    def step3_local_weight(self, alibaba_product_id: str, scrape_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         logger.info('=' * 60)
         logger.info('[步骤3] 获取本地1688重量尺寸')
         logger.info('=' * 60)
 
         try:
-            data = self.fetch_weight_from_local(alibaba_product_id, timeout=120)
-            if data and data.get('success'):
-                logger.info(f"[step3] 获取成功: {data.get('sku_count', 0)} 个SKU")
+            data = self.fetch_weight_from_local(alibaba_product_id, timeout=120, scrape_data=scrape_data)
+            if data is not None:
+                logger.info(
+                    f"[step3] 尺寸解析完成: sku_count={data.get('sku_count', 0)}, "
+                    f"completed={(data.get('dimension_summary') or {}).get('completed_dimension_skus', 0)}"
+                )
                 return {'success': True, 'data': data}
-            return self._fail('step3_local_weight', (data or {}).get('error') or '本地重量服务返回失败', {'data': data or {}})
+            return self._fail('step3_local_weight', '本地重量服务返回空结果', {'data': {}})
         except Exception as exc:
             return self._fail('step3_local_weight', str(exc))
 
@@ -281,20 +340,23 @@ class WorkflowRunner:
 
         try:
             optimizer = self.ListingOptimizer()
+            product_payload.update(self.site_context)
             result = optimizer.optimize_product(product_payload)
             if result.get('success'):
                 row_id = self._lookup_product_row_id(product_payload)
-                if row_id:
+                if row_id and not result.get('persisted'):
                     persisted = optimizer.update_product(
                         row_id,
                         result.get('optimized_title') or '',
-                        result.get('optimized_description') or ''
+                        result.get('optimized_description') or '',
+                        result.get('optimized_skus') or [],
                     )
                     result['persisted'] = persisted
                     if persisted:
                         product_payload['id'] = row_id
                 product_payload['optimized_title'] = result.get('optimized_title')
                 product_payload['optimized_description'] = result.get('optimized_description')
+                product_payload['optimized_skus'] = result.get('optimized_skus') or []
                 logger.info('[step5] 优化成功')
                 return result
             return self._fail('step5_optimize', result.get('message') or '优化失败', result)
@@ -308,6 +370,9 @@ class WorkflowRunner:
 
         updater = None
         try:
+            if isinstance(product_identifier, dict):
+                product_identifier = dict(product_identifier)
+                product_identifier.update(self.site_context)
             updater = self.MiaoshouUpdater(
                 headless=True,
                 cdp_url=os.environ.get('MIAOSHOU_CDP_URL')
@@ -329,6 +394,7 @@ class WorkflowRunner:
                     'product_id': product_identifier,
                     'published': is_published,
                     'status': observed_status,
+                    'site_context': dict(self.site_context),
                 }
             return self._fail('step6_update', '妙手回写返回失败', {'product_id': product_identifier})
         except Exception as exc:
@@ -344,18 +410,51 @@ class WorkflowRunner:
 
         try:
             analyzer = self.ProfitAnalyzer()
+            product_payload.update(self.site_context)
+            alibaba_product_id = str(product_payload.get('alibaba_product_id') or '').strip()
+            outcome = analyzer.run([alibaba_product_id], sync_feishu=False, site_context=self.site_context)
+            results = outcome.get('results') or []
+            primary = next((row for row in results if row.get('分析状态') == 'success'), None)
+            if primary:
+                currency = str((self.site_context or {}).get('default_currency') or 'TWD').upper()
+                logger.info(f"[step7] 分析成功: 建议售价 {primary.get('建议售价(TWD)')} {currency}")
+                return {'success': True, 'data': {'results': results, 'db_result': outcome.get('db_result') or {}}}
             result = analyzer.analyze_product(product_payload)
-            if result.get('status') == 'success':
-                logger.info(f"[step7] 分析成功: 建议售价 {result.get('suggested_price_twd')} TWD")
-                return {'success': True, 'data': result}
             return self._fail('step7_analyze', result.get('message') or '利润分析失败', {'data': result})
         except Exception as exc:
             return self._fail('step7_analyze', str(exc))
+
+    def step8_sync(self, alibaba_product_id: str) -> Dict[str, Any]:
+        logger.info('=' * 60)
+        logger.info('[步骤8] 同步利润分析到飞书 Bitable')
+        logger.info('=' * 60)
+
+        if not alibaba_product_id:
+            return self._fail('step8_sync', '缺少 1688 商品 ID，无法同步飞书')
+
+        try:
+            analyzer = self.ProfitAnalyzer()
+            outcome = analyzer.run([alibaba_product_id], site_context=self.site_context, write_db=False)
+            sync_result = outcome.get('sync_result') or {}
+            logger.info(
+                '[step8] 同步成功: '
+                f"created={sync_result.get('created', 0)}, "
+                f"updated={sync_result.get('updated', 0)}, "
+                f"removed_stale={sync_result.get('removed_stale', 0)}"
+            )
+            return {
+                'success': True,
+                'data': outcome,
+                'alibaba_product_id': alibaba_product_id,
+            }
+        except Exception as exc:
+            return self._fail('step8_sync', str(exc), {'alibaba_product_id': alibaba_product_id})
 
     def run_full(self, url: str, publish: bool = True) -> Dict[str, Dict[str, Any]]:
         logger.info('=' * 60)
         logger.info('🚀 全流程工作流开始')
         logger.info('=' * 60)
+        logger.info(f"[context] {self.site_context}")
 
         results: Dict[str, Dict[str, Any]] = {}
 
@@ -383,7 +482,7 @@ class WorkflowRunner:
             results['weight'] = self._fail('step3_local_weight', '无法确定1688商品ID')
             return results
 
-        r3 = self.step3_local_weight(alibaba_product_id)
+        r3 = self.step3_local_weight(alibaba_product_id, scrape_data=scrape_data)
         results['weight'] = r3
         if not r3.get('success'):
             return results
@@ -418,6 +517,11 @@ class WorkflowRunner:
             analyze_payload['weight_g'] = weight_data['sku_list'][0].get('weight_g')
         r7 = self.step7_analyze(analyze_payload)
         results['analyze'] = r7
+        if not r7.get('success'):
+            return results
+
+        r8 = self.step8_sync(alibaba_product_id)
+        results['sync'] = r8
 
         logger.info('=' * 60)
         logger.info('🏁 全流程工作流结束')
@@ -428,6 +532,7 @@ class WorkflowRunner:
         logger.info('=' * 60)
         logger.info('🚀 轻量工作流开始（跳过采集）')
         logger.info('=' * 60)
+        logger.info(f"[context] {self.site_context}")
 
         results: Dict[str, Dict[str, Any]] = {}
 
@@ -447,7 +552,7 @@ class WorkflowRunner:
             results['weight'] = self._fail('step3_local_weight', '无法确定1688商品ID')
             return results
 
-        r3 = self.step3_local_weight(alibaba_product_id)
+        r3 = self.step3_local_weight(alibaba_product_id, scrape_data=scrape_data)
         results['weight'] = r3
         if not r3.get('success'):
             return results
@@ -482,6 +587,11 @@ class WorkflowRunner:
             analyze_payload['weight_g'] = weight_data['sku_list'][0].get('weight_g')
         r7 = self.step7_analyze(analyze_payload)
         results['analyze'] = r7
+        if not r7.get('success'):
+            return results
+
+        r8 = self.step8_sync(alibaba_product_id)
+        results['sync'] = r8
 
         logger.info('=' * 60)
         logger.info('🏁 轻量工作流结束')
@@ -518,9 +628,20 @@ def main():
     parser.add_argument('--url-file', type=str, help='批量处理的 URL 文件')
     parser.add_argument('--lightweight', action='store_true', help='跳过采集步骤，直接从采集箱继续')
     parser.add_argument('--no-publish', action='store_true', help='执行到ERP保存为止，不做最终发布')
+    parser.add_argument('--market-code', type=str, help='市场代码，例如 shopee_tw / shopee_ph')
+    parser.add_argument('--site-code', type=str, help='站点代码，例如 shopee_tw / shopee_ph')
+    parser.add_argument('--shop-code', type=str, help='店铺代码')
+    parser.add_argument('--source-language', type=str, help='主档源语言，例如 zh-CN')
+    parser.add_argument('--listing-language', type=str, help='站点 listing 语言，例如 zh-Hant / en')
     args = parser.parse_args()
 
-    runner = WorkflowRunner()
+    runner = WorkflowRunner(site_context={
+        'market_code': args.market_code,
+        'site_code': args.site_code,
+        'shop_code': args.shop_code,
+        'source_language': args.source_language,
+        'listing_language': args.listing_language,
+    })
 
     if args.url:
         if args.lightweight:
